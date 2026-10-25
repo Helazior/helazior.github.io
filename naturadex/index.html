@@ -1,0 +1,1676 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0e5c6b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font-family:system-ui,sans-serif;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Duel photo Camargue</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Nunito+Sans:wght@400;600;700&display=swap">
+<style>
+/* Layout : tableau des scores collant en haut avec trois onglets, une colonne de fiches espèces groupées par famille, feuille de détail en bas, page stats avec une courbe. */
+:root{
+  --bg:#edf0ea; --surface:#ffffff; --surface-2:#f4f6f1; --ink:#1a292d; --ink-2:#596a6e; --line:#d3d9d2;
+  --accent:#0e5c6b; --accent-ink:#ffffff; --accent-soft:#dcecef;
+  --p1:#1f78a8; --p2:#d4692e; --p1-soft:#e1edf5; --p2-soft:#f9e8dd;
+  --t1:#8b9794; --t2:#b98f22; --t3:#d9496f; --t3-soft:#fbe3ea;
+  --good:#2f7d4f; --bad:#b8321f;
+  --font-display:"Bricolage Grotesque","Arial Narrow",Arial,sans-serif;
+  --font-body:"Nunito Sans","Segoe UI",system-ui,sans-serif;
+  --shadow:0 10px 30px rgba(20,40,45,.18);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#111a1c; --surface:#1a2528; --surface-2:#223033; --ink:#e6ece9; --ink-2:#9cabae; --line:#2c3b3f;
+    --accent:#5fc1d1; --accent-ink:#0b1a1e; --accent-soft:#17343b;
+    --p1:#2f9fcc; --p2:#d67a3c; --p1-soft:#16303d; --p2-soft:#3a2619;
+    --t1:#6d7b79; --t2:#d2ab3c; --t3:#f08aa0; --t3-soft:#3b2230;
+    --good:#5fc48a; --bad:#f07a66;
+    --shadow:0 10px 30px rgba(0,0,0,.5);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#111a1c; --surface:#1a2528; --surface-2:#223033; --ink:#e6ece9; --ink-2:#9cabae; --line:#2c3b3f;
+  --accent:#5fc1d1; --accent-ink:#0b1a1e; --accent-soft:#17343b;
+  --p1:#2f9fcc; --p2:#d67a3c; --p1-soft:#16303d; --p2-soft:#3a2619;
+  --t1:#6d7b79; --t2:#d2ab3c; --t3:#f08aa0; --t3-soft:#3b2230;
+  --good:#5fc48a; --bad:#f07a66;
+  --shadow:0 10px 30px rgba(0,0,0,.5);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 40px;-webkit-text-size-adjust:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+button{font:inherit;color:inherit}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;max-width:100%}
+input[type=number]{width:92px;font-variant-numeric:tabular-nums}
+h1,h2,h3{text-wrap:balance}
+.hide{display:none!important}
+
+/* En-tête */
+.brand{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding-block:12px 6px}
+.brand h1{font-family:var(--font-display);font-size:24px;font-weight:800;margin:0;letter-spacing:-.01em;line-height:1.05}
+.brand .sub{margin:2px 0 0;color:var(--ink-2);font-size:12.5px}
+.sync{font-size:11px;color:var(--ink-2);display:flex;align-items:center;gap:5px;white-space:nowrap;padding-top:4px}
+.sync i{width:8px;height:8px;border-radius:50%;background:var(--t1);display:inline-block}
+.sync.on i{background:var(--good)} .sync.err i{background:var(--bad)}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bg);padding-block:6px 0;border-bottom:1px solid var(--line);margin-bottom:12px}
+.scoreboard{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:stretch}
+.player{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"name pts" "meta pts";column-gap:8px;align-items:center;border:2px solid var(--line);background:var(--surface);border-radius:12px;padding:6px 10px;text-align:left;cursor:pointer;min-width:0}
+.player .name{grid-area:name;font-weight:700;font-size:14px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;line-height:1.2}
+.player .name .lead{font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);background:var(--surface-2);padding:1px 6px;border-radius:999px}
+.player .pts{grid-area:pts;font-family:var(--font-display);font-size:28px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.player .meta{grid-area:meta;font-size:11.5px;color:var(--ink-2);line-height:1.2}
+.player.p1{border-color:var(--p1)} .player.p2{border-color:var(--p2)}
+.player.p1 .pts{color:var(--p1)} .player.p2 .pts{color:var(--p2)}
+.player.me{box-shadow:0 0 0 3px var(--bg),0 0 0 5px currentColor}
+.player.p1.me{color:var(--p1)} .player.p2.me{color:var(--p2)}
+.player.me .name,.player.me .meta{color:var(--ink)} .player.me .meta{opacity:.75}
+.vs{align-self:center;font-family:var(--font-display);font-weight:700;color:var(--ink-2);font-size:13px}
+.tabs{display:flex;gap:2px;margin-top:4px}
+.tabs button{flex:1;border:0;background:transparent;padding:8px 4px;font-weight:700;color:var(--ink-2);border-bottom:3px solid transparent;cursor:pointer}
+.tabs button[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* Barre d'outils */
+.toolbar{display:flex;flex-direction:column;gap:8px}
+.who{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--ink-2)}
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:999px;padding:2px;background:var(--surface)}
+.seg button{border:0;background:transparent;border-radius:999px;padding:5px 12px;font-weight:700;color:var(--ink-2);cursor:pointer}
+.seg button[aria-pressed="true"]{color:#fff}
+.seg button.p1[aria-pressed="true"]{background:var(--p1)} .seg button.p2[aria-pressed="true"]{background:var(--p2)}
+.seg button:not(.p1):not(.p2)[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.search{width:100%}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips .chip{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 11px;font-size:13px;font-weight:600;color:var(--ink-2);cursor:pointer}
+.chips .chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chips .chip.ico[aria-pressed="true"]{background:var(--t2);border-color:var(--t2);color:#fff}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row select{flex:1;min-width:140px}
+.toggle{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-2);cursor:pointer}
+.legend{font-size:12.5px;color:var(--ink-2);display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
+.legend b{font-weight:700}
+.legend .t1{color:var(--t1)} .legend .t2{color:var(--t2)} .legend .t3{color:var(--t3)}
+details.rules{margin-top:6px;font-size:13px;color:var(--ink-2)}
+details.rules summary{cursor:pointer;font-weight:700;color:var(--ink)}
+details.rules p{margin:6px 0}
+
+/* Liste et fiches */
+.group-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:18px 0 8px;font-family:var(--font-display);font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-2)}
+.group-h span{font-family:var(--font-body);text-transform:none;letter-spacing:0;font-weight:600;font-size:12px}
+.cards{display:grid;grid-template-columns:1fr;gap:8px}
+@media (min-width:760px){.cards{grid-template-columns:1fr 1fr}}
+@media (min-width:1150px){.cards{grid-template-columns:1fr 1fr 1fr}}
+body.cols-1 .cards{grid-template-columns:1fr}
+body.cols-2 .cards{grid-template-columns:1fr 1fr}
+body.cols-3 .cards{grid-template-columns:1fr 1fr 1fr}
+body.cols-2 .card,body.cols-3 .card{grid-template-columns:44px minmax(0,1fr) auto;gap:3px 8px;padding:8px 9px}
+body.cols-2 .card .head,body.cols-3 .card .head{width:44px;height:44px} body.cols-2 .card .head svg,body.cols-3 .card .head svg{width:44px;height:44px}
+body.cols-2 .card h3,body.cols-3 .card h3{font-size:15px} body.cols-2 .tiers button,body.cols-3 .tiers button{padding:5px 2px;font-size:12px;min-height:38px}
+.card{display:grid;grid-template-columns:56px minmax(0,1fr) auto;grid-template-areas:"head info pts" "tiers tiers tiers" "other other other";gap:3px 12px;background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:10px 12px}
+.card.taken{border-color:var(--accent)}
+.card .head{grid-area:head;width:56px;height:56px;border-radius:50%;background:var(--surface-2);display:grid;place-items:center;overflow:hidden;cursor:pointer;border:0;padding:0}
+.card .head svg{width:56px;height:56px;display:block}
+.card .info{grid-area:info;min-width:0;cursor:pointer}
+.card h3{margin:0;font-family:var(--font-display);font-size:17px;font-weight:700;line-height:1.15}
+.card .latin{margin:0;font-size:12px;color:var(--ink-2);font-style:italic}
+.tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.tag{font-size:11px;padding:1px 7px;border-radius:999px;background:var(--surface-2);color:var(--ink-2);letter-spacing:.02em;font-weight:600}
+.tag.l3{background:var(--t3-soft);color:var(--t3)} .tag.l2{background:var(--accent-soft);color:var(--accent)}
+.tag.ic{background:var(--t2);color:#fff}
+.tag.obj{color:#fff} .tag.obj.p1{background:var(--p1)} .tag.obj.p2{background:var(--p2)}
+.prow .when{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.cote{margin-top:12px;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--surface-2)}
+.cote-h{display:flex;justify-content:space-between;align-items:baseline;font-weight:700;margin-bottom:6px}
+.cote-h b{font-family:var(--font-display);font-size:22px;font-variant-numeric:tabular-nums}
+.crow{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:8px;align-items:center;margin-top:6px;font-size:13px}
+.crow label{font-weight:600;color:var(--ink-2)}
+.crow select{width:100%;padding:6px 8px;font-size:13px}
+.calc{font-size:12.5px;color:var(--ink-2);margin:8px 0 0;line-height:1.5}
+.cote .ptsedit{margin-top:8px}
+.feed .t small{color:var(--ink-2);font-size:11px}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.dot.p1{background:var(--p1)} .dot.p2{background:var(--p2)}
+.qr{display:grid;place-items:center;margin:8px 0;color:var(--ink-2);font-size:13px;text-align:center}
+.qr img,.qr canvas{background:#fff;padding:10px;border-radius:10px;max-width:100%;height:auto}
+.objbtn{border:1.5px solid var(--line);background:var(--surface-2);border-radius:999px;padding:4px 10px;font-size:12.5px;font-weight:700;color:var(--ink-2);cursor:pointer}
+.objbtn.on{background:var(--t2);border-color:var(--t2);color:#fff}
+.card .pts{grid-area:pts;text-align:right;font-family:var(--font-display);font-weight:800;font-size:22px;line-height:1;font-variant-numeric:tabular-nums;padding-top:2px}
+.card .pts small{display:block;font-size:11px;font-weight:600;color:var(--ink-2);font-family:var(--font-body);margin-top:2px}
+.tiers{grid-area:tiers;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}
+.tiers button{border:1.5px solid var(--line);background:var(--surface-2);border-radius:10px;padding:6px 4px;font-size:13px;font-weight:700;color:var(--ink-2);cursor:pointer;min-height:42px;line-height:1.1}
+.tiers button span{display:block;font-size:11px;font-weight:600;opacity:.85;margin-top:1px;font-variant-numeric:tabular-nums}
+.tiers button[aria-pressed="true"]{color:#fff;border-color:transparent}
+.tiers button[aria-pressed="true"] span{opacity:1}
+.tiers button[data-t="1"][aria-pressed="true"]{background:var(--t1)}
+.tiers button[data-t="2"][aria-pressed="true"]{background:var(--t2)}
+.tiers button[data-t="3"][aria-pressed="true"]{background:var(--t3)}
+.card .other{grid-area:other;font-size:12px;color:var(--ink-2);margin-top:2px;min-height:1em}
+.card .other b{font-weight:700}
+.empty{color:var(--ink-2);padding:24px 8px;text-align:center}
+.board{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:start}
+.bcol{min-width:0;border:1.5px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+.bcol.p1{border-color:var(--p1)} .bcol.p2{border-color:var(--p2)}
+.bcol .bh{padding:8px 10px;border-bottom:1px solid var(--line)}
+.bcol .bh .nm{font-weight:700;font-size:14px}
+.bcol.p1 .bh .nm{color:var(--p1)} .bcol.p2 .bh .nm{color:var(--p2)}
+.bcol .bh .big{font-family:var(--font-display);font-size:24px;font-weight:800;line-height:1.05;font-variant-numeric:tabular-nums}
+.bcol .bh .sub{font-size:11.5px;color:var(--ink-2)}
+.bitem{display:grid;grid-template-columns:40px minmax(0,1fr);gap:8px;align-items:center;padding:7px 10px;border-bottom:1px solid var(--line);background:transparent;border-left:0;border-right:0;border-top:0;width:100%;text-align:left;cursor:pointer}
+.bitem:last-child{border-bottom:0}
+.bitem .head{width:40px;height:40px;border-radius:50%;background:var(--surface-2);overflow:hidden}
+.bitem .head svg{width:40px;height:40px;display:block}
+.bitem b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;font-size:13px;line-height:1.2;overflow:hidden;overflow-wrap:anywhere}
+.bitem .meta{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--ink-2);margin-top:2px;flex-wrap:wrap}
+.bitem .tq{display:inline-block;width:8px;height:8px;border-radius:50%}
+.bitem .tq.t1{background:var(--t1)} .bitem .tq.t2{background:var(--t2)} .bitem .tq.t3{background:var(--t3)}
+.bitem .bp{font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.bitem .also{display:inline-block;width:7px;height:7px;border-radius:50%;border:1.5px solid currentColor}
+.bitem .also.p1{color:var(--p1)} .bitem .also.p2{color:var(--p2)}
+.bempty{padding:16px 10px;color:var(--ink-2);font-size:12.5px}
+.bitem.out{opacity:.55}
+.tip{margin-top:10px;font-size:13px;line-height:1.5;background:var(--accent-soft);color:var(--ink);border-radius:10px;padding:8px 10px}
+.tip b{color:var(--accent);margin-right:4px}
+.crow label small{font-weight:600;color:var(--ink-2)}
+
+/* Feuille de détail */
+.backdrop{position:fixed;inset:0;background:rgba(10,20,22,.45);z-index:20}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;background:var(--surface);border-radius:18px 18px 0 0;box-shadow:var(--shadow);max-height:88%;overflow:auto;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px calc(16px + env(safe-area-inset-bottom,0px))}
+.sheet .grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 10px}
+.sheet .hd{display:grid;grid-template-columns:84px minmax(0,1fr) auto;gap:12px;align-items:center}
+.sheet .hd .head{width:84px;height:84px;border-radius:50%;background:var(--surface-2);overflow:hidden;display:grid;place-items:center}
+.sheet .hd .head svg{width:84px;height:84px;display:block}
+.sheet h2{margin:0;font-family:var(--font-display);font-size:22px;font-weight:800;line-height:1.1}
+.sheet .close{border:0;background:var(--surface-2);border-radius:50%;width:36px;height:36px;cursor:pointer;font-size:18px;line-height:1;align-self:start}
+.sheet .ptsedit{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:14px}
+.prow{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+.prow .pname{display:flex;justify-content:space-between;align-items:center;font-weight:700;margin-bottom:6px}
+.prow .pname .earned{font-family:var(--font-display);font-size:18px;font-weight:800;font-variant-numeric:tabular-nums}
+.prow.p1 .pname{color:var(--p1)} .prow.p2 .pname{color:var(--p2)}
+.prow .when{font-size:12px;color:var(--ink-2);margin-top:4px}
+.sheet textarea{width:100%;min-height:64px;margin-top:6px;resize:vertical}
+.sheet label{font-size:13px;color:var(--ink-2);font-weight:600}
+
+/* Stats */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+.tile{background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;min-width:0}
+.tile.p1{border-color:var(--p1)} .tile.p2{border-color:var(--p2)}
+.tile .big{font-family:var(--font-display);font-size:34px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.tile.p1 .big{color:var(--p1)} .tile.p2 .big{color:var(--p2)}
+.tile .lbl{font-weight:700;font-size:13px}
+.tile .sub{font-size:12px;color:var(--ink-2);margin-top:6px;line-height:1.5}
+.tile .sub b{color:var(--ink)}
+.panel{background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;margin-top:10px;min-width:0}
+.panel h2{margin:0 0 4px;font-family:var(--font-display);font-size:17px;font-weight:700}
+.panel .hint{margin:0 0 8px;font-size:12.5px;color:var(--ink-2)}
+.chart-wrap{position:relative}
+.chart-wrap svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.chart-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-2);margin:6px 0 2px}
+.chart-legend i{display:inline-block;width:12px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
+.chart-legend .p1 i{background:var(--p1)} .chart-legend .p2 i{background:var(--p2)}
+.tooltip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12px;padding:6px 8px;border-radius:8px;line-height:1.4;white-space:nowrap;transform:translate(-50%,-100%);display:none;font-variant-numeric:tabular-nums}
+.tooltip.show{display:block}
+.bars{display:grid;gap:6px;margin-top:6px}
+.bar-h{font-weight:700;font-size:13px;margin-top:8px;display:flex;justify-content:space-between;align-items:baseline}
+.bar-h span{font-weight:600;font-size:12px;color:var(--ink-2)}
+.bar-h.t1{color:var(--t1)} .bar-h.t2{color:var(--t2)} .bar-h.t3{color:var(--t3)}
+.bar{display:grid;grid-template-columns:84px minmax(0,1fr) 36px;gap:8px;align-items:center;font-size:13px}
+.bar>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar .track{height:12px;background:var(--surface-2);border-radius:6px;overflow:hidden;position:relative}
+.bar .fill{height:100%;border-radius:6px;width:0}
+.bar.p1 .fill{background:var(--p1)} .bar.p2 .fill{background:var(--p2)}
+.bar .num{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+.feed{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:6px;font-size:13.5px}
+.feed li{display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:8px;align-items:baseline}
+.feed .t{color:var(--ink-2);font-variant-numeric:tabular-nums;font-size:12.5px}
+.feed .who{font-weight:700}
+.feed .who.p1{color:var(--p1)} .feed .who.p2{color:var(--p2)}
+.feed .v{font-weight:700;font-variant-numeric:tabular-nums}
+table.tbl{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+table.tbl th,table.tbl td{text-align:left;padding:6px 6px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+table.tbl th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-2)}
+.tblwrap{overflow-x:auto}
+
+/* Réglages */
+.field{display:grid;gap:4px;margin-top:10px}
+.field label{font-size:13px;font-weight:700;color:var(--ink-2)}
+.field .inl{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.radio{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.radio label{display:flex;gap:8px;align-items:flex-start;font-size:14px;color:var(--ink);font-weight:500;cursor:pointer}
+.radio input{margin-top:3px}
+.btn{border:1.5px solid var(--line);background:var(--surface);border-radius:10px;padding:9px 14px;font-weight:700;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.danger{color:var(--bad);border-color:var(--bad)}
+.btn.small{padding:6px 10px;font-size:13px}
+.ptslist{display:grid;gap:6px;margin-top:8px}
+.ptrow{display:grid;grid-template-columns:36px minmax(0,1fr) 92px;gap:8px;align-items:center;font-size:14px}
+.ptrow .head{width:36px;height:36px;border-radius:50%;background:var(--surface-2);overflow:hidden}
+.ptrow .head svg{width:36px;height:36px;display:block}
+.ptrow .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ptrow .nm small{color:var(--ink-2)}
+.ptrow input{width:100%}
+.ptrow.changed .nm{font-weight:700}
+.bonuslist{list-style:none;padding:0;margin:8px 0 0;display:grid;gap:6px;font-size:13.5px}
+.bonuslist li{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center}
+.code{width:100%;min-height:70px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+.muted{color:var(--ink-2);font-size:12.5px}
+.ok{color:var(--good);font-weight:700}
+
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-weight:700;font-size:14px;z-index:30;box-shadow:var(--shadow);opacity:0;transition:opacity .2s;pointer-events:none;max-width:90%;text-align:center}
+#toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){#toast{transition:none}}
+</style>
+
+<div class="brand">
+  <div>
+    <h1>Duel photo Camargue</h1>
+    <p class="sub">Pont de Gau · Marais du Vigueirat · 1<sup>er</sup>–2 novembre 2026</p>
+  </div>
+  <div class="sync" id="sync" title="État de la synchronisation"><i></i><span>local</span></div>
+</div>
+<header class="top">
+  <div class="scoreboard">
+    <button class="player p1" id="pl-p1" data-p="p1" type="button" aria-label="Choisir Clément comme profil actif"><span class="name"></span><span class="pts">0</span><span class="meta">0 espèce</span></button>
+    <div class="vs">vs</div>
+    <button class="player p2" id="pl-p2" data-p="p2" type="button" aria-label="Choisir Manu comme profil actif"><span class="name"></span><span class="pts">0</span><span class="meta">0 espèce</span></button>
+  </div>
+  <nav class="tabs" role="tablist">
+    <button role="tab" id="tab-birds" aria-selected="true" aria-controls="view-birds" type="button">Espèces</button>
+    <button role="tab" id="tab-board" aria-selected="false" aria-controls="view-board" type="button">Tableau</button>
+    <button role="tab" id="tab-stats" aria-selected="false" aria-controls="view-stats" type="button">Stats</button>
+    <button role="tab" id="tab-settings" aria-selected="false" aria-controls="view-settings" type="button">Réglages</button>
+  </nav>
+</header>
+
+<main>
+<section id="view-birds" role="tabpanel">
+  <div class="toolbar">
+    <div class="who"><span>Je coche pour</span>
+      <span class="seg" id="who-seg"><button type="button" class="p1" data-p="p1" aria-pressed="true">Clément</button><button type="button" class="p2" data-p="p2" aria-pressed="false">Manu</button></span>
+    </div>
+    <div class="who"><span>Je suis à</span><span class="chips" id="lieu-chips" role="group" aria-label="Lieu"></span></div>
+    <input class="search" id="q" type="search" placeholder="Chercher une espèce (flamant, martin…)" aria-label="Chercher une espèce" autocomplete="off">
+    <div class="chips" id="site-chips" role="group" aria-label="Site">
+      <button type="button" class="chip" data-v="all" aria-pressed="true">Les deux sites</button>
+      <button type="button" class="chip" data-v="PG" aria-pressed="false">Pont de Gau</button>
+      <button type="button" class="chip" data-v="MV" aria-pressed="false">Vigueirat</button>
+    </div>
+    <div class="chips" id="like-chips" role="group" aria-label="Probabilité">
+      <button type="button" class="chip" data-v="all" aria-pressed="true">Toutes</button>
+      <button type="button" class="chip" data-v="1" aria-pressed="false">Communes</button>
+      <button type="button" class="chip" data-v="2" aria-pressed="false">Possibles</button>
+      <button type="button" class="chip" data-v="3" aria-pressed="false">Rares</button>
+      <button type="button" class="chip ico" id="ico-chip" aria-pressed="false">★ Iconiques</button>
+    </div>
+    <div class="row">
+      <select id="group-sel" aria-label="Famille"><option value="all">Toutes les familles</option></select>
+      <select id="sort-sel" aria-label="Tri">
+        <option value="group">Par famille</option>
+        <option value="pts">Points décroissants</option>
+        <option value="name">Nom A→Z</option>
+      </select>
+    </div>
+    <div class="chips" id="taken-chips" role="group" aria-label="Prises">
+      <button type="button" class="chip" data-v="all" aria-pressed="true">Toutes</button>
+      <button type="button" class="chip" data-v="mine" aria-pressed="false">Mes prises</button>
+      <button type="button" class="chip" data-v="rest" aria-pressed="false">Pas encore prises</button>
+    </div>
+    <div class="legend"><span><b class="t1">Flou</b> <span id="lg1">10 %</span></span><span><b class="t2">Banale</b> <span id="lg2">50 %</span></span><span><b class="t3">Portfolio</b> <span id="lg3">100 %</span></span><span>Mode : <span id="lgmode">chacun ses points</span></span><span><b class="t2">★ Iconique</b> portfolio ×<span id="lgico">2</span></span></div>
+    <details class="rules">
+      <summary>Règles du duel</summary>
+      <p>Chaque espèce vaut des points : plus elle est belle, iconique et dure à shooter, plus elle rapporte (de 5 à 500). Une photo floue mais identifiable rapporte 10 % des points, une photo banale 50 %, une photo digne du portfolio 100 %.</p>
+      <p>Les espèces ★ Iconique (martin-pêcheur, flamant, panure, gorgebleue, butor…) doublent en portfolio : les approcher de près est le vrai défi. Chacun choisit aussi 3 objectifs personnels depuis la fiche d'une espèce : atteint en portfolio, un objectif rapporte +100 % (ça se cumule avec l'iconique, un pigeon en objectif ne rapporte rien).</p>
+      <p>Seule la meilleure photo de chacun compte par espèce. On peut monter d'un cran plus tard (flou puis portfolio) : la courbe garde la date de chaque progrès. Tout se discute : barème, mode « le meilleur rafle tout », points par espèce, bonus iconique et bonus manuels sont dans Réglages.</p>
+    </details>
+  </div>
+  <div id="list"></div>
+  <div class="row" style="margin-top:14px;justify-content:center"><button class="btn" type="button" id="add-custom">+ Espèce hors liste</button></div>
+</section>
+
+<section id="view-board" role="tabpanel" hidden>
+  <div class="row" style="margin-bottom:8px"><select id="board-sort" aria-label="Tri du tableau"><option value="pts">Par points</option><option value="time">Par heure (récent en premier)</option><option value="name">Par nom</option></select></div>
+  <div class="board" id="board"></div>
+</section>
+<section id="view-stats" role="tabpanel" hidden>
+  <div class="panel" id="bilan" hidden></div>
+  <div class="tiles" id="tiles"></div>
+  <div class="panel">
+    <h2>Évolution des points</h2>
+    <p class="hint" id="chart-hint">La courbe monte à chaque photo cochée. Touchez la courbe pour lire un instant.</p>
+    <div class="chart-legend" id="chart-legend"></div>
+    <div class="chart-wrap" id="chart-wrap"><div class="tooltip" id="tip"></div></div>
+    <div class="row" style="margin-top:8px"><button class="btn small" type="button" id="tbl-toggle" aria-expanded="false">Voir le tableau des prises</button></div>
+    <div class="tblwrap hide" id="tblwrap"></div>
+  </div>
+  <div class="panel">
+    <h2>Qualité des photos</h2>
+    <div class="bars" id="bars"></div>
+  </div>
+  <div class="row" id="end-row" style="margin-top:12px;justify-content:center"><button type="button" class="btn" id="end-duel">Terminer le duel</button></div>
+  <div class="panel">
+    <h2>Historique</h2>
+    <p class="hint">Qui a fait quoi, tous téléphones réunis : coches, cotes, réglages, bonus.</p>
+    <ul class="feed" id="hist"></ul>
+    <div class="row" style="margin-top:8px"><button class="btn small" type="button" id="hist-more" hidden>Voir tout</button></div>
+  </div>
+</section>
+
+<section id="view-settings" role="tabpanel" hidden>
+  <div class="panel">
+    <h2>Profils</h2>
+    <div class="field"><label>Ce téléphone est celui de</label><div><span class="seg" id="dev-seg"><button type="button" class="p1" data-p="p1" aria-pressed="false">Clément</button><button type="button" class="p2" data-p="p2" aria-pressed="false">Manu</button></span></div><p class="hint" style="margin:4px 0 0">Chaque modification est signée de ce nom dans l'historique.</p></div>
+    <div class="field"><label for="name1">Joueur 1</label><input id="name1" type="text" maxlength="20"></div>
+    <div class="field"><label for="name2">Joueur 2</label><input id="name2" type="text" maxlength="20"></div>
+  </div>
+  <div class="panel">
+    <h2>Barème</h2>
+    <p class="hint">Part des points de l'espèce selon la qualité de la meilleure photo.</p>
+    <div class="field"><div class="inl"><label for="pct1" style="width:80px">Flou</label><input id="pct1" type="number" min="0" max="100" step="5"> %</div></div>
+    <div class="field"><div class="inl"><label for="pct2" style="width:80px">Banale</label><input id="pct2" type="number" min="0" max="100" step="5"> %</div></div>
+    <div class="field"><div class="inl"><label for="pct3" style="width:80px">Portfolio</label><input id="pct3" type="number" min="0" max="100" step="5"> %</div></div>
+    <div class="field"><label>Mode de score</label>
+      <div class="radio">
+        <label><input type="radio" name="mode" value="each" id="mode-each"> <span><b>Chacun ses points</b> : chaque joueur marque selon sa propre meilleure photo.</span></label>
+        <label><input type="radio" name="mode" value="duel" id="mode-duel"> <span><b>Le meilleur rafle tout</b> : par espèce, seul celui qui a la meilleure qualité marque. À égalité, les deux marquent.</span></label>
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>Affichage</h2>
+    <div class="field"><label>Fiches par ligne</label><div><span class="seg" id="cols-seg"><button type="button" data-v="auto" aria-pressed="true">Auto</button><button type="button" data-v="1" aria-pressed="false">1</button><button type="button" data-v="2" aria-pressed="false">2</button><button type="button" data-v="3" aria-pressed="false">3</button></span></div></div>
+    <div class="field"><label>Taille du texte</label><div class="inl"><button type="button" class="btn small" id="zoom-minus" aria-label="Réduire">A−</button><span id="zoom-val" style="min-width:48px;text-align:center;font-variant-numeric:tabular-nums">100 %</span><button type="button" class="btn small" id="zoom-plus" aria-label="Agrandir">A+</button><button type="button" class="btn small" id="zoom-reset">Normal</button></div><p class="hint" style="margin:4px 0 0">Le zoom à deux doigts reste possible en plus.</p></div>
+  </div>
+  <div class="panel" id="panel-lieux">
+    <h2>Lieux</h2>
+    <p class="hint">La rareté « ici » et « à cette période » dépend du lieu choisi en haut de la liste des espèces, et chaque coche garde le lieu où la photo a été faite. Pont de Gau et le Vigueirat sont calculés depuis GBIF ; ajoutez n'importe quel autre lieu avec ses coordonnées.</p>
+    <ul class="bonuslist" id="lieux"></ul>
+    <p class="hint" id="gbif-note"></p>
+    <div class="field"><label for="l-n">Nouveau lieu</label><input id="l-n" type="text" maxlength="40" placeholder="Ex. : Lac du Bourget"></div>
+    <div class="field"><div class="inl"><input id="l-lat" type="number" step="0.0001" placeholder="latitude" aria-label="Latitude" style="width:120px"><input id="l-lng" type="number" step="0.0001" placeholder="longitude" aria-label="Longitude" style="width:120px"><input id="l-r" type="number" min="1" max="50" step="1" value="9" aria-label="Rayon en km" style="width:70px"> km<button class="btn small" type="button" id="l-geo">Ma position</button></div></div>
+    <div class="row"><button class="btn primary" type="button" id="l-add">Ajouter et calculer</button></div>
+  </div>
+  <div class="panel" id="panel-custom">
+    <h2 id="x-title">Espèce hors liste</h2>
+    <p class="hint">Pour une rareté que la liste n'avait pas prévue. Elle apparaît chez les deux après fusion, avec un dessin générique et ses cinq notes.</p>
+    <div class="field"><label for="x-n">Nom</label><input id="x-n" type="text" maxlength="40" placeholder="Ex. : Pélican blanc"></div>
+    <div class="field"><label for="x-l">Nom latin (facultatif)</label><input id="x-l" type="text" maxlength="40"></div>
+    <div class="field"><label for="x-g">Famille</label><select id="x-g"></select></div>
+    <div class="field"><div class="inl"><label for="x-site">Site</label><select id="x-site"><option value="PG+MV">Les 2 sites</option><option value="PG">Pont de Gau</option><option value="MV">Vigueirat</option></select><label for="x-like">Probabilité</label><select id="x-like"><option value="1">Commun</option><option value="2" selected>Possible</option><option value="3">Rare</option></select></div></div>
+    <div id="x-comps"></div>
+    <div class="row" style="margin-top:10px"><button class="btn primary" type="button" id="x-add">Ajouter</button><button class="btn" type="button" id="x-cancel" hidden>Annuler</button></div>
+    <ul class="bonuslist" id="xlist"></ul>
+  </div>
+  <div class="panel">
+    <h2>Bonus iconique et objectifs</h2>
+    <p class="hint">Les espèces marquées ★ Iconique (martin-pêcheur, flamant, panure, gorgebleue…) rapportent plus en portfolio, parce qu'un cliché de près est le vrai défi. Chaque joueur choisit aussi jusqu'à 3 objectifs depuis la fiche d'une espèce : réussis en portfolio, ils rapportent un pourcentage en plus (un pigeon en objectif ne rapporte donc presque rien).</p>
+    <div class="field"><div class="inl"><label for="icomul" style="width:200px">Portfolio d'une espèce iconique</label>× <input id="icomul" type="number" min="1" max="5" step="0.5"></div></div>
+    <div class="field"><div class="inl"><label for="objbonus" style="width:200px">Objectif atteint en portfolio</label>+ <input id="objbonus" type="number" min="0" max="500" step="10"> %</div></div>
+    <div class="field"><div class="inl"><label for="topn" style="width:200px">Ne compter que les meilleures prises</label><input id="topn" type="number" min="0" max="500" step="1" placeholder="toutes"> prises</div><p class="hint" style="margin:4px 0 0">Vide ou 0 : tout compte. Avec 10, seules les 10 espèces qui rapportent le plus à chacun entrent dans le score ; les bonus manuels s'ajoutent toujours.</p></div>
+    <div id="objectives"></div>
+  </div>
+  <div class="panel">
+    <h2>Bonus et malus manuels</h2>
+    <p class="hint">Pour tout ce que le barème ne prévoit pas : photo en vol, comportement rare, objectif tombé dans la vase…</p>
+    <div class="field"><div class="inl">
+      <select id="bonus-p" aria-label="Joueur"><option value="p1">Joueur 1</option><option value="p2">Joueur 2</option></select>
+      <input id="bonus-l" type="text" placeholder="Motif" maxlength="60" style="flex:1;min-width:120px">
+      <input id="bonus-v" type="number" step="5" placeholder="± pts" aria-label="Points">
+      <button class="btn small primary" type="button" id="bonus-add">Ajouter</button>
+    </div></div>
+    <ul class="bonuslist" id="bonuslist"></ul>
+  </div>
+  <div class="panel">
+    <h2>Cotes des espèces</h2>
+    <p class="hint">Chaque cote = 2,5 × beauté × difficulté photo × rareté<sup>1,7</sup>, arrondie à 5, entre 5 et 500. Les cinq notes (1 à 5) se changent dans la fiche de l'espèce ; ici vous pouvez forcer une cote à la main. La rareté est une moyenne pondérée de trois raretés :</p>
+    <div class="field"><div class="inl"><label for="w-ici" style="width:140px">Rareté ici</label><input id="w-ici" type="number" min="0" max="100" step="5"> %</div></div>
+    <div class="field"><div class="inl"><label for="w-monde" style="width:140px">Rareté mondiale</label><input id="w-monde" type="number" min="0" max="100" step="5"> %</div></div>
+    <div class="field"><div class="inl"><label for="w-periode" style="width:140px">Rareté à cette période</label><input id="w-periode" type="number" min="0" max="100" step="5"> %</div></div>
+    <p class="hint">Baisser le poids « période » limite les points gagnés sur un retardataire vu par chance.</p>
+    <div class="row" style="margin-top:8px"><input type="search" id="ptsq" placeholder="Filtrer…" aria-label="Filtrer les espèces" style="flex:1"><button class="btn small" type="button" id="pts-reset">Valeurs par défaut</button></div>
+    <div class="ptslist" id="ptslist"></div>
+  </div>
+  <div class="panel">
+    <h2>Partage entre téléphones</h2>
+    <p class="hint" id="sync-hint">Pas de serveur : chaque téléphone garde le journal complet, et les journaux se réunissent par code, de téléphone à téléphone. Générez un code, montrez le QR ou envoyez le texte ; l'autre le colle et fusionne. Rien n'est jamais écrasé, chaque entrée garde son auteur et son heure.</p>
+    <div class="row"><button class="btn primary" type="button" id="code-delta">Nouveautés depuis mon dernier code</button><button class="btn" type="button" id="code-full">Code complet</button><button class="btn" type="button" id="code-share">Envoyer…</button></div>
+    <p class="muted" id="code-info"></p>
+    <div id="qr" class="qr"></div>
+    <textarea class="code hide" id="code-out" aria-label="Votre code" readonly></textarea>
+    <textarea class="code" id="code-in" placeholder="Coller ici le code reçu (ou le texte lu dans le QR)" aria-label="Code reçu"></textarea>
+    <div class="row" style="margin-top:6px"><button class="btn" type="button" id="merge-code">Fusionner</button><span class="muted" id="merge-msg"></span></div>
+  </div>
+  <div class="panel">
+    <h2>Remise à zéro</h2>
+    <p class="hint">Efface toutes les prises, bonus et notes des deux joueurs. Les points par espèce et le barème sont conservés.</p>
+    <div class="row"><button class="btn danger" type="button" id="reset-all">Tout effacer</button></div>
+  </div>
+</section>
+</main>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script id="core">
+/* ---------- Données ---------- */
+const K='#1d1d1f',W='#f7f5f0',DG='#3a3a38',RD='#d6322a',YL='#e8c33a';
+const GROUPS=['Flamants, hérons, cigognes & cormorans','Canards, oies & grèbes','Rapaces de jour et de nuit','Rallidés & grue','Limicoles','Mouettes, goélands & sternes','Martin-pêcheur, huppe & pics','Oiseaux des roselières','Autres passereaux','Autres oiseaux','Mammifères','Reptiles & amphibiens','Libellules, papillons & gros insectes'];
+const IC={ic:1};
+const LIKE={1:'Commun',2:'Possible',3:'Rare'};
+const SITES={'PG':'Pont de Gau','MV':'Vigueirat','PG+MV':'Les 2 sites'};
+const SPECIES_RAW=[
+/* 0 — Flamants, hérons, cigognes, ibis, cormorans */
+['flamant-rose',"Flamant rose","Phoenicopterus roseus",0,[5,3,1,1,2],1,'PG+MV',{s:'long',c:'#f3c3cf',bl:{t:'flamingo',c:'#f6d7de',tip:K},ey:{i:'#f2d16b'}},IC],
+['flamant-nain',"Flamant nain","Phoeniconaias minor",0,[4,5,4,2,3],3,'PG',{s:'long',c:'#f0a9bd',bl:{t:'flamingo',c:'#9c1d3a',tip:K},ey:{i:'#f2b84a'}}],
+['heron-cendre',"Héron cendré","Ardea cinerea",0,[2,1,1,1,2],1,'PG+MV',{s:'long',c:W,np:'#9aa5ab',nk:'#c9d0d3',su:K,cs:{t:'long',c:K},bl:{t:'dagger',c:'#e0b04a'},ey:{i:'#e9c93f'}}],
+['grande-aigrette',"Grande Aigrette","Ardea alba",0,[3,2,1,1,2],1,'PG+MV',{s:'long',c:W,bl:{t:'dagger',c:'#e6b820'},ey:{i:'#e9d23f'},lo:'#d9c86a'}],
+['aigrette-garzette',"Aigrette garzette","Egretta garzetta",0,[3,2,1,1,2],1,'PG+MV',{s:'long',c:W,cs:{t:'long',c:W},bl:{t:'dagger',c:K},ey:{i:'#e9d23f'},lo:'#9fb1b7'}],
+['heron-garde-boeufs',"Héron garde-bœufs","Bubulcus ibis",0,[2,2,1,1,2],1,'PG+MV',{s:'duck',c:W,cr:'#f1dcae',bl:{t:'dagger',c:'#e9b94a',k:.7},ey:{i:'#e6c43a'}}],
+['bihoreau-gris',"Bihoreau gris","Nycticorax nycticorax",0,[4,2,2,2,3],2,'PG',{c:W,cr:K,np:K,cs:{t:'long',c:W},bl:{t:'dagger',c:K,k:.8},ey:{i:RD}},IC],
+['crabier-chevelu',"Crabier chevelu","Ardeola ralloides",0,[4,3,3,4,3],3,'PG+MV',{c:'#e3cfa0',sp:'#8a7040',cs:{t:'long',c:'#cdb47c'},bl:{t:'dagger',c:'#8a9a58',tip:K,k:.8},ey:{i:'#e9c93f'}}],
+['heron-pourpre',"Héron pourpré","Ardea purpurea",0,[3,2,2,5,3],3,'PG+MV',{s:'long',c:'#c9843f',cr:K,es:K,bl:{t:'dagger',c:'#d9a93c'},ey:{i:'#e8c33a'}}],
+['butor-etoile',"Butor étoilé","Botaurus stellaris",0,[4,4,4,2,5],3,'MV',{s:'long',c:'#d0a860',cr:K,nk:'#d8b876',mo:K,sp:'#7a5a30',bl:{t:'dagger',c:'#c9b24a',k:.9},ey:{i:'#e8c33a'}},IC],
+['ibis-falcinelle',"Ibis falcinelle","Plegadis falcinellus",0,[3,3,1,1,2],1,'PG+MV',{s:'long',c:'#5a3b2e',sp:'#e9e4dc',bl:{t:'decurved',c:'#6b5a52',k:1.1},ey:{i:'#5a3b2e'}}],
+['spatule-blanche',"Spatule blanche","Platalea leucorodia",0,[4,3,2,2,2],2,'PG+MV',{s:'long',c:W,bl:{t:'spoon',c:K,tip:'#e8c33a'},ey:{i:RD}},IC],
+['cigogne-blanche',"Cigogne blanche","Ciconia ciconia",0,[3,2,1,1,1],1,'PG+MV',{s:'long',c:W,bl:{t:'stork',c:RD},ey:{i:'#5a3b2e',r:RD}}],
+['cigogne-noire',"Cigogne noire","Ciconia nigra",0,[4,4,4,3,4],3,'MV',{s:'long',c:'#2a2c2e',bl:{t:'stork',c:RD},ey:{i:'#3a2a22',r:RD}}],
+['grand-cormoran',"Grand Cormoran","Phalacrocorax carbo",0,[1,1,1,1,1],1,'PG+MV',{s:'long',c:'#1f2a2a',ck:W,th:W,gu:YL,bl:{t:'cormorant',c:'#7a7d74'},ey:{i:'#2fa89c'}}],
+['cormoran-pygmee',"Cormoran pygmée","Microcarbo pygmaeus",0,[3,5,4,2,3],3,'PG+MV',{c:'#3a2a24',nk:'#1f2a2a',bl:{t:'cormorant',c:'#5f5a52',k:.65},ey:{i:'#3a2a24'}}],
+['ibis-sacre',"Ibis sacré","Threskiornis aethiopicus",0,[2,4,3,2,2],2,'PG+MV',{s:'long',c:K,bl:{t:'decurved',c:K,k:1.1},ey:{i:'#5a3b2e'}}],
+/* 1 — Canards, oies, cygnes, grèbes */
+['canard-colvert',"Canard colvert","Anas platyrhynchos",1,[2,1,1,1,1],1,'PG+MV',{s:'duck',c:'#1f7a44',cl:W,bl:{t:'duck',c:YL,tip:K},ey:{i:'#3a2a22'}}],
+['sarcelle-hiver',"Sarcelle d'hiver","Anas crecca",1,[3,1,1,1,3],1,'PG+MV',{s:'duck',c:'#8a3f26',es:'#1f6f3a',ms:1,su:'#e8dca0',bl:{t:'duck',c:DG,k:.75},ey:{i:'#3a2a22'}}],
+['canard-souchet',"Canard souchet","Spatula clypeata",1,[3,1,1,1,2],1,'PG+MV',{s:'duck',c:'#1f6f3a',bl:{t:'duck',c:DG,k:1.3},ey:{i:YL}}],
+['canard-siffleur',"Canard siffleur","Mareca penelope",1,[3,2,2,1,3],2,'PG+MV',{s:'duck',c:'#b0532c',fh:'#f0e2a8',bl:{t:'duck',c:'#9bb0c0',tip:K,k:.75},ey:{i:'#3a2a22'}}],
+['canard-pilet',"Canard pilet","Anas acuta",1,[4,2,2,1,3],2,'PG+MV',{s:'duck',c:'#5c3b2a',cl:W,ns:W,bl:{t:'duck',c:'#6f8da0',k:.9},ey:{i:'#3a2a22'}}],
+['canard-chipeau',"Canard chipeau","Mareca strepera",1,[2,1,1,1,2],1,'PG+MV',{s:'duck',c:'#9a8a72',sp:'#6f6252',bl:{t:'duck',c:DG,k:.85},ey:{i:'#3a2a22'}}],
+['nette-rousse',"Nette rousse","Netta rufina",1,[4,3,1,1,2],1,'PG+MV',{s:'duck',c:'#e07a2e',cr:'#f0a04a',bl:{t:'duck',c:RD,k:.85},ey:{i:RD}}],
+['fuligule-milouin',"Fuligule milouin","Aythya ferina",1,[3,1,1,1,2],1,'PG+MV',{s:'duck',c:'#8a3f26',bl:{t:'duck',c:DG,band:'#9bb0c0',k:.85},ey:{i:RD}}],
+['fuligule-morillon',"Fuligule morillon","Aythya fuligula",1,[3,1,2,1,2],2,'PG+MV',{s:'duck',c:'#1d1d24',cs:{t:'tuft',c:'#1d1d24'},bl:{t:'duck',c:'#8fa3b2',tip:K,k:.8},ey:{i:YL}}],
+['fuligule-nyroca',"Fuligule nyroca","Aythya nyroca",1,[3,4,4,2,3],3,'PG+MV',{s:'duck',c:'#7a3a1e',bl:{t:'duck',c:DG,tip:K,k:.8},ey:{i:W}}],
+['tadorne-belon',"Tadorne de Belon","Tadorna tadorna",1,[4,2,1,1,2],1,'PG+MV',{s:'duck',c:'#1f4f3a',bl:{t:'duck',c:RD,knob:RD,k:.85},ey:{i:'#3a2a22'}}],
+['oie-cendree',"Oie cendrée","Anser anser",1,[2,2,2,1,2],1,'PG+MV',{s:'goose',c:'#9a8f7e',bl:{t:'goose',c:'#e8743a'},ey:{i:'#3a2a22',r:'#e8a070'}}],
+['cygne-tubercule',"Cygne tuberculé","Cygnus olor",1,[2,1,1,1,1],1,'PG+MV',{s:'goose',c:W,lo:K,bl:{t:'swan',c:'#e8743a',tip:K,knob:K},ey:{i:K}}],
+['erismature-tete-blanche',"Érismature à tête blanche","Oxyura leucocephala",1,[4,5,4,2,3],3,'PG+MV',{s:'duck',c:W,cr:K,bl:{t:'duck',c:'#4aa0d6',knob:'#4aa0d6'},ey:{i:'#3a2a22'}}],
+['grebe-castagneux',"Grèbe castagneux","Tachybaptus ruficollis",1,[2,1,1,1,3],1,'PG+MV',{c:'#7a5a40',th:'#d9c9a6',gu:'#f0e68c',bl:{t:'grebe',c:'#4a4a44',k:.6},ey:{i:'#3a2a22'}}],
+['grebe-huppe',"Grèbe huppé","Podiceps cristatus",1,[3,1,1,1,2],1,'PG+MV',{s:'long',c:W,cr:K,cs:{t:'tuft',c:K},es:'#4a4a44',bl:{t:'grebe',c:'#d9a0a0',k:1.1},ey:{i:RD}}],
+['grebe-cou-noir',"Grèbe à cou noir","Podiceps nigricollis",1,[3,2,2,1,3],2,'PG+MV',{c:W,cr:K,np:K,ck:'#d9d4cc',bl:{t:'grebe',c:DG,k:.8},ey:{i:RD}}],
+/* 2 — Rapaces */
+['busard-roseaux',"Busard des roseaux","Circus aeruginosus",2,[3,2,1,1,4],1,'PG+MV',{s:'raptor',c:'#5e4530',cr:'#e9d7a4',th:'#e9d7a4',bl:{t:'hook',c:DG,cere:YL},ey:{i:YL}}],
+['busard-saint-martin',"Busard Saint-Martin","Circus cyaneus",2,[4,3,2,1,4],2,'PG+MV',{s:'raptor',c:'#8a949a',bl:{t:'hook',c:DG,cere:YL},ey:{i:YL}}],
+['buse-variable',"Buse variable","Buteo buteo",2,[2,1,1,1,3],1,'PG+MV',{s:'raptor',c:'#6b4f36',sp:'#c9b48e',bl:{t:'hook',c:DG,cere:YL},ey:{i:'#6b4f36'}}],
+['faucon-crecerelle',"Faucon crécerelle","Falco tinnunculus",2,[3,1,1,1,3],1,'PG+MV',{s:'raptor',c:'#8a949a',mo:'#4a4a44',bl:{t:'hook',c:'#7a8aa0',cere:YL,k:.8},ey:{i:'#2a1f18',r:YL}}],
+['epervier-europe',"Épervier d'Europe","Accipiter nisus",2,[3,1,2,1,4],2,'PG+MV',{s:'raptor',c:'#5c6e80',ck:'#d9a070',bl:{t:'hook',c:DG,cere:YL,k:.8},ey:{i:'#e8a020'}}],
+['milan-noir',"Milan noir","Milvus migrans",2,[2,2,2,4,3],2,'PG+MV',{s:'raptor',c:'#8a8276',sp:'#5c5048',bl:{t:'hook',c:DG,cere:YL,k:.85},ey:{i:'#8a6a3a'}}],
+['milan-royal',"Milan royal","Milvus milvus",2,[4,2,2,2,3],2,'PG+MV',{s:'raptor',c:'#d9d2c4',sp:'#7a6a5a',bl:{t:'hook',c:DG,cere:YL,k:.85},ey:{i:YL}}],
+['balbuzard-pecheur',"Balbuzard pêcheur","Pandion haliaetus",2,[5,3,3,3,4],2,'PG+MV',{s:'raptor',c:W,cr:'#f0ece0',es:'#3a2a1e',ms:1,np:'#3a2a1e',bl:{t:'hook',c:DG,cere:'#8aa0b0',k:.9},ey:{i:YL}},IC],
+['faucon-pelerin',"Faucon pèlerin","Falco peregrinus",2,[4,2,3,2,4],2,'PG+MV',{s:'raptor',c:'#2f3c48',ck:W,th:W,mo:'#2f3c48',bl:{t:'hook',c:'#6f7a86',cere:YL,k:.85},ey:{i:K,r:YL}},IC],
+['faucon-emerillon',"Faucon émerillon","Falco columbarius",2,[4,3,3,2,5],3,'PG+MV',{s:'raptor',c:'#5c6e80',ck:'#e0c8a0',th:'#e8d8b8',mo:'#5c6e80',bl:{t:'hook',c:'#6f7a86',cere:YL,k:.7},ey:{i:K,r:YL}}],
+['elanion-blanc',"Élanion blanc","Elanus caeruleus",2,[5,3,4,2,3],3,'PG+MV',{s:'raptor',c:W,cr:'#c8d0d8',ep:K,bl:{t:'hook',c:DG,cere:YL,k:.75},ey:{i:RD}}],
+['aigle-botte',"Aigle botté","Hieraaetus pennatus",2,[3,3,3,2,4],3,'PG+MV',{s:'raptor',c:'#a08060',sp:'#5c4a3a',th:'#e9dcc0',bl:{t:'hook',c:DG,cere:YL,k:.9},ey:{i:'#a06a2a'}}],
+['circaete',"Circaète Jean-le-Blanc","Circaetus gallicus",2,[4,3,2,5,4],3,'PG+MV',{s:'raptor',c:'#8a7a66',th:'#e9e2d0',bl:{t:'hook',c:DG,cere:'#8a9aa8',k:.85},ey:{i:YL}}],
+['aigle-criard',"Aigle criard","Clanga clanga",2,[4,5,4,2,5],3,'MV',{s:'raptor',c:'#4a3626',bl:{t:'hook',c:DG,cere:YL,k:1.05},ey:{i:'#5a3a22'}},IC],
+['pygargue-queue-blanche',"Pygargue à queue blanche","Haliaeetus albicilla",2,[5,5,5,3,4],3,'PG+MV',{s:'raptor',c:'#c9b89a',nk:'#8a6a4a',bl:{t:'hook',c:YL,cere:YL,k:1.2},ey:{i:YL}}],
+['hibou-marais',"Hibou des marais","Asio flammeus",2,[4,3,4,2,4],3,'PG+MV',{s:'owl',c:'#c9b48e',dk:'#e9dcc0',ep:'#2a2622',sp:'#7a6a5a',bl:{t:'owl',c:DG},ey:{i:YL}},IC],
+['cheveche',"Chevêche d'Athéna","Athene noctua",2,[4,2,3,1,3],2,'PG+MV',{s:'owl',c:'#8a7a66',dk:'#d9cfbb',su:W,sp:W,bl:{t:'owl',c:'#c9c0a0'},ey:{i:YL}}],
+['effraie',"Effraie des clochers","Tyto alba",2,[4,2,4,1,5],3,'PG+MV',{s:'owl',c:'#e0c89a',dk:W,heart:1,bl:{t:'owl',c:'#e0cdb0'},ey:{i:K}}],
+['hibou-moyen-duc',"Hibou moyen-duc","Asio otus",2,[4,2,4,2,4],3,'PG+MV',{s:'owl',c:'#a08a6a',dk:'#d9b88a',cs:{t:'ears',c:'#5a4a3a'},bl:{t:'owl',c:DG},ey:{i:'#e88a20'}}],
+/* 3 — Rallidés, grue */
+['foulque-macroule',"Foulque macroule","Fulica atra",3,[1,1,1,1,1],1,'PG+MV',{c:K,sh:W,bl:{t:'cone',c:W,k:.9},ey:{i:RD}}],
+['gallinule',"Gallinule poule-d'eau","Gallinula chloropus",3,[2,1,1,1,1],1,'PG+MV',{c:'#2f3a44',sh:RD,bl:{t:'cone',c:RD,tip:YL,k:.9},ey:{i:RD}}],
+['rale-eau',"Râle d'eau","Rallus aquaticus",3,[3,2,3,1,5],2,'PG+MV',{c:'#5c6e80',cr:'#6b5a40',np:'#6b5a40',bl:{t:'long',c:RD,k:.7},ey:{i:RD}}],
+['taleve-sultane',"Talève sultane","Porphyrio porphyrio",3,[5,4,2,1,3],2,'PG+MV',{c:'#2a3a9a',sh:RD,bl:{t:'cone',c:RD,k:1.1},ey:{i:RD}},IC],
+['marouette-ponctuee',"Marouette ponctuée","Porzana porzana",3,[3,4,4,3,5],3,'PG+MV',{c:'#6a7a62',cr:'#6b5a40',sp:W,bl:{t:'cone',c:YL,base:RD,k:.8},ey:{i:'#8a4a2a'}}],
+['grue-cendree',"Grue cendrée","Grus grus",3,[4,2,2,1,3],1,'PG+MV',{s:'long',c:'#2f3a3a',cr:RD,crh:-13,ck:W,np:W,nk:'#8a9494',bl:{t:'crane',c:'#8a8a7a'},ey:{i:RD}},IC],
+/* 4 — Limicoles */
+['avocette',"Avocette élégante","Recurvirostra avosetta",4,[4,3,1,1,2],1,'PG+MV',{s:'long',c:W,cr:K,np:K,bl:{t:'upcurved',c:K},ey:{i:'#5a3a22'}},IC],
+['echasse-blanche',"Échasse blanche","Himantopus himantopus",4,[4,3,2,3,2],2,'PG+MV',{s:'long',c:W,np:'#2a2a2a',bl:{t:'stilt',c:K},ey:{i:RD}}],
+['vanneau-huppe',"Vanneau huppé","Vanellus vanellus",4,[3,1,1,1,2],1,'PG+MV',{c:W,cr:'#1f3a2a',es:K,cs:{t:'long',c:K},bl:{t:'fine',c:K,k:.8},ey:{i:'#5a3a22'}}],
+['pluvier-dore',"Pluvier doré","Pluvialis apricaria",4,[3,2,2,2,3],2,'PG+MV',{c:'#c8a84a',sp:'#5c4a2a',su:'#e9dcb0',bl:{t:'cone',c:K,k:.7},ey:{i:K}}],
+['pluvier-argente',"Pluvier argenté","Pluvialis squatarola",4,[3,2,2,2,3],2,'PG+MV',{c:'#a0a39a',sp:'#5c5c58',su:'#e9e9e4',bl:{t:'cone',c:K,k:.85},ey:{i:K}}],
+['grand-gravelot',"Grand Gravelot","Charadrius hiaticula",4,[3,2,2,1,3],1,'PG+MV',{c:'#8a7a62',fh:W,es:K,ms:1,cl:W,th:W,bl:{t:'cone',c:'#e8a020',tip:K,k:.6},ey:{i:K}}],
+['gravelot-collier-interrompu',"Gravelot à collier interrompu","Anarhynchus alexandrinus",4,[3,3,3,2,3],2,'PG+MV',{c:'#c9b08a',fh:W,es:'#9a8a6a',su:W,th:W,cl:W,bl:{t:'cone',c:K,k:.6},ey:{i:K}}],
+['becasseau-variable',"Bécasseau variable","Calidris alpina",4,[2,1,1,1,3],1,'PG+MV',{c:'#8a8a84',su:'#e9e9e4',th:W,bl:{t:'decurved',c:K,k:.6},ey:{i:K}}],
+['becasseau-minute',"Bécasseau minute","Calidris minuta",4,[2,2,2,2,4],2,'PG+MV',{c:'#9a8a74',su:W,th:W,bl:{t:'fine',c:K,k:.6},ey:{i:K}}],
+['combattant-varie',"Combattant varié","Calidris pugnax",4,[3,2,2,2,3],1,'PG+MV',{c:'#a0917a',sp:'#6a5a44',th:'#e9e2d0',bl:{t:'fine',c:'#5c4a3a',k:.8},ey:{i:K}}],
+['becassine-marais',"Bécassine des marais","Gallinago gallinago",4,[3,2,2,1,4],2,'PG+MV',{c:'#a08a5a',cr:'#3a2a1a',su:'#e9d8a0',es:'#3a2a1a',bl:{t:'long',c:'#6a5a44',tip:K,k:1.15},ey:{i:K}}],
+['becassine-sourde',"Bécassine sourde","Lymnocryptes minimus",4,[3,3,4,2,5],3,'PG+MV',{c:'#9a8450',cr:'#2a1f12',su:'#e9d8a0',es:'#2a1f12',bl:{t:'long',c:'#6a5a44',tip:K,k:.8},ey:{i:K}}],
+['barge-queue-noire',"Barge à queue noire","Limosa limosa",4,[3,2,2,2,3],2,'PG+MV',{s:'long',c:'#a09682',su:'#e9e2d0',bl:{t:'long',c:'#e8a060',tip:K,k:1.2},ey:{i:K}}],
+['courlis-cendre',"Courlis cendré","Numenius arquata",4,[3,2,2,1,3],2,'PG+MV',{s:'long',c:'#b0a080',sp:'#6a5a44',bl:{t:'decurved',c:'#5c4a3a',k:1.35},ey:{i:K}}],
+['chevalier-gambette',"Chevalier gambette","Tringa totanus",4,[2,1,1,1,3],1,'PG+MV',{c:'#9a8a70',sp:'#6a5a44',su:'#e9e2d0',bl:{t:'long',c:'#e04a3a',tip:K,k:.8},ey:{i:K}}],
+['chevalier-arlequin',"Chevalier arlequin","Tringa erythropus",4,[3,2,3,2,3],2,'PG+MV',{c:'#b8b8b2',su:W,es:'#6a6a64',bl:{t:'long',c:DG,base:'#e04a3a',k:.95},ey:{i:K}}],
+['chevalier-aboyeur',"Chevalier aboyeur","Tringa nebularia",4,[2,2,2,1,3],1,'PG+MV',{c:'#b0b0a8',su:W,th:W,bl:{t:'long',c:'#5a6a60',k:.95},ey:{i:K}}],
+['chevalier-culblanc',"Chevalier culblanc","Tringa ochropus",4,[2,2,2,1,4],2,'PG+MV',{c:'#5c5a4a',sp:W,th:W,bl:{t:'long',c:'#4a4a44',k:.8},ey:{i:K,r:W}}],
+['chevalier-guignette',"Chevalier guignette","Actitis hypoleucos",4,[2,1,2,2,3],2,'PG+MV',{c:'#8a7a62',su:W,es:'#5c4a3a',th:W,bl:{t:'long',c:'#5c5a52',k:.7},ey:{i:K}}],
+['oedicneme',"Œdicnème criard","Burhinus oedicnemus",4,[4,3,4,2,4],3,'MV',{c:'#c0a878',sp:'#6a5a44',su:W,mo:W,bl:{t:'cone',c:YL,tip:K,k:.85},ey:{i:YL}}],
+['huitrier-pie',"Huîtrier pie","Haematopus ostralegus",4,[3,2,3,2,2],2,'PG+MV',{s:'duck',c:K,th:W,bl:{t:'long',c:'#e8502a',k:1.2},ey:{i:RD,r:'#e8502a'}}],
+['tournepierre',"Tournepierre à collier","Arenaria interpres",4,[3,2,2,2,3],2,'PG+MV',{c:'#6a5a4a',sp:W,th:W,cl:W,es:'#4a3a2a',bl:{t:'cone',c:K,k:.7},ey:{i:K}}],
+/* 5 — Laridés */
+['mouette-rieuse',"Mouette rieuse","Chroicocephalus ridibundus",5,[1,1,1,1,1],1,'PG+MV',{c:W,esp:'#5c5c58',bl:{t:'gull',c:RD,tip:K,k:.7},ey:{i:'#3a2a22'}}],
+['mouette-melanocephale',"Mouette mélanocéphale","Ichthyaetus melanocephalus",5,[2,2,1,1,2],1,'PG+MV',{c:W,esp:'#5c5c58',es:'#8a8a84',bl:{t:'gull',c:RD,tip:K,k:.8},ey:{i:'#3a2a22',r:RD}}],
+['goeland-railleur',"Goéland railleur","Chroicocephalus genei",5,[3,3,2,1,3],1,'PG+MV',{s:'long',c:W,bl:{t:'gull',c:'#c0262a',k:.9},ey:{i:'#e9e2d0'}}],
+['goeland-leucophee',"Goéland leucophée","Larus michahellis",5,[1,1,1,1,1],1,'PG+MV',{c:W,sp:'#b8b8b2',bl:{t:'gull',c:YL,spot:RD},ey:{i:'#e8d060',r:RD}}],
+['goeland-brun',"Goéland brun","Larus fuscus",5,[1,2,2,1,2],2,'PG+MV',{c:W,sp:'#8a8a84',bl:{t:'gull',c:YL,spot:RD},ey:{i:'#e8d060',r:RD}}],
+['goeland-cendre',"Goéland cendré","Larus canus",5,[2,2,3,2,2],2,'PG+MV',{c:W,sp:'#9a9a94',bl:{t:'gull',c:'#c8b860',k:.8},ey:{i:'#3a2a22'}}],
+['sterne-caugek',"Sterne caugek","Thalasseus sandvicensis",5,[3,2,2,2,3],1,'PG+MV',{c:W,np:K,cs:{t:'spiky',c:K},bl:{t:'tern',c:K,tip:YL},ey:{i:K}}],
+['sterne-caspienne',"Sterne caspienne","Hydroprogne caspia",5,[4,3,3,3,3],2,'PG+MV',{c:W,cr:DG,np:K,bl:{t:'tern',c:'#e0402a',k:1.2},ey:{i:K}}],
+/* 6 — Martin-pêcheur, huppe, pics */
+['martin-pecheur',"Martin-pêcheur d'Europe","Alcedo atthis",6,[5,2,2,1,5],1,'PG+MV',{c:'#1f7fcf',cr:'#1b6bb5',sp:'#7fd0f5',ck:'#e38a3e',np:W,th:W,mo:'#1b6bb5',bl:{t:'kf',c:K},ey:{i:K}},IC],
+['huppe-fasciee',"Huppe fasciée","Upupa epops",6,[5,2,3,5,3],3,'PG+MV',{c:'#e0a070',cs:{t:'fan',c:'#e0a070',tip:K},bl:{t:'hoopoe',c:'#3a2a22'},ey:{i:K}},IC],
+['pic-vert',"Pic vert","Picus viridis",6,[4,1,2,1,4],2,'PG+MV',{c:'#8aa84a',cr:RD,ep:K,mo:K,bl:{t:'chisel',c:'#6a6a64'},ey:{i:'#e9e2d0'}}],
+['pic-epeiche',"Pic épeiche","Dendrocopos major",6,[4,1,2,1,3],2,'PG+MV',{c:W,cr:K,np:RD,mo:K,bl:{t:'chisel',c:DG,k:.9},ey:{i:'#3a2a22'}}],
+['pic-epeichette',"Pic épeichette","Dryobates minor",6,[4,2,4,1,5],3,'PG+MV',{c:W,cr:RD,es:K,mo:K,bl:{t:'chisel',c:DG,k:.55},ey:{i:'#3a2a22'}}],
+/* 7 — Roselières */
+['panure-moustaches',"Panure à moustaches","Panurus biarmicus",7,[5,3,3,2,4],2,'PG+MV',{c:'#9ab0c0',np:'#d9b070',mo:K,th:'#e9e2d0',bl:{t:'cone',c:'#e8a020',k:.6},ey:{i:YL}},IC],
+['lusciniole',"Lusciniole à moustaches","Acrocephalus melanopogon",7,[3,5,3,1,5],3,'MV',{c:'#8a6a4a',cr:'#3a2a1a',su:W,es:'#3a2a1a',th:W,bl:{t:'fine',c:'#5c4a3a',k:.8},ey:{i:'#3a2a22'}},IC],
+['bouscarle-cetti',"Bouscarle de Cetti","Cettia cetti",7,[2,2,1,1,5],1,'PG+MV',{c:'#8a5a3a',su:'#c9b8a0',th:'#c9c0b0',bl:{t:'fine',c:'#5c4a3a',k:.8},ey:{i:'#3a2a22'}}],
+['cisticole-joncs',"Cisticole des joncs","Cisticola juncidis",7,[3,2,1,1,4],1,'PG+MV',{c:'#c9a870',cr:'#8a6a3a',sp:'#5c4a2a',su:'#e9dcb0',bl:{t:'fine',c:'#8a6a4a',k:.6},ey:{i:'#3a2a22'}}],
+['remiz-penduline',"Rémiz penduline","Remiz pendulinus",7,[5,3,3,1,4],2,'PG+MV',{c:'#c9c0b0',es:K,ms:1,np:'#a07a4a',bl:{t:'fine',c:DG,k:.7},ey:{i:K}},IC],
+['gorgebleue',"Gorgebleue à miroir","Luscinia svecica",7,[5,2,3,2,5],2,'PG+MV',{c:'#8a6a4a',su:W,th:'#2f6fb0',ts:'#e04a3a',bl:{t:'fine',c:DG,k:.8},ey:{i:'#3a2a22'}},IC],
+['bruant-roseaux',"Bruant des roseaux","Emberiza schoeniclus",7,[3,2,2,1,3],1,'PG+MV',{c:'#a08a62',cr:'#5c4a3a',su:'#e9dcb0',mo:'#3a2a1a',th:'#e9dcb0',bl:{t:'cone',c:DG,k:.7},ey:{i:'#3a2a22'}}],
+/* 8 — Autres passereaux */
+['fauvette-melanocephale',"Fauvette mélanocéphale","Curruca melanocephala",8,[3,3,1,1,4],1,'PG+MV',{c:'#8a8a84',cr:K,es:K,ms:1,th:W,bl:{t:'fine',c:DG,k:.75},ey:{i:'#8a2a1a',r:RD}}],
+['fauvette-tete-noire',"Fauvette à tête noire","Sylvia atricapilla",8,[2,1,1,1,3],1,'PG+MV',{c:'#9a9a94',cr:K,bl:{t:'fine',c:DG,k:.75},ey:{i:'#3a2a22'}}],
+['pouillot-veloce',"Pouillot véloce","Phylloscopus collybita",8,[2,1,1,1,4],1,'PG+MV',{c:'#9aa06a',su:'#e9e2b0',es:'#7a7a4a',bl:{t:'fine',c:DG,k:.65},ey:{i:K}}],
+['roitelet-triple-bandeau',"Roitelet à triple bandeau","Regulus ignicapilla",8,[4,2,2,1,5],1,'PG+MV',{c:'#9aa06a',cs:{t:'stripe',c:'#e8a020',edge:K},su:W,es:K,bl:{t:'fine',c:DG,k:.5},ey:{i:K}}],
+['roitelet-huppe',"Roitelet huppé","Regulus regulus",8,[4,2,2,2,5],2,'PG+MV',{c:'#9aa06a',cs:{t:'stripe',c:YL,edge:K},bl:{t:'fine',c:DG,k:.5},ey:{i:K,r:'#e9e9e4'}}],
+['tarier-patre',"Tarier pâtre","Saxicola rubicola",8,[3,1,1,1,2],1,'PG+MV',{c:K,cl:W,bl:{t:'fine',c:K,k:.65},ey:{i:K}}],
+['rougequeue-noir',"Rougequeue noir","Phoenicurus ochruros",8,[2,1,1,1,2],1,'PG+MV',{c:'#4a4a48',bl:{t:'fine',c:K,k:.7},ey:{i:K}}],
+['rougegorge',"Rougegorge familier","Erithacus rubecula",8,[3,1,1,1,1],1,'PG+MV',{c:'#8a6a4a',fc:'#e8763a',th:'#e8763a',bl:{t:'fine',c:DG,k:.7},ey:{i:K}}],
+['troglodyte',"Troglodyte mignon","Troglodytes troglodytes",8,[3,1,1,1,4],1,'PG+MV',{c:'#8a5a3a',su:'#d9c9a6',bl:{t:'fine',c:'#5c4a3a',k:.75},ey:{i:K}}],
+['accenteur-mouchet',"Accenteur mouchet","Prunella modularis",8,[2,1,2,1,3],2,'PG+MV',{c:'#6a7080',cr:'#6b5a44',ck:'#7a6a54',bl:{t:'fine',c:DG,k:.75},ey:{i:'#8a4a2a'}}],
+['merle-noir',"Merle noir","Turdus merula",8,[1,1,1,1,1],1,'PG+MV',{c:K,bl:{t:'cone',c:'#e8a020',k:.85},ey:{i:K,r:'#e8a020'}}],
+['grive-musicienne',"Grive musicienne","Turdus philomelos",8,[2,1,2,1,3],2,'PG+MV',{c:'#a08a62',th:'#e9dcb0',sp:'#5c4a2a',bl:{t:'cone',c:'#5c4a3a',k:.85},ey:{i:K}}],
+['grive-litorne',"Grive litorne","Turdus pilaris",8,[3,2,3,2,3],2,'PG+MV',{c:'#8a949a',su:'#e9e2d0',es:'#4a4a44',th:'#e8c35a',sp:'#3a2a1a',bl:{t:'cone',c:YL,tip:K,k:.85},ey:{i:K}}],
+['grive-mauvis',"Grive mauvis","Turdus iliacus",8,[3,2,3,2,3],2,'PG+MV',{c:'#7a6a4a',su:'#e9e2d0',es:'#4a3a2a',th:'#e9e2d0',mo:'#4a3a2a',bl:{t:'cone',c:'#5c4a3a',tip:K,k:.85},ey:{i:K}}],
+['mesange-charbonniere',"Mésange charbonnière","Parus major",8,[2,1,1,1,2],1,'PG+MV',{c:K,ck:W,th:K,bl:{t:'fine',c:K,k:.6},ey:{i:K}}],
+['mesange-bleue',"Mésange bleue","Cyanistes caeruleus",8,[3,1,1,1,2],1,'PG+MV',{c:W,cr:'#2f6fb0',es:'#2f6fb0',cl:'#1f3f8a',th:'#1f3f8a',bl:{t:'fine',c:K,k:.55},ey:{i:K}}],
+['orite-longue-queue',"Orite à longue queue","Aegithalos caudatus",8,[4,1,2,1,4],2,'PG+MV',{c:W,su:'#4a4a48',bl:{t:'fine',c:K,k:.45},ey:{i:K,r:'#e8a060'}},{alt:"Mésange à longue queue"}],
+['tarin-aulnes',"Tarin des aulnes","Spinus spinus",8,[3,2,2,2,3],2,'PG+MV',{c:'#c9c860',cr:K,th:K,es:'#6a6a3a',bl:{t:'cone',c:'#8a8a64',k:.55},ey:{i:K}}],
+['etourneau',"Étourneau sansonnet","Sturnus vulgaris",8,[2,1,1,1,1],1,'PG+MV',{c:'#2a3a3a',sp:'#e9e2d0',bl:{t:'fine',c:DG,k:1.1},ey:{i:'#3a2a22'}}],
+['pie-bavarde',"Pie bavarde","Pica pica",8,[2,1,1,1,2],1,'PG+MV',{c:K,bl:{t:'thick',c:K,k:.9},ey:{i:K}}],
+['geai-chenes',"Geai des chênes","Garrulus glandarius",8,[4,1,2,1,4],2,'PG+MV',{c:'#d9b8a0',cr:'#e9e2d0',sp:K,mo:K,th:W,bl:{t:'thick',c:K,k:.8},ey:{i:'#9ab0d0'}}],
+['choucas',"Choucas des tours","Coloeus monedula",8,[1,1,1,1,2],1,'PG+MV',{c:'#8a8a84',cr:K,fc:K,bl:{t:'thick',c:K,k:.8},ey:{i:'#d9d9d4'}}],
+['corneille-noire',"Corneille noire","Corvus corone",8,[1,1,1,1,1],1,'PG+MV',{c:K,bl:{t:'thick',c:K,k:1.1},ey:{i:K}}],
+['pipit-farlouse',"Pipit farlouse","Anthus pratensis",8,[2,1,1,1,3],1,'PG+MV',{c:'#a0a070',sp:'#5c5a3a',su:'#e9e2b0',th:'#e9e2d0',bl:{t:'fine',c:'#5c4a3a',k:.75},ey:{i:K,r:'#e9e2d0'}}],
+['pipit-spioncelle',"Pipit spioncelle","Anthus spinoletta",8,[2,2,2,1,4],2,'PG+MV',{c:'#8a8a80',su:W,th:W,bl:{t:'fine',c:DG,k:.8},ey:{i:K}}],
+['bergeronnette-grise',"Bergeronnette grise","Motacilla alba",8,[2,1,1,1,2],1,'PG+MV',{c:W,cr:K,np:K,cl:K,bl:{t:'fine',c:K,k:.7},ey:{i:K}}],
+['bergeronnette-ruisseaux',"Bergeronnette des ruisseaux","Motacilla cinerea",8,[3,2,2,1,3],2,'PG+MV',{c:'#8a949a',su:W,mo:W,th:'#e9e2d0',bl:{t:'fine',c:DG,k:.7},ey:{i:K}}],
+['alouette-champs',"Alouette des champs","Alauda arvensis",8,[2,1,2,1,4],2,'PG+MV',{c:'#b0a070',sp:'#6a5a3a',su:'#e9e2c0',cs:{t:'crest',c:'#8a7a4a'},bl:{t:'cone',c:'#8a7a5a',k:.7},ey:{i:K}}],
+['cochevis-huppe',"Cochevis huppé","Galerida cristata",8,[3,2,2,1,3],2,'PG+MV',{c:'#c0b090',sp:'#7a6a4a',su:'#e9e2c0',cs:{t:'spiky',c:'#9a8a6a'},bl:{t:'cone',c:'#9a8a6a',k:.85},ey:{i:K}}],
+['moineau-domestique',"Moineau domestique","Passer domesticus",8,[1,1,1,1,1],1,'PG+MV',{c:'#8a5a3a',cr:'#8a8a84',ck:'#c9c0b0',th:K,bl:{t:'cone',c:DG,k:.7},ey:{i:K}}],
+['moineau-friquet',"Moineau friquet","Passer montanus",8,[3,2,3,1,3],2,'PG+MV',{c:W,cr:'#8a5a3a',esp:K,th:K,bl:{t:'cone',c:DG,k:.65},ey:{i:K}}],
+['pinson-arbres',"Pinson des arbres","Fringilla coelebs",8,[3,1,1,1,2],1,'PG+MV',{c:'#d9a080',cr:'#6a7a9a',np:'#6a7a9a',bl:{t:'cone',c:'#8a8a84',k:.7},ey:{i:K}}],
+['verdier',"Verdier d'Europe","Chloris chloris",8,[3,1,1,1,2],1,'PG+MV',{c:'#9ab04a',ck:'#8a9a60',bl:{t:'cone',c:'#e9d8b0',k:.8},ey:{i:K}}],
+['chardonneret',"Chardonneret élégant","Carduelis carduelis",8,[4,1,1,1,2],1,'PG+MV',{c:W,cr:K,np:K,fc:RD,bl:{t:'cone',c:'#e9e2d0',tip:K,k:.7},ey:{i:K}}],
+['linotte',"Linotte mélodieuse","Linaria cannabina",8,[3,1,2,1,3],1,'PG+MV',{c:'#9a8a74',ck:'#c9b8a0',bl:{t:'cone',c:'#6a6a64',k:.65},ey:{i:K}}],
+['serin-cini',"Serin cini","Serinus serinus",8,[3,2,2,2,3],1,'PG+MV',{c:'#c9c860',sp:'#6a6a3a',fh:'#e8d040',bl:{t:'cone',c:'#8a8a64',k:.5},ey:{i:K}}],
+['grimpereau-jardins',"Grimpereau des jardins","Certhia brachydactyla",8,[2,1,2,1,4],2,'PG+MV',{c:'#8a7a5a',sp:'#e9e2d0',su:'#e9e2d0',th:W,bl:{t:'decurved',c:'#5c4a3a',k:.5},ey:{i:K}}],
+['pie-grieche-meridionale',"Pie-grièche méridionale","Lanius meridionalis",8,[4,4,4,2,4],3,'PG+MV',{c:'#8a949a',es:K,ms:1,su:W,th:W,bl:{t:'hook',c:K,k:.7},ey:{i:K}}],
+['bruant-proyer',"Bruant proyer","Emberiza calandra",8,[2,2,2,1,3],2,'PG+MV',{c:'#b0a070',sp:'#6a5a3a',mo:'#6a5a3a',th:'#e9e2d0',bl:{t:'cone',c:'#c9b890',k:.85},ey:{i:K}}],
+['bruant-zizi',"Bruant zizi","Emberiza cirlus",8,[3,2,2,1,3],2,'PG+MV',{c:YL,cr:'#8a9a4a',es:K,th:K,bl:{t:'cone',c:'#6a6a64',k:.7},ey:{i:K}}],
+['hirondelle-rustique',"Hirondelle rustique","Hirundo rustica",8,[3,1,1,4,4],2,'PG+MV',{c:'#1f3a6a',fh:'#c9452a',th:'#c9452a',bl:{t:'fine',c:K,k:.4},ey:{i:K}}],
+/* 9 — Autres oiseaux */
+['pigeon-ramier',"Pigeon ramier","Columba palumbus",9,[1,1,1,1,1],1,'PG+MV',{c:'#8a94a4',np:'#e9e9e4',bl:{t:'pigeon',c:'#e8a020',cere:W},ey:{i:'#e9e2b0'}}],
+['tourterelle-turque',"Tourterelle turque","Streptopelia decaocto",9,[1,1,1,1,1],1,'PG+MV',{c:'#d9c9b8',cl:K,bl:{t:'pigeon',c:DG},ey:{i:RD}}],
+['faisan-colchide',"Faisan de Colchide","Phasianus colchicus",9,[3,1,2,1,3],2,'PG+MV',{c:'#1f5a4a',ep:RD,cl:W,cs:{t:'ears',c:'#1f5a4a'},bl:{t:'cone',c:'#e9e2d0',k:.85},ey:{i:YL}}],
+['perdrix-rouge',"Perdrix rouge","Alectoris rufa",9,[4,2,3,1,4],2,'PG+MV',{c:'#a08a6a',su:W,es:K,th:W,cl:K,bl:{t:'cone',c:RD,k:.75},ey:{i:'#5a3a22',r:RD}}],
+/* 10 — Mammifères */
+['ragondin',"Ragondin","Myocastor coypus",10,[1,1,1,1,1],1,'PG+MV',{k:'m',c:'#6a4a32',ears:'round',ei:'#8a6a52',sn:'#7a5a42',teeth:'#e8902e',wh:W,th:'#9a7a62',ey:{i:K}}],
+['cheval-camargue',"Cheval de Camargue","Equus caballus",10,[3,2,1,1,1],1,'PG+MV',{k:'m',c:W,rx:30,ry:17,ears:'point',ei:'#c9c0b0',sn:'#e9e2d0',nose:'#8a8a84',mane:'#d9d4cc',ey:{i:'#3a2a22'}}],
+['taureau-camargue',"Taureau de Camargue","Bos taurus",10,[3,2,1,1,2],1,'PG+MV',{k:'m',c:'#1d1d1f',ears:'small',sn:'#2a2a2a',nose:'#6a6a68',horns:'#e9e2d0',ey:{i:'#3a2a22'}}],
+['sanglier',"Sanglier","Sus scrofa",10,[3,1,2,1,3],2,'PG+MV',{k:'m',c:'#4a3a2e',ears:'small',sn:'#5a4a3e',disc:'#9a8078',tusk:W,ey:{i:K}}],
+['renard',"Renard roux","Vulpes vulpes",10,[4,1,3,1,4],2,'PG+MV',{k:'m',c:'#d2702e',ears:'point',ei:K,th:W,sn:W,nose:K,ey:{i:'#e8a020',slit:'v'}},IC],
+['lapin',"Lapin de garenne","Oryctolagus cuniculus",10,[2,1,2,1,2],2,'PG+MV',{k:'m',c:'#9a8a72',ears:'long',ei:'#d9b8a8',sn:'#b0a088',nose:'#6a4a3a',ey:{i:K}}],
+['lievre',"Lièvre d'Europe","Lepus europaeus",10,[3,1,3,1,3],2,'MV',{k:'m',c:'#b08a5a',ears:'long',ei:'#d9c0a0',et:K,sn:'#c9a878',nose:K,ey:{i:'#8a5a2a'}}],
+['chevreuil',"Chevreuil","Capreolus capreolus",10,[3,1,3,1,3],2,'MV',{k:'m',c:'#9a7a52',ears:'round',bigears:1,ei:'#d9c9b0',sn:W,nose:K,ey:{i:K},er:5}],
+['herisson',"Hérisson d'Europe","Erinaceus europaeus",10,[3,1,3,2,2],2,'PG+MV',{k:'m',c:'#8a7a62',ears:'small',spines:'#4a3a2a',sn:'#9a8a72',nose:K,ey:{i:K}}],
+['ecureuil',"Écureuil roux","Sciurus vulgaris",10,[4,1,3,1,3],2,'MV',{k:'m',c:'#c9602a',ears:'tuft',ei:'#e8a080',th:W,nose:K,ey:{i:K},er:5}],
+['pipistrelle',"Pipistrelle (chauve-souris)","Pipistrellus sp.",10,[2,1,2,2,5],2,'PG+MV',{k:'m',c:'#4a3a32',rx:20,ry:17,ears:'round',ei:'#2a2a2a',sn:'#5a4a42',snr:8,nose:'#2a2a2a',ey:{i:K},bat:1,er:3}],
+['castor',"Castor d'Europe","Castor fiber",10,[4,3,4,1,5],3,'MV',{k:'m',c:'#6a4a2e',ears:'small',sn:'#7a5a3e',teeth:'#e8902e',wh:'#d9c9a6',nose:K,ey:{i:K}},IC],
+['loutre',"Loutre d'Europe","Lutra lutra",10,[5,3,5,1,5],3,'MV',{k:'m',c:'#5a4030',rx:28,ry:17,ears:'small',th:'#d9c9a6',sn:'#8a7060',wh:W,nose:K,ey:{i:K}},IC],
+['genette',"Genette commune","Genetta genetta",10,[4,3,5,1,5],3,'MV',{k:'m',c:'#b0a898',ears:'round',ei:'#d9c9c0',sp:K,ep:W,nose:K,ey:{i:'#5a3a22'},er:5}],
+['blaireau',"Blaireau européen","Meles meles",10,[4,1,4,1,4],3,'MV',{k:'m',c:W,ears:'small',mask:K,sn:W,nose:K,ey:{i:K}}],
+/* 11 — Reptiles & amphibiens */
+['cistude',"Cistude d'Europe","Emys orbicularis",11,[4,3,3,4,3],2,'PG+MV',{k:'h',t:'turtle',c:'#3a3a2a',sp:YL,shell:'#4a4a2a',ey:{i:YL}}],
+['tortue-floride',"Tortue de Floride","Trachemys scripta",11,[2,2,2,4,2],2,'PG+MV',{k:'h',t:'turtle',c:'#4a6a3a',stripes:'#e8d040',ear:RD,shell:'#5a6a3a',ey:{i:'#e8d040'}}],
+['lezard-murailles',"Lézard des murailles","Podarcis muralis",11,[2,1,1,2,2],1,'PG+MV',{k:'h',t:'lizard',c:'#8a8a62',sp:'#4a4a32',th:'#c9c0a0',ey:{i:'#3a2a22'}}],
+['couleuvre-viperine',"Couleuvre vipérine","Natrix maura",11,[3,2,3,5,3],3,'PG+MV',{k:'h',t:'snake',c:'#8a7a52',zig:'#3a2a1a',ey:{i:'#c9a060'}}],
+['couleuvre-montpellier',"Couleuvre de Montpellier","Malpolon monspessulanus",11,[3,3,4,5,4],3,'MV',{k:'h',t:'snake',c:'#7a7a5a',brow:'#3a3a2a',ey:{i:YL}}],
+['rainette',"Rainette méridionale","Hyla meridionalis",11,[5,2,3,3,3],2,'PG+MV',{k:'h',t:'frog',c:'#6ac23a',es:'#5a3a2a',th:'#d9e8b0',ey:{i:YL}}],
+['grenouille-rieuse',"Grenouille rieuse","Pelophylax ridibundus",11,[2,1,1,2,1],1,'PG+MV',{k:'h',t:'frog',c:'#6a8a3a',sp:'#2a3a1a',th:'#c9d8a0',ey:{i:YL}}],
+/* 12 — Libellules, papillons & gros insectes */
+['sympetrum',"Sympétrum (libellule rouge)","Sympetrum striolatum / fonscolombii",12,[3,1,1,2,2],1,'PG+MV',{k:'i',t:'dragonfly',th:'#9a6a3a',ab:RD,wing:'rgba(240,210,180,.5)',ey:'#8a3a2a'}],
+['aeshne-mixte',"Aeshne mixte","Aeshna mixta",12,[4,2,2,2,4],2,'PG+MV',{k:'i',t:'dragonfly',th:'#6a5a3a',ab:'#3a3a3a',spots:'#4aa0d6',ey:'#4a7a9a'}],
+['trithemis',"Trithémis annelé","Trithemis annulata",12,[4,3,2,3,3],2,'PG+MV',{k:'i',t:'dragonfly',th:'#8a4a8a',ab:'#b05ab0',wing:'rgba(230,180,220,.5)',ey:'#8a3a6a'}],
+['crocothemis',"Crocothémis écarlate","Crocothemis erythraea",12,[4,2,1,3,3],2,'PG+MV',{k:'i',t:'dragonfly',th:RD,ab:'#e03a2a',wing:'rgba(240,200,170,.5)',wide:1,ey:'#a02a2a'}],
+['anax-empereur',"Anax empereur","Anax imperator",12,[5,1,2,5,4],3,'PG+MV',{k:'i',t:'dragonfly',th:'#4aa04a',ab:'#2a6ad6',big:1,ey:'#2a7a5a'},IC],
+['agrion-elegant',"Agrion élégant (demoiselle)","Ischnura elegans",12,[3,1,1,3,4],2,'PG+MV',{k:'i',t:'damsel',th:'#2a2a2a',ab:'#2a2a2a',tip:'#4aa0d6',th2:'#4aa0d6',ey:'#4aa0d6'}],
+['vulcain',"Vulcain","Vanessa atalanta",12,[4,1,1,1,2],1,'PG+MV',{k:'i',t:'butterfly',wc:'#2a2220',band:'#e0402a',tip:W,hb:'#e0402a'}],
+['belle-dame',"Belle-Dame","Vanessa cardui",12,[4,1,2,2,2],2,'PG+MV',{k:'i',t:'butterfly',wc:'#e89a4a',tipc:K,tip:W,spots:K}],
+['souci',"Souci","Colias crocea",12,[3,1,1,1,3],1,'PG+MV',{k:'i',t:'butterfly',wc:'#f0b020',border:K,spot:'#2a2a2a',hspot:'#e8702a'}],
+['azure-porte-queue',"Azuré porte-queue","Lampides boeticus",12,[4,2,2,2,3],2,'PG+MV',{k:'i',t:'butterfly',wc:'#7a8ad6',border:'#4a4a6a',tail:1,hspot:'#2a2a2a'}],
+['mante',"Mante religieuse","Mantis religiosa",12,[4,2,2,3,2],2,'PG+MV',{k:'i',t:'mantis',c:'#6ab04a'}],
+['criquet-egyptien',"Criquet égyptien","Anacridium aegyptium",12,[3,2,1,1,2],1,'PG+MV',{k:'i',t:'grasshopper',c:'#9a8a6a'}],
+['argiope',"Argiope frelon (araignée)","Argiope bruennichi",12,[4,2,2,3,2],2,'PG+MV',{k:'i',t:'spider',c:YL,stripes:K}],
+['xylocope',"Abeille charpentière (xylocope)","Xylocopa violacea",12,[3,2,2,2,3],2,'PG+MV',{k:'i',t:'bee',c:'#1d1d24'}],
+];
+const SPECIES=SPECIES_RAW.map(r=>({id:r[0],n:r[1],l:r[2],g:r[3],c:r[4],like:r[5],site:r[6],h:r[7],ic:!!(r[8]&&r[8].ic),alt:(r[8]&&r[8].alt)||''}));
+const SPECIES_BY=Object.fromEntries(SPECIES.map(s=>[s.id,s]));
+const PROFILES=['p1','p2'];
+
+/* ---------- Têtes en SVG ---------- */
+const SH={
+  round:{cx:46,cy:52,rx:25,ry:23,ex:8,ey:-5,er:4.5},
+  duck:{cx:46,cy:53,rx:27,ry:21,ex:9,ey:-4,er:4},
+  long:{cx:44,cy:54,rx:28,ry:17,ex:12,ey:-3,er:4,neck:1},
+  goose:{cx:46,cy:52,rx:25,ry:22,ex:9,ey:-4,er:4,neck:1},
+  raptor:{cx:46,cy:52,rx:26,ry:23,ex:10,ey:-4,er:4.5,brow:1},
+  owl:{cx:48,cy:50,rx:31,ry:30,ex:11,ey:-1,er:7.5,owl:1}
+};
+const BILL={
+  cone:{d:'M0,-6 L15,1 L0,6 Z',len:15,m:1},
+  fine:{d:'M0,-3 L15,1 L0,3 Z',len:15,m:1},
+  thick:{d:'M0,-6 Q12,-6 18,1 Q12,5 0,7 Z',len:18,m:1},
+  dagger:{d:'M0,-5 L30,2 L0,6 Z',len:30,m:1},
+  long:{d:'M0,-2.5 L34,3 L0,3.5 Z',len:34,m:1},
+  decurved:{d:'M0,-3 Q20,-2 30,14 Q18,4 0,3 Z',len:30},
+  upcurved:{d:'M0,-2 Q18,-1 30,-12 Q18,1 0,3 Z',len:30},
+  spoon:{d:'M0,-3 L16,-2 Q32,-6 33,3 Q30,9 16,4 L0,3 Z',len:33,tipx:.5},
+  duck:{d:'M0,-5 Q14,-7 22,0 Q14,7 0,6 Z',len:22,nail:1},
+  hook:{d:'M0,-6 Q12,-7 14,0 Q14,4 11,5 L10,2 Q6,4 0,5 Z',len:14},
+  flamingo:{d:'M0,-7 Q13,-8 18,1 Q20,10 12,17 Q8,12 5,8 Q2,5 0,5 Z',len:18,tipd:'M18,1 Q20,10 12,17 Q8,12 5,8 Q11,4 18,1 Z'},
+  kf:{d:'M0,-5 L32,1 L0,7 Z',len:32,m:1},
+  hoopoe:{d:'M0,-2 Q20,-1 32,10 Q18,3 0,2 Z',len:32},
+  chisel:{d:'M0,-4 L17,0 L0,4 Z',len:17,m:1},
+  gull:{d:'M0,-5 Q10,-6 18,-1 Q19,3 16,5 L0,5 Z',len:18,m:1},
+  tern:{d:'M0,-4 L22,1 L0,4 Z',len:22,m:1},
+  cormorant:{d:'M0,-4 L24,-2 Q29,0 25,4 L0,4 Z',len:26,m:1},
+  goose:{d:'M0,-6 Q12,-7 16,0 Q12,6 0,6 Z',len:16,nail:1},
+  swan:{d:'M0,-6 Q12,-7 16,0 Q12,6 0,6 Z',len:16,nail:1},
+  owl:{d:'M-3,-3 Q4,-3 3,6 L-1,3 Z',len:6},
+  stilt:{d:'M0,-1.5 L30,1 L0,2 Z',len:30},
+  crane:{d:'M0,-4 L24,1 L0,4 Z',len:24,m:1},
+  stork:{d:'M0,-5 L36,2 L0,6 Z',len:36,m:1},
+  pigeon:{d:'M0,-3 Q7,-4 9,1 Q6,3 0,3 Z',len:9},
+  grebe:{d:'M0,-3 L18,1 L0,4 Z',len:18,m:1}
+};
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function hashStr(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+function headSVG(sp,uid){
+  const p=sp.h,S=SH[p.s||'round'];
+  const {cx,cy,rx,ry}=S,top=cy-ry;
+  const ax=S.owl?cx+6:cx+rx-4,ay=S.owl?cy+9:cy+3;
+  const exx=cx+S.ex,eyy=cy+S.ey,er=S.er;
+  const id='h'+uid,clip=`clip-path="url(#${id})"`;
+  const rect=(x,y,x2,y2,f)=>`<rect x="${x}" y="${y}" width="${x2-x}" height="${y2-y}" fill="${f}"/>`;
+  const line=(x1,y1,x2,y2,c,w)=>`<path d="M${x1},${y1} L${x2},${y2}" stroke="${c}" stroke-width="${w}" fill="none" stroke-linecap="round"/>`;
+  let o=`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${esc(sp.n)}"><defs><clipPath id="${id}"><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"/></clipPath></defs>`;
+  const nk=p.nk||(S.neck?p.c:null);
+  if(nk) o+=`<path d="M${cx-13},${cy+ry-8} C${cx-15},${cy+ry+8} ${cx-15},92 ${cx-17},100 L${cx+11},100 C${cx+9},92 ${cx+7},${cy+ry+6} ${cx+5},${cy+ry-4} Z" fill="${nk}" stroke="rgba(0,0,0,.18)" stroke-width="1"/>`;
+  if(p.ns) o+=`<path d="M${cx-9},100 Q${cx-8},${cy+ry+14} ${cx-3},${cy+ry-2}" fill="none" stroke="${p.ns}" stroke-width="3"/>`;
+  o+=`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${p.c}"/><g ${clip}>`;
+  if(p.np) o+=rect(0,0,cx-9,100,p.np);
+  if(p.cr) o+=rect(0,0,100,cy+(p.crh==null?-8:p.crh),p.cr);
+  if(p.fc) o+=rect(cx+1,0,100,100,p.fc);
+  if(p.ck) o+=`<ellipse cx="${cx+4}" cy="${cy+7}" rx="16" ry="10" fill="${p.ck}"/>`;
+  if(p.fh) o+=rect(cx+10,0,100,cy-3,p.fh);
+  if(p.th) o+=rect(cx-4,cy+9,100,100,p.th);
+  if(p.cl) o+=rect(0,cy+ry-7,100,100,p.cl);
+  if(p.dk){
+    if(p.heart) o+=`<path d="M${cx+4},${cy+24} C${cx-22},${cy+8} ${cx-24},${cy-18} ${cx-6},${cy-18} C${cx},${cy-18} ${cx+3},${cy-12} ${cx+4},${cy-10} C${cx+5},${cy-12} ${cx+8},${cy-18} ${cx+14},${cy-18} C${cx+32},${cy-18} ${cx+30},${cy+8} ${cx+4},${cy+24} Z" fill="${p.dk}" stroke="rgba(0,0,0,.25)" stroke-width="1.5"/>`;
+    else o+=`<ellipse cx="${cx+4}" cy="${cy+2}" rx="24" ry="23" fill="${p.dk}" stroke="rgba(0,0,0,.25)" stroke-width="1.5"/>`;
+  }
+  if(p.cs&&p.cs.t==='stripe'){ o+=rect(cx-18,top,cx+14,top+8,p.cs.edge||K); o+=rect(cx-18,top+2,cx+14,top+6,p.cs.c); }
+  if(p.sp){ let h=hashStr(sp.id); const rnd=()=>{h=(Math.imul(h,1664525)+1013904223)>>>0;return h/4294967296}; for(let i=0;i<13;i++){const x=cx+(rnd()*2-1)*rx*.85,y=cy+(rnd()*2-1)*ry*.85; o+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="1.4" fill="${p.sp}" opacity=".85"/>`;} }
+  if(p.es) o+=line(cx-rx+2,eyy+1,ax+1,eyy+2,p.es,p.ms?10:3.5);
+  if(p.su) o+=`<path d="M${cx-10},${eyy-6} Q${cx+6},${eyy-11} ${cx+rx-2},${eyy-5}" fill="none" stroke="${p.su}" stroke-width="3.2" stroke-linecap="round"/>`;
+  if(p.mo) o+=line(ax-4,ay+3,cx+2,cy+ry-2,p.mo,4.5);
+  if(p.esp) o+=`<ellipse cx="${cx-3}" cy="${eyy+4}" rx="4.5" ry="3.5" fill="${p.esp}"/>`;
+  if(p.gu) o+=`<ellipse cx="${ax-5}" cy="${ay+4}" rx="4" ry="3" fill="${p.gu}"/>`;
+  if(p.ts) o+=`<circle cx="${cx+10}" cy="${cy+15}" r="3.5" fill="${p.ts}"/>`;
+  if(p.lo) o+=`<path d="M${exx+5},${eyy-3} L${ax},${ay-4} L${ax},${ay+1} Z" fill="${p.lo}"/>`;
+  if(p.ep) o+=`<ellipse cx="${exx}" cy="${eyy}" rx="${er+4}" ry="${er+3}" fill="${p.ep}"/>`;
+  o+='</g>';
+  o+=`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="none" stroke="rgba(0,0,0,.2)" stroke-width="1"/>`;
+  if(p.cs){const c=p.cs;
+    if(c.t==='spiky') o+=`<path d="M${cx+4},${top+2} L${cx},${top-8} L${cx-4},${top+1} L${cx-8},${top-7} L${cx-12},${top+2} L${cx-15},${top-3} L${cx-19},${top+6} Z" fill="${c.c}" stroke="rgba(0,0,0,.2)"/>`;
+    else if(c.t==='long') o+=`<path d="M${cx-8},${top+5} Q${cx-20},${top-1} ${cx-32},${top-7}" fill="none" stroke="${c.c}" stroke-width="2.6" stroke-linecap="round"/>`;
+    else if(c.t==='tuft') o+=`<path d="M${cx-10},${top+4} Q${cx-17},${top-6} ${cx-24},${top-4} M${cx-15},${top+8} Q${cx-24},${top+1} ${cx-30},${top+3}" fill="none" stroke="${c.c}" stroke-width="3.2" stroke-linecap="round"/>`;
+    else if(c.t==='ears') o+=`<path d="M${cx-6},${top+8} L${cx-11},${top-9} L${cx+2},${top+5} Z M${cx+9},${top+5} L${cx+12},${top-9} L${cx+19},${top+7} Z" fill="${c.c}"/>`;
+    else if(c.t==='crest') o+=`<path d="M${cx-3},${top+3} L${cx-8},${top-6} L${cx-13},${top+4} Z" fill="${c.c}"/>`;
+    else if(c.t==='fan'){ for(const a of [15,-10,-35,-60,-85]) o+=`<g transform="rotate(${a} ${cx+4} ${top+8})"><rect x="${cx+2.5}" y="${top-16}" width="3" height="24" rx="1.5" fill="${c.c}"/><rect x="${cx+2.5}" y="${top-16}" width="3" height="6" rx="1.5" fill="${c.tip||K}"/></g>`; }
+  }
+  if(p.sh) o+=`<ellipse cx="${ax-6}" cy="${(ay-5+top+5)/2}" rx="4.5" ry="${(ay-5-(top+5))/2}" fill="${p.sh}" stroke="rgba(0,0,0,.2)"/>`;
+  const bl=p.bl||{t:'cone',c:DG},B=BILL[bl.t]||BILL.cone,k=bl.k||1,bid=id+'b';
+  o+=`<g transform="translate(${ax} ${ay}) scale(${k})"><defs><clipPath id="${bid}"><path d="${B.d}"/></clipPath></defs>`;
+  o+=`<path d="${B.d}" fill="${bl.c}" stroke="rgba(0,0,0,.25)" stroke-width="${(0.9/k).toFixed(2)}" stroke-linejoin="round"/>`;
+  if(bl.base) o+=`<rect x="-1" y="-20" width="${B.len*.35+1}" height="40" fill="${bl.base}" clip-path="url(#${bid})"/>`;
+  if(bl.band) o+=`<rect x="${B.len*.55}" y="-20" width="${B.len*.15}" height="40" fill="${bl.band}" clip-path="url(#${bid})"/>`;
+  if(bl.tip){ if(B.tipd) o+=`<path d="${B.tipd}" fill="${bl.tip}"/>`; else o+=`<rect x="${B.len*(B.tipx||.62)}" y="-20" width="${B.len}" height="40" fill="${bl.tip}" clip-path="url(#${bid})"/>`; }
+  if(B.m) o+=`<path d="M0,0.5 L${B.len*.85},1" stroke="rgba(0,0,0,.35)" stroke-width="${(0.9/k).toFixed(2)}" fill="none"/>`;
+  if(B.nail) o+=`<ellipse cx="${B.len-2.5}" cy="-0.5" rx="2" ry="1.5" fill="rgba(0,0,0,.4)"/>`;
+  if(bl.cere) o+=`<ellipse cx="2" cy="-3.5" rx="3.6" ry="2.6" fill="${bl.cere}"/>`;
+  if(bl.knob) o+=`<ellipse cx="1" cy="-7" rx="3" ry="2.6" fill="${bl.knob}"/>`;
+  if(bl.spot) o+=`<circle cx="${B.len*.78}" cy="2.5" r="1.7" fill="${bl.spot}"/>`;
+  o+='</g>';
+  if(S.brow) o+=`<path d="M${exx-9},${eyy-7} Q${exx},${eyy-9} ${exx+7},${eyy-6}" stroke="rgba(0,0,0,.5)" stroke-width="2.4" fill="none" stroke-linecap="round"/>`;
+  const ey=p.ey||{i:K};
+  if(ey.r) o+=`<circle cx="${exx}" cy="${eyy}" r="${er+1.6}" fill="${ey.r}"/>`;
+  o+=`<circle cx="${exx}" cy="${eyy}" r="${er}" fill="${ey.i||K}"/><circle cx="${(exx+er*.08).toFixed(1)}" cy="${eyy}" r="${(er*.55).toFixed(1)}" fill="#111"/><circle cx="${(exx+er*.3).toFixed(1)}" cy="${(eyy-er*.3).toFixed(1)}" r="${(er*.22).toFixed(1)}" fill="#fff"/>`;
+  o+='</svg>';
+  return o;
+}
+const ST='stroke="rgba(0,0,0,.22)" stroke-width="1"';
+function speckles(sid,cx,cy,rx,ry,c,n,r){let h=hashStr(sid);const rnd=()=>{h=(Math.imul(h,1664525)+1013904223)>>>0;return h/4294967296};let o='';for(let i=0;i<n;i++){const x=cx+(rnd()*2-1)*rx,y=cy+(rnd()*2-1)*ry;o+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r}" fill="${c}" opacity=".85"/>`}return o}
+function eyeSVG(x,y,r,i,ring,slit){let o='';if(ring) o+=`<circle cx="${x}" cy="${y}" r="${r+1.6}" fill="${ring}"/>`;o+=`<circle cx="${x}" cy="${y}" r="${r}" fill="${i||K}"/>`;o+=slit==='h'?`<ellipse cx="${x}" cy="${y}" rx="${(r*.7).toFixed(1)}" ry="${(r*.3).toFixed(1)}" fill="#111"/>`:slit==='v'?`<ellipse cx="${x}" cy="${y}" rx="${(r*.28).toFixed(1)}" ry="${(r*.72).toFixed(1)}" fill="#111"/>`:`<circle cx="${(x+r*.1).toFixed(1)}" cy="${y}" r="${(r*.5).toFixed(1)}" fill="#111"/>`;o+=`<circle cx="${(x+r*.3).toFixed(1)}" cy="${(y-r*.3).toFixed(1)}" r="${(r*.22).toFixed(1)}" fill="#fff"/>`;return o}
+function mammalSVG(sp,uid){
+  const p=sp.h,cx=50,cy=57,rx=p.rx||26,ry=p.ry||21,top=cy-ry,id='m'+uid,er=p.er||4;
+  const exx=cx+9,eyy=cy-6,ec=p.ec||p.c,ei=p.ei||'#d9b8a8',ears=p.ears||'round';
+  let o=`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${esc(sp.n)}"><defs><clipPath id="${id}"><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"/></clipPath></defs>`;
+  if(p.bat) o+=`<path d="M${cx-8},${cy} Q${cx-30},${cy-30} ${cx-48},${cy+8} Q${cx-30},${cy+2} ${cx-24},${cy+20} Q${cx-14},${cy+10} ${cx-6},${cy+24} Z" fill="${p.c}" ${ST}/><path d="M${cx+8},${cy} Q${cx+30},${cy-30} ${cx+48},${cy+8} Q${cx+30},${cy+2} ${cx+24},${cy+20} Q${cx+14},${cy+10} ${cx+6},${cy+24} Z" fill="${p.c}" ${ST}/>`;
+  if(p.horns) o+=`<path d="M${cx-14},${top+6} Q${cx-32},${top-4} ${cx-18},${top-20}" fill="none" stroke="${p.horns}" stroke-width="4.5" stroke-linecap="round"/><path d="M${cx+8},${top+4} Q${cx+24},${top-8} ${cx+12},${top-20}" fill="none" stroke="${p.horns}" stroke-width="4.5" stroke-linecap="round"/>`;
+  const ear=(x,y,back)=>{
+    if(ears==='round'){const R=p.bigears?12:9;return `<circle cx="${x}" cy="${y}" r="${R}" fill="${ec}" ${ST}/><circle cx="${x}" cy="${y}" r="${R*.55}" fill="${ei}"/>`}
+    if(ears==='point'||ears==='tuft') return `<path d="M${x-9},${y+8} L${x-1},${y-14} L${x+9},${y+6} Z" fill="${ec}" ${ST}/><path d="M${x-4},${y+5} L${x-1},${y-7} L${x+4},${y+4} Z" fill="${ei}"/>`+(ears==='tuft'?`<path d="M${x-1},${y-13} L${x+1},${y-22} M${x+1},${y-12} L${x+5},${y-19}" stroke="${ec}" stroke-width="2" stroke-linecap="round" fill="none"/>`:'')+(p.et?`<path d="M${x-4},${y-6} L${x-1},${y-14} L${x+3},${y-7} Z" fill="${p.et}"/>`:'');
+    if(ears==='long'){const a=back?-24:-8;return `<g transform="rotate(${a} ${x} ${y})"><ellipse cx="${x}" cy="${y-12}" rx="5.5" ry="18" fill="${ec}" ${ST}/><ellipse cx="${x}" cy="${y-11}" rx="2.6" ry="13" fill="${ei}"/>${p.et?`<ellipse cx="${x}" cy="${y-27}" rx="4.2" ry="3.4" fill="${p.et}"/>`:''}</g>`}
+    if(ears==='small') return `<path d="M${x-6},${y+6} L${x-1},${y-5} L${x+6},${y+5} Z" fill="${ec}" ${ST}/>`;
+    return '';
+  };
+  if(ears!=='none') o+=ear(cx-14,top+4,true);
+  o+=`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${p.c}"/><g clip-path="url(#${id})">`;
+  if(p.fc) o+=`<rect x="${cx+2}" y="0" width="100" height="100" fill="${p.fc}"/>`;
+  if(p.ck) o+=`<ellipse cx="${cx+6}" cy="${cy+6}" rx="15" ry="9" fill="${p.ck}"/>`;
+  if(p.th) o+=`<rect x="${cx-6}" y="${cy+8}" width="100" height="100" fill="${p.th}"/>`;
+  if(p.spines){for(let i=0;i<9;i++){const x=cx-rx+4+i*5.6;o+=`<path d="M${x},${top+18} L${x+2.5},${top-2} L${x+5.5},${top+18}" fill="${p.spines}" opacity=".9"/>`}}
+  if(p.sp) o+=speckles(sp.id,cx,cy,rx*.8,ry*.8,p.sp,12,1.8);
+  if(p.mask) o+=`<path d="M${cx+rx+2},${cy+1} L${cx-rx+4},${cy-9}" stroke="${p.mask}" stroke-width="9" stroke-linecap="round" fill="none"/>`;
+  if(p.ep) o+=`<ellipse cx="${exx}" cy="${eyy}" rx="${er+4}" ry="${er+3}" fill="${p.ep}"/>`;
+  if(p.mane) o+=`<path d="M${cx-rx-2},${cy+4} Q${cx-10},${top-6} ${cx+8},${top+2}" stroke="${p.mane}" stroke-width="8" fill="none" stroke-linecap="round"/>`;
+  o+=`</g><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="none" ${ST}/>`;
+  if(ears!=='none') o+=ear(cx+2,top+2,false);
+  const sx=cx+rx-8,sy=cy+7,sr=p.snr||11;
+  o+=`<ellipse cx="${sx+2}" cy="${sy}" rx="${sr}" ry="${(sr*.68).toFixed(1)}" fill="${p.sn||p.c}" ${ST}/>`;
+  if(p.disc) o+=`<ellipse cx="${sx+sr}" cy="${sy}" rx="4" ry="5.5" fill="${p.disc}" ${ST}/>`; else o+=`<circle cx="${sx+sr-2}" cy="${sy-2}" r="3.5" fill="${p.nose||K}"/>`;
+  o+=`<path d="M${sx+sr-3},${sy+2} Q${sx+2},${sy+5} ${sx-3},${sy+3}" stroke="rgba(0,0,0,.35)" stroke-width="1" fill="none"/>`;
+  if(p.teeth) o+=`<rect x="${sx+3}" y="${sy+5}" width="3.2" height="7" rx="1" fill="${p.teeth}" stroke="rgba(0,0,0,.25)" stroke-width=".6"/><rect x="${sx+7}" y="${sy+5}" width="3.2" height="7" rx="1" fill="${p.teeth}" stroke="rgba(0,0,0,.25)" stroke-width=".6"/>`;
+  if(p.tusk) o+=`<path d="M${sx+6},${sy+4} L${sx+8},${sy+12} L${sx+11},${sy+3} Z" fill="${p.tusk}"/>`;
+  if(p.wh) o+=`<path d="M${sx+2},${sy} L${sx+17},${sy-7} M${sx+2},${sy+2} L${sx+18},${sy+3} M${sx+2},${sy+4} L${sx+16},${sy+11}" stroke="${p.wh}" stroke-width=".9" fill="none" opacity=".9"/>`;
+  const ey=p.ey||{i:K};o+=eyeSVG(exx,eyy,er,ey.i,ey.r,ey.slit);
+  return o+'</svg>';
+}
+function herpSVG(sp,uid){
+  const p=sp.h,t=p.t,id='r'+uid,ey=p.ey||{i:'#e8c33a'};
+  let o=`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${esc(sp.n)}">`;
+  if(t==='frog'){
+    const cx=48,cy=62,rx=32,ry=18;
+    o+=`<defs><clipPath id="${id}"><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"/></clipPath></defs>`;
+    o+=`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${p.c}" ${ST}/>`;
+    if(p.sp) o+=`<g clip-path="url(#${id})">${speckles(sp.id,cx,cy,rx*.8,ry*.7,p.sp,10,2)}</g>`;
+    if(p.th) o+=`<g clip-path="url(#${id})"><rect x="${cx-6}" y="${cy+6}" width="100" height="100" fill="${p.th}"/></g>`;
+    o+=`<circle cx="${cx+12}" cy="${cy-14}" r="9.5" fill="${p.c}" ${ST}/>`;
+    if(p.es) o+=`<path d="M${cx+21},${cy-8} Q${cx+6},${cy-2} ${cx-30},${cy+2}" stroke="${p.es}" stroke-width="3.5" fill="none" stroke-linecap="round"/>`;
+    o+=eyeSVG(cx+12,cy-14,6.5,ey.i,ey.r,'h');
+    o+=`<path d="M${cx+31},${cy+2} Q${cx+8},${cy+11} ${cx-26},${cy+6}" stroke="rgba(0,0,0,.35)" stroke-width="1.2" fill="none"/>`;
+    o+=`<circle cx="${cx+26}" cy="${cy-6}" r="1.3" fill="rgba(0,0,0,.4)"/>`;
+  } else if(t==='lizard'||t==='snake'){
+    const cx=48,cy=56,rx=t==='snake'?27:31,ry=t==='snake'?15:13;
+    o+=`<defs><clipPath id="${id}"><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"/></clipPath></defs>`;
+    if(t==='snake') o+=`<path d="M${cx-rx+6},${cy-4} Q${cx-rx-10},${cy-6} ${cx-rx-6},${cy+10} Q${cx-rx-2},${cy+20} ${cx-rx+10},${cy+12} Z" fill="${p.c}" ${ST}/>`;
+    o+=`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${p.c}" ${ST}/><g clip-path="url(#${id})">`;
+    if(p.sp) o+=speckles(sp.id,cx,cy,rx*.85,ry*.8,p.sp,14,1.6);
+    if(p.zig) for(let i=0;i<5;i++){const x=cx-rx+9+i*11;o+=`<path d="M${x},${cy-ry+1} l6,6 l-6,6 l-6,-6 Z" fill="${p.zig}" opacity=".85"/>`}
+    if(p.th) o+=`<rect x="0" y="${cy+5}" width="100" height="100" fill="${p.th}"/>`;
+    if(p.brow) o+=`<path d="M${cx+4},${cy-9} L${cx+24},${cy-6}" stroke="${p.brow}" stroke-width="2.6" stroke-linecap="round"/>`;
+    o+='</g>';
+    o+=`<path d="M${cx+rx},${cy+3} Q${cx+10},${cy+6} ${cx-2},${cy+5}" stroke="rgba(0,0,0,.35)" stroke-width="1.1" fill="none"/><circle cx="${cx+rx-4}" cy="${cy-2}" r="1.2" fill="rgba(0,0,0,.4)"/>`;
+    o+=eyeSVG(cx+15,cy-3,t==='snake'?4.2:3.6,ey.i,ey.r,p.slit);
+  } else if(t==='turtle'){
+    o+=`<path d="M6,74 Q8,32 38,32 Q68,32 70,74 Z" fill="${p.shell}" ${ST}/><path d="M20,74 Q22,46 38,44 Q54,46 56,74 M38,32 L38,74" stroke="rgba(0,0,0,.3)" stroke-width="1" fill="none"/><rect x="6" y="73" width="64" height="5" rx="2" fill="${p.shell}" stroke="rgba(0,0,0,.3)" stroke-width="1"/>`;
+    o+=`<path d="M60,48 Q70,42 78,48 L78,64 Q70,68 60,64 Z" fill="${p.c}" ${ST}/>`;
+    if(p.stripes) o+=`<path d="M62,52 L80,50 M62,58 L80,58 M62,62 L78,64" stroke="${p.stripes}" stroke-width="1.6" fill="none"/>`;
+    o+=`<ellipse cx="80" cy="54" rx="15" ry="10" fill="${p.c}" ${ST}/>`;
+    if(p.sp) o+=speckles(sp.id,80,54,11,7,p.sp,9,1.4);
+    if(p.ear) o+=`<ellipse cx="72" cy="55" rx="3.5" ry="2.2" fill="${p.ear}"/>`;
+    o+=`<path d="M94,56 Q86,60 76,59" stroke="rgba(0,0,0,.35)" stroke-width="1" fill="none"/>`;
+    o+=eyeSVG(85,51,3.2,ey.i,ey.r);
+  }
+  return o+'</svg>';
+}
+function insectSVG(sp,uid){
+  const p=sp.h,t=p.t,id='i'+uid;
+  let o=`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${esc(sp.n)}">`;
+  const cx=50;
+  if(t==='dragonfly'||t==='damsel'){
+    const wingF=p.wing||'rgba(190,215,235,.5)';
+    if(t==='dragonfly'){
+      const wl=p.big?26:22,wr=p.wide?7:5.5;
+      for(const m of [-1,1]){
+        o+=`<ellipse cx="${cx+m*(wl+1)}" cy="40" rx="${wl}" ry="${wr}" transform="rotate(${-10*m} ${cx+m*(wl+1)} 40)" fill="${wingF}" ${ST}/>`;
+        o+=`<ellipse cx="${cx+m*(wl-1)}" cy="53" rx="${wl-2}" ry="${wr+.5}" transform="rotate(${6*m} ${cx+m*(wl-1)} 53)" fill="${wingF}" ${ST}/>`;
+        o+=`<path d="M${cx+m*6},40 L${cx+m*(2*wl-2)},${36} M${cx+m*6},53 L${cx+m*(2*wl-6)},56" stroke="rgba(0,0,0,.25)" stroke-width=".8" fill="none"/>`;
+        o+=`<rect x="${cx+m*(2*wl-6)-2}" y="34.5" width="4" height="2.2" fill="rgba(60,40,20,.7)"/>`;
+      }
+    } else o+=`<ellipse cx="${cx-3}" cy="62" rx="4" ry="22" fill="${wingF}" ${ST}/><ellipse cx="${cx+3}" cy="62" rx="4" ry="22" fill="${wingF}" ${ST}/>`;
+    const aw=t==='damsel'?3:(p.big?6.5:5.2);
+    o+=`<rect x="${cx-aw}" y="46" width="${aw*2}" height="50" rx="${aw}" fill="${p.ab}" ${ST}/>`;
+    for(let y=52;y<94;y+=6) o+=`<line x1="${cx-aw}" x2="${cx+aw}" y1="${y}" y2="${y}" stroke="rgba(0,0,0,.3)" stroke-width=".8"/>`;
+    if(p.spots) for(let y=55;y<92;y+=6) o+=`<circle cx="${(cx-aw*.45).toFixed(1)}" cy="${y}" r="1.6" fill="${p.spots}"/><circle cx="${(cx+aw*.45).toFixed(1)}" cy="${y}" r="1.6" fill="${p.spots}"/>`;
+    if(p.tip) o+=`<rect x="${cx-aw}" y="84" width="${aw*2}" height="9" rx="${aw}" fill="${p.tip}"/>`;
+    o+=`<ellipse cx="${cx}" cy="40" rx="${t==='damsel'?4.5:7.5}" ry="${t==='damsel'?7:10}" fill="${p.th}" ${ST}/>`;
+    if(p.th2) o+=`<path d="M${cx-3},33 L${cx-3},46 M${cx+3},33 L${cx+3},46" stroke="${p.th2}" stroke-width="1.8"/>`;
+    o+=`<circle cx="${cx}" cy="27" r="${t==='damsel'?4.5:7}" fill="${p.th}" ${ST}/>`;
+    const ec=p.ey||'#3a6a3a';
+    if(t==='damsel') o+=`<circle cx="${cx-5.5}" cy="26" r="3" fill="${ec}"/><circle cx="${cx+5.5}" cy="26" r="3" fill="${ec}"/>`;
+    else o+=`<circle cx="${cx-4.5}" cy="25" r="5.2" fill="${ec}" ${ST}/><circle cx="${cx+4.5}" cy="25" r="5.2" fill="${ec}" ${ST}/>`;
+  } else if(t==='butterfly'){
+    const cy=54;
+    const fw=m=>`M${cx},${cy-6} Q${cx+m*14},${cy-40} ${cx+m*40},${cy-30} Q${cx+m*46},${cy-14} ${cx+m*20},${cy} Z`;
+    const hw=m=>`M${cx},${cy} Q${cx+m*26},${cy-2} ${cx+m*34},${cy+14} Q${cx+m*28},${cy+34} ${cx+m*8},${cy+22} Z`;
+    o+=`<defs><clipPath id="${id}fl"><path d="${fw(-1)}"/></clipPath><clipPath id="${id}fr"><path d="${fw(1)}"/></clipPath><clipPath id="${id}hl"><path d="${hw(-1)}"/></clipPath><clipPath id="${id}hr"><path d="${hw(1)}"/></clipPath></defs>`;
+    for(const m of [-1,1]){const f=`url(#${id}f${m<0?'l':'r'})`,h=`url(#${id}h${m<0?'l':'r'})`;
+      o+=`<path d="${hw(m)}" fill="${p.hw||p.wc}" ${ST}/>`;
+      if(p.hb) o+=`<path d="${hw(m)}" fill="none" stroke="${p.hb}" stroke-width="7" clip-path="${h}"/>`;
+      if(p.hspot) o+=`<circle cx="${cx+m*22}" cy="${cy+14}" r="2.4" fill="${p.hspot}"/>`;
+      o+=`<path d="${fw(m)}" fill="${p.wc}" ${ST}/>`;
+      if(p.band) o+=`<path d="M${cx+m*8},${cy-2} L${cx+m*38},${cy-30}" stroke="${p.band}" stroke-width="7" clip-path="${f}"/>`;
+      if(p.tipc) o+=`<path d="M${cx+m*20},${cy-40} L${cx+m*48},${cy-32} L${cx+m*46},${cy-12} L${cx+m*30},${cy-22} Z" fill="${p.tipc}" clip-path="${f}"/>`;
+      if(p.tip) o+=`<circle cx="${cx+m*35}" cy="${cy-27}" r="2" fill="${p.tip}"/><circle cx="${cx+m*40}" cy="${cy-21}" r="1.6" fill="${p.tip}"/><circle cx="${cx+m*30}" cy="${cy-32}" r="1.4" fill="${p.tip}"/>`;
+      if(p.border) o+=`<path d="${fw(m)}" fill="none" stroke="${p.border}" stroke-width="5" clip-path="${f}"/><path d="${hw(m)}" fill="none" stroke="${p.border}" stroke-width="3" clip-path="${h}"/>`;
+      if(p.spots) o+=`<circle cx="${cx+m*18}" cy="${cy-14}" r="2.2" fill="${p.spots}"/><circle cx="${cx+m*26}" cy="${cy+10}" r="2" fill="${p.spots}"/><circle cx="${cx+m*30}" cy="${cy+20}" r="1.6" fill="${p.spots}"/>`;
+      if(p.spot) o+=`<circle cx="${cx+m*24}" cy="${cy-18}" r="2.4" fill="${p.spot}"/>`;
+      if(p.tail) o+=`<path d="M${cx+m*26},${cy+30} L${cx+m*28},${cy+38}" stroke="${p.border||'#2a2a2a'}" stroke-width="1.6" stroke-linecap="round"/>`;
+    }
+    const bc=p.body||'#2a2a2a';
+    o+=`<rect x="${cx-3}" y="${cy-16}" width="6" height="38" rx="3" fill="${bc}"/><path d="M${cx-1},${cy-16} Q${cx-8},${cy-28} ${cx-12},${cy-36} M${cx+1},${cy-16} Q${cx+8},${cy-28} ${cx+12},${cy-36}" stroke="${bc}" stroke-width="1.2" fill="none"/><circle cx="${cx-12}" cy="${cy-36}" r="1.6" fill="${bc}"/><circle cx="${cx+12}" cy="${cy-36}" r="1.6" fill="${bc}"/>`;
+  } else if(t==='mantis'){
+    const c=p.c;
+    o+=`<path d="M12,72 Q40,62 70,56 Q79,55 80,61 Q70,68 40,76 Q22,80 12,72 Z" fill="${c}" ${ST}/><path d="M18,69 Q44,60 72,58" stroke="rgba(0,0,0,.25)" stroke-width="1" fill="none"/>`;
+    o+=`<path d="M40,76 L34,92 M52,73 L50,92 M64,68 L74,88" stroke="${c}" stroke-width="2.2" fill="none" stroke-linecap="round"/>`;
+    o+=`<path d="M74,60 L62,46 L76,40 M78,62 L68,50 L80,44" stroke="${c}" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M62,46 L76,40 M68,50 L80,44" stroke="rgba(0,0,0,.3)" stroke-width="1" fill="none"/>`;
+    o+=`<path d="M76,52 L94,46 L86,34 Z" fill="${c}" ${ST}/><path d="M88,36 L92,22 M86,36 L82,22" stroke="${c}" stroke-width="1.2" fill="none"/>`;
+    o+=`<circle cx="89" cy="42" r="3.4" fill="${p.ey||'#d9d060'}" ${ST}/><circle cx="90" cy="42" r="1.2" fill="#111"/>`;
+  } else if(t==='grasshopper'){
+    const c=p.c;
+    o+=`<path d="M38,66 L24,46 L14,78" stroke="${c}" stroke-width="4.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M38,66 L24,46" stroke="rgba(0,0,0,.28)" stroke-width="1.2" fill="none"/>`;
+    o+=`<ellipse cx="46" cy="62" rx="31" ry="10" fill="${c}" ${ST}/><path d="M20,58 Q46,50 74,56" stroke="rgba(0,0,0,.28)" stroke-width="1" fill="none"/><path d="M26,62 L72,60" stroke="rgba(0,0,0,.2)" stroke-width="1" fill="none"/>`;
+    o+=`<path d="M46,72 L44,84 M58,72 L60,84" stroke="${c}" stroke-width="2.4" fill="none" stroke-linecap="round"/>`;
+    o+=`<circle cx="78" cy="52" r="9" fill="${c}" ${ST}/><path d="M80,44 L86,30 M82,45 L92,34" stroke="${c}" stroke-width="1.4" fill="none"/>`;
+    o+=`<ellipse cx="82" cy="50" rx="3.2" ry="4.6" fill="${p.ey||'#d9c9a6'}" stroke="rgba(0,0,0,.4)" stroke-width=".8"/><path d="M81,46 L81,54 M83,46 L83,54" stroke="#3a2a1a" stroke-width=".9"/>`;
+  } else if(t==='spider'){
+    const c=p.c,lc=p.legs||'#2a2a2a';
+    for(const m of [-1,1]) o+=`<path d="M${cx+m*4},38 L${cx+m*22},16 L${cx+m*30},28 M${cx+m*6},40 L${cx+m*34},34 L${cx+m*42},46 M${cx+m*6},44 L${cx+m*34},52 L${cx+m*42},66 M${cx+m*4},46 L${cx+m*24},66 L${cx+m*30},82" stroke="${lc}" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+    o+=`<defs><clipPath id="${id}"><ellipse cx="${cx}" cy="62" rx="13" ry="20"/></clipPath></defs><ellipse cx="${cx}" cy="62" rx="13" ry="20" fill="${c}" ${ST}/>`;
+    if(p.stripes){o+=`<g clip-path="url(#${id})">`;for(let y=48;y<82;y+=7) o+=`<rect x="30" y="${y}" width="40" height="3" fill="${p.stripes}"/>`;o+='</g>'}
+    o+=`<circle cx="${cx}" cy="38" r="8" fill="${p.head||'#9a8a74'}" ${ST}/><circle cx="${cx-2.5}" cy="33" r="1.2" fill="#111"/><circle cx="${cx+2.5}" cy="33" r="1.2" fill="#111"/>`;
+  } else if(t==='bee'){
+    const c=p.c;
+    o+=`<path d="M44,74 L40,88 M56,72 L58,88 M66,68 L72,84" stroke="${c}" stroke-width="2.4" fill="none" stroke-linecap="round"/>`;
+    o+=`<ellipse cx="42" cy="62" rx="23" ry="15" fill="${c}" ${ST}/><circle cx="62" cy="52" r="12" fill="${c}" ${ST}/><circle cx="78" cy="52" r="7.5" fill="${c}" ${ST}/>`;
+    o+=`<ellipse cx="52" cy="46" rx="22" ry="7" transform="rotate(-16 52 46)" fill="${p.wing||'rgba(120,60,160,.55)'}" ${ST}/>`;
+    o+=`<circle cx="81" cy="50" r="2.6" fill="#555"/><path d="M80,45 L84,36 M82,46 L88,38" stroke="${c}" stroke-width="1.2" fill="none"/>`;
+  }
+  return o+'</svg>';
+}
+function drawSVG(sp,uid){const k=sp.h&&sp.h.k;let o=k==='m'?mammalSVG(sp,uid):k==='h'?herpSVG(sp,uid):k==='i'?insectSVG(sp,uid):headSVG(sp,uid);
+  if(sp.custom) o=o.replace(/<\/svg>$/,'<circle cx="82" cy="82" r="13" fill="#e8c33a" stroke="rgba(0,0,0,.25)"/><text x="82" y="88" text-anchor="middle" font-size="17" font-weight="700" font-family="sans-serif" fill="#1d1d1f">?</text></svg>');
+  return o}
+
+const TIPS={"flamant-rose":"Partout à Pont de Gau, souvent à moins de 10 m des sentiers près de l'entrée. Lumière rasante tôt le matin ou en fin d'après-midi ; viser les scènes (toilette, parade, envol groupé) plutôt que le portrait.","flamant-nain":"Un ou deux individus se mêlent régulièrement aux flamants roses de Pont de Gau : balayer les groupes à la jumelle, chercher le plus petit, plus rose, au bec sombre.","martin-pecheur":"Canaux et passerelles de Pont de Gau, rives des roubines au Vigueirat. Il revient aux mêmes perchoirs : repérer une branche basse au-dessus d'une eau calme, s'asseoir à 10–15 m et attendre 20 minutes sans bouger. Meilleur en début de matinée.","bihoreau-gris":"Dortoirs de jour dans les tamaris au bord des sentiers de Pont de Gau : chercher les silhouettes immobiles dans les branches basses, à hauteur d'yeux. Actif au crépuscule.","panure-moustaches":"Roselières denses du Vigueirat et grandes roselières de Pont de Gau. Écouter le « ping » métallique ; les groupes montent au sommet des roseaux par matin calme et ensoleillé, sans vent.","remiz-penduline":"Hivernante dans les massettes et roseaux : écouter le sifflement fin « tsiiih » et chercher les oiseaux qui décortiquent les massettes. Petite et très mobile, 400 mm minimum.","gorgebleue":"Lisières de roselière et vasières, souvent à terre au pied des roseaux. Rester immobile à l'aube au bord d'un chenal ; elle sort et rentre vite, viser les perchoirs bas.","butor-etoile":"Roselières du Vigueirat : scruter les lisières aux premières heures, quand il traverse une trouée ou vole bas au-dessus des roseaux. Patience, longue focale et beaucoup de chance.","lusciniole":"Spécialité du Vigueirat : roselière à grandes laîches sur sol humide. Elle chante toute l'année par beau temps calme, souvent près du sol. Chant de rousserolle avec des notes montantes de rossignol.","taleve-sultane":"Bordures de roselière et canaux à lentilles d'eau, au Vigueirat comme à Pont de Gau. Au lever du jour elle marche à découvert ; dès que ça passe, elle rentre. Chercher le rouge du bec dans les joncs.","rale-eau":"On l'entend partout (cri de cochon), on le voit rarement : lisière de roselière au bord d'un chenal avec vase découverte, à l'aube. S'asseoir et attendre.","grue-cendree":"En vol au crépuscule vers les dortoirs, ou dans les rizières et marais autour des deux sites. Photo d'ambiance : lignes en vol sur ciel coloré ; pour un portrait, il faut l'affût.","spatule-blanche":"Lagunes peu profondes : chercher les groupes qui fauchent l'eau en marchant. Lumière du matin, position basse.","ibis-falcinelle":"Marais et prés inondés, souvent en groupes compacts. Le plumage n'a l'air noir que de loin : attendre le soleil rasant pour les reflets bronze et vert.","balbuzard-pecheur":"Étangs poissonneux, souvent posé sur un piquet ou un arbre mort au-dessus de l'eau. Repérer le perchoir et attendre le plongeon ; plutôt le matin.","busard-roseaux":"Vol lent au ras des roseaux, partout. Pour le portrait, se poster face au vent là où il patrouille : il repasse souvent au même endroit.","aigle-criard":"Hivernant irrégulier au Vigueirat et dans les marais voisins. Scruter les arbres morts et les piquets en bordure de marais, puis les thermiques en fin de matinée. Vérifier les observations récentes sur Faune-PACA avant de partir.","hibou-marais":"Prairies humides et sansouires, en chasse en fin d'après-midi par temps couvert. Rare : chercher les vols bas et chaloupés.","cheveche":"Mas, murets et cabanes autour des sites, souvent posée bien en vue au soleil le matin. Approcher lentement, en restant dans la voiture ou derrière un repère.","huppe-fasciee":"Rare en novembre ; quelques hivernantes sur les pelouses rases et les abords des mas. Chercher au sol, en lisière.","avocette":"Lagunes de Pont de Gau ; se poster au niveau de l'eau pour avoir le reflet. Les groupes en toilette au petit matin donnent les meilleures images.","sarcelle-hiver":"Très farouche : utiliser les observatoires et attendre que le groupe se rapproche. Mâle superbe en lumière rasante.","nette-rousse":"Étangs à végétation flottante ; mâle roux très photogénique, souvent loin : observatoires et patience.","cistude":"Au Vigueirat, troncs et berges ensoleillés des canaux : par beau temps calme, même en novembre, elle sort se chauffer. Approche silencieuse, elle plonge au moindre bruit.","ragondin":"Partout dans les canaux, peu farouche : l'occasion de soigner la composition plutôt que l'approche.","renard":"Aube et crépuscule sur les pistes et les prés, souvent peu farouche en Camargue. Rester bas et immobile quand il approche.","sanglier":"Pistes et roselières du Vigueirat, surtout tôt le matin ; traces et bauges partout, rencontres au détour d'un chemin aussi.","castor":"Canaux et rives boisées du Vigueirat : chercher les troncs rongés, puis se poster au crépuscule en aval d'un terrier.","loutre":"De retour dans les canaux de Camargue : épreintes sur les berges, observation exceptionnelle à l'aube. Objectif de rêve, pas un plan.","sympetrum":"Par journée douce et ensoleillée, sur les sentiers et les piquets au soleil ; approche lente par en dessous, macro ou longue focale à distance minimale.","rainette":"Nuits douces et humides : elle chante dans les roseaux et les buissons près de l'eau, même en novembre. Lampe frontale et patience.","aigrette-garzette":"Partout : le défi est la lumière et le fond, pas l'oiseau. Chercher les scènes de pêche en contre-jour le matin.","heron-cendre":"Partout, et c'est le piège : la cote est basse mais une scène de pêche en lumière rasante vaut un portfolio.","grand-cormoran":"Pose au sec ailes ouvertes sur les piquets : lumière du matin, cadrage serré sur l'œil émeraude.","faucon-pelerin":"Posé sur les pylônes et les arbres morts dominant les marais ; vérifier chaque silhouette compacte sur les perchoirs hauts.","bruant-roseaux":"Au sommet des roseaux par temps calme, en petits groupes. Facile à voir, difficile à faire net : attendre la pose.","cormoran-pygmee":"En expansion en Camargue depuis quelques années : chercher un petit cormoran à longue queue, perché bas au bord des canaux, au Vigueirat surtout.","elanion-blanc":"Rare mais en progression : chasse en vol stationnaire au-dessus des prairies, surtout en fin de journée.","pie-grieche-meridionale":"Hivernante sur les zones ouvertes à buissons ; posée en haut d'un buisson ou d'un fil, bien en vue mais farouche : approche en voiture.","chevreuil":"Lisières boisées du Vigueirat à l'aube ; souvent couché dans les prés en fin de matinée.","herisson":"Soirées douces sur les chemins ; une photo à sa hauteur, sans le déranger.","pic-vert":"On l'entend rire de loin ; au sol dans les prés et pelouses des mas, à chercher à la jumelle avant d'approcher.","oie-cendree":"Groupes hivernants dans les marais et prés ; farouches, les observatoires du Vigueirat sont la meilleure chance.","canard-pilet":"Le plus élégant des canards de surface, souvent au large : observatoire, lumière rasante, patience.","tadorne-belon":"Lagunes salées de Pont de Gau ; couleurs vives, facile à cadrer depuis les digues basses."};
+/* ---------- Journal partagé, état dérivé et calcul ---------- */
+/* Tout ce qui change (coche, points, barème, objectifs, bonus, note, remise à zéro) est une entrée datée et signée du journal. L'état se déduit du journal ; fusionner deux téléphones = réunir leurs journaux. */
+const DEFAULT_PCT=[10,50,100],OBJ_MAX=3,DEFAULT_NAMES=['Clément','Manu'];
+const LIEUX={pg:{n:'Pont de Gau',lat:43.529,lng:4.413,r:9},mv:{n:'Marais du Vigueirat',lat:43.533,lng:4.733,r:9}};
+/* Rareté ici / à cette période par lieu, calculée depuis GBIF (occurrences 2010–2026 dans un carré de ±9 km, fenêtre oct.–nov.) : {espèce:[ici,période]} */
+const RARITY={pg:{"flamant-rose":[1,1],"flamant-nain":[4,3],"heron-cendre":[1,1],"grande-aigrette":[1,1],"aigrette-garzette":[1,1],"heron-garde-boeufs":[2,1],"bihoreau-gris":[2,3],"crabier-chevelu":[2,5],"heron-pourpre":[2,5],"butor-etoile":[3,4],"ibis-falcinelle":[1,4],"spatule-blanche":[2,3],"cigogne-blanche":[1,1],"cigogne-noire":[4,1],"grand-cormoran":[2,1],"cormoran-pygmee":[5,5],"ibis-sacre":[3,1],"canard-colvert":[1,1],"sarcelle-hiver":[2,1],"canard-souchet":[2,1],"canard-siffleur":[3,1],"canard-pilet":[4,1],"canard-chipeau":[2,2],"nette-rousse":[2,4],"fuligule-milouin":[4,1],"fuligule-morillon":[5,1],"fuligule-nyroca":[5,5],"tadorne-belon":[2,2],"oie-cendree":[3,1],"cygne-tubercule":[1,1],"erismature-tete-blanche":[5,5],"grebe-castagneux":[3,1],"grebe-huppe":[2,2],"grebe-cou-noir":[3,1],"busard-roseaux":[1,1],"busard-saint-martin":[3,1],"buse-variable":[2,1],"faucon-crecerelle":[2,1],"epervier-europe":[3,1],"milan-noir":[2,5],"milan-royal":[3,1],"balbuzard-pecheur":[3,1],"faucon-pelerin":[3,1],"faucon-emerillon":[3,1],"elanion-blanc":[5,5],"aigle-botte":[3,1],"circaete":[3,4],"aigle-criard":[4,1],"pygargue-queue-blanche":[5,5],"hibou-marais":[5,5],"cheveche":[5,1],"effraie":[3,1],"hibou-moyen-duc":[5,2],"foulque-macroule":[1,1],"gallinule":[1,1],"rale-eau":[2,1],"taleve-sultane":[2,2],"marouette-ponctuee":[5,5],"grue-cendree":[2,2],"avocette":[2,1],"echasse-blanche":[1,4],"vanneau-huppe":[2,1],"pluvier-dore":[3,1],"pluvier-argente":[2,1],"grand-gravelot":[3,1],"gravelot-collier-interrompu":[2,3],"becasseau-variable":[2,1],"becasseau-minute":[3,1],"combattant-varie":[3,1],"becassine-marais":[2,1],"becassine-sourde":[5,1],"barge-queue-noire":[3,3],"courlis-cendre":[2,1],"chevalier-gambette":[2,1],"chevalier-arlequin":[2,1],"chevalier-aboyeur":[2,1],"chevalier-culblanc":[2,1],"chevalier-guignette":[2,1],"oedicneme":[4,1],"huitrier-pie":[2,4],"tournepierre":[3,1],"mouette-rieuse":[1,1],"mouette-melanocephale":[2,4],"goeland-railleur":[2,2],"goeland-leucophee":[1,1],"goeland-brun":[4,1],"goeland-cendre":[5,1],"sterne-caugek":[2,1],"sterne-caspienne":[3,2],"martin-pecheur":[2,1],"huppe-fasciee":[2,3],"pic-vert":[4,2],"pic-epeiche":[4,1],"pic-epeichette":[4,2],"panure-moustaches":[3,1],"lusciniole":[3,1],"bouscarle-cetti":[1,1],"cisticole-joncs":[2,2],"remiz-penduline":[3,1],"gorgebleue":[4,1],"bruant-roseaux":[2,1],"fauvette-melanocephale":[2,1],"fauvette-tete-noire":[3,1],"pouillot-veloce":[2,1],"roitelet-triple-bandeau":[3,1],"roitelet-huppe":[4,1],"tarier-patre":[3,1],"rougequeue-noir":[3,1],"rougegorge":[2,1],"troglodyte":[3,1],"accenteur-mouchet":[4,1],"merle-noir":[3,1],"grive-musicienne":[3,1],"grive-litorne":[5,1],"grive-mauvis":[5,1],"mesange-charbonniere":[2,1],"mesange-bleue":[2,1],"orite-longue-queue":[3,1],"tarin-aulnes":[4,1],"etourneau":[2,1],"pie-bavarde":[2,1],"geai-chenes":[5,1],"choucas":[2,1],"corneille-noire":[2,1],"pipit-farlouse":[2,1],"pipit-spioncelle":[4,1],"bergeronnette-grise":[3,1],"bergeronnette-ruisseaux":[4,1],"alouette-champs":[3,1],"cochevis-huppe":[2,1],"moineau-domestique":[1,1],"moineau-friquet":[3,1],"pinson-arbres":[3,1],"verdier":[3,2],"chardonneret":[2,1],"linotte":[3,1],"serin-cini":[4,1],"grimpereau-jardins":[4,2],"pie-grieche-meridionale":[5,1],"bruant-proyer":[3,1],"bruant-zizi":[5,1],"hirondelle-rustique":[2,3],"pigeon-ramier":[2,2],"tourterelle-turque":[2,1],"faisan-colchide":[2,1],"perdrix-rouge":[4,1]},mv:{"flamant-rose":[1,1],"flamant-nain":[5,5],"heron-cendre":[1,1],"grande-aigrette":[1,1],"aigrette-garzette":[1,1],"heron-garde-boeufs":[2,2],"bihoreau-gris":[2,4],"crabier-chevelu":[2,5],"heron-pourpre":[2,5],"butor-etoile":[2,3],"ibis-falcinelle":[2,4],"spatule-blanche":[2,4],"cigogne-blanche":[1,2],"cigogne-noire":[3,1],"grand-cormoran":[1,1],"cormoran-pygmee":[5,5],"ibis-sacre":[5,3],"canard-colvert":[1,1],"sarcelle-hiver":[2,1],"canard-souchet":[2,1],"canard-siffleur":[3,1],"canard-pilet":[3,1],"canard-chipeau":[2,1],"nette-rousse":[2,3],"fuligule-milouin":[3,1],"fuligule-morillon":[3,2],"fuligule-nyroca":[5,3],"tadorne-belon":[2,3],"oie-cendree":[2,1],"cygne-tubercule":[2,2],"erismature-tete-blanche":[5,5],"grebe-castagneux":[2,1],"grebe-huppe":[2,1],"grebe-cou-noir":[2,1],"busard-roseaux":[2,1],"busard-saint-martin":[2,1],"buse-variable":[2,1],"faucon-crecerelle":[2,1],"epervier-europe":[2,1],"milan-noir":[2,5],"milan-royal":[3,1],"balbuzard-pecheur":[3,1],"faucon-pelerin":[3,1],"faucon-emerillon":[3,1],"elanion-blanc":[5,2],"aigle-botte":[3,1],"circaete":[2,4],"aigle-criard":[4,1],"pygargue-queue-blanche":[5,5],"hibou-marais":[5,1],"cheveche":[3,3],"effraie":[4,1],"hibou-moyen-duc":[4,1],"foulque-macroule":[2,1],"gallinule":[2,1],"rale-eau":[2,1],"taleve-sultane":[3,2],"marouette-ponctuee":[5,5],"grue-cendree":[3,1],"avocette":[2,2],"echasse-blanche":[2,5],"vanneau-huppe":[2,1],"pluvier-dore":[3,1],"pluvier-argente":[3,1],"grand-gravelot":[3,1],"gravelot-collier-interrompu":[3,4],"becasseau-variable":[3,1],"becasseau-minute":[3,1],"combattant-varie":[3,2],"becassine-marais":[2,1],"becassine-sourde":[4,1],"barge-queue-noire":[3,4],"courlis-cendre":[2,1],"chevalier-gambette":[3,1],"chevalier-arlequin":[2,2],"chevalier-aboyeur":[2,2],"chevalier-culblanc":[2,1],"chevalier-guignette":[2,2],"oedicneme":[2,4],"huitrier-pie":[4,5],"tournepierre":[4,2],"mouette-rieuse":[1,1],"mouette-melanocephale":[3,3],"goeland-railleur":[3,1],"goeland-leucophee":[1,2],"goeland-brun":[4,1],"goeland-cendre":[5,5],"sterne-caugek":[3,1],"sterne-caspienne":[2,2],"martin-pecheur":[2,1],"huppe-fasciee":[2,5],"pic-vert":[3,2],"pic-epeiche":[3,1],"pic-epeichette":[3,1],"panure-moustaches":[3,1],"lusciniole":[3,1],"bouscarle-cetti":[1,1],"cisticole-joncs":[2,3],"remiz-penduline":[2,1],"gorgebleue":[3,1],"bruant-roseaux":[2,1],"fauvette-melanocephale":[2,1],"fauvette-tete-noire":[2,1],"pouillot-veloce":[2,1],"roitelet-triple-bandeau":[3,1],"roitelet-huppe":[4,1],"tarier-patre":[3,1],"rougequeue-noir":[3,1],"rougegorge":[2,1],"troglodyte":[3,1],"accenteur-mouchet":[3,1],"merle-noir":[3,1],"grive-musicienne":[3,1],"grive-litorne":[4,1],"grive-mauvis":[4,1],"mesange-charbonniere":[2,1],"mesange-bleue":[2,1],"orite-longue-queue":[3,1],"tarin-aulnes":[3,1],"etourneau":[2,1],"pie-bavarde":[2,2],"geai-chenes":[4,1],"choucas":[2,2],"corneille-noire":[2,2],"pipit-farlouse":[2,1],"pipit-spioncelle":[3,1],"bergeronnette-grise":[3,1],"bergeronnette-ruisseaux":[3,1],"alouette-champs":[2,1],"cochevis-huppe":[2,1],"moineau-domestique":[2,1],"moineau-friquet":[3,1],"pinson-arbres":[2,1],"verdier":[2,1],"chardonneret":[2,1],"linotte":[3,1],"serin-cini":[3,1],"grimpereau-jardins":[4,1],"pie-grieche-meridionale":[3,2],"bruant-proyer":[2,2],"bruant-zizi":[4,1],"hirondelle-rustique":[2,3],"pigeon-ramier":[2,1],"tourterelle-turque":[2,2],"faisan-colchide":[2,2],"perdrix-rouge":[3,3]}};
+const MONTHS_FR=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+const KINDS=new Set(['tier','pts','comp','w','pct','mode','name','ico','objpct','obj','bonus','bonusdel','note','reset','unreset','add','xdel','lieuadd','profile','topn','end','resume']);
+const isLieuId=l=>!!LIEUX[l]||/^l-[a-z0-9]{3,40}$/.test(String(l||''));
+/* Espèces hors liste : ajoutées par les joueurs (entrée « add »), identifiant x-…, dessin générique par famille. */
+const CUSTOM={};
+const isCustomId=sid=>/^x-[a-z0-9]{3,40}$/.test(String(sid||''));
+const spOf=sid=>SPECIES_BY[sid]||CUSTOM[sid]||null;
+const knownSpecies=sid=>!!SPECIES_BY[sid]||isCustomId(sid);
+function allSpecies(){return SPECIES.concat(Object.values(CUSTOM))}
+const GEN_HEAD=[{s:'long',c:'#b9bfb6',bl:{t:'dagger',c:'#8a8a84'}},{s:'duck',c:'#b9bfb6',bl:{t:'duck',c:'#8a8a84'}},{s:'raptor',c:'#b9bfb6',bl:{t:'hook',c:'#3a3a38',cere:'#c9c0a0'},ey:{i:'#8a8a64'}},{c:'#b9bfb6',bl:{t:'cone',c:'#8a8a84'}},{c:'#b9bfb6',bl:{t:'long',c:'#8a8a84'}},{c:'#e9e9e4',bl:{t:'gull',c:'#c9b860'}},{c:'#b9bfb6',bl:{t:'chisel',c:'#3a3a38'}},{c:'#c9c0a0',bl:{t:'fine',c:'#3a3a38'}},{c:'#b9bfb6',bl:{t:'cone',c:'#3a3a38'}},{c:'#b9bfb6',bl:{t:'pigeon',c:'#3a3a38'}},{k:'m',c:'#b9bfb6',ears:'round',sn:'#c9c9c4'},{k:'h',t:'lizard',c:'#b9bfb6',ey:{i:'#3a2a22'}},{k:'i',t:'butterfly',wc:'#c9c9c4',border:'#8a8a84'}];
+function customSpecies(e){const g=Math.max(0,Math.min(GROUPS.length-1,e.g|0));return {id:e.cid,n:e.n,l:e.l||'',g,c:e.c.slice(),like:e.like,site:e.site,h:GEN_HEAD[g],ic:false,alt:'',custom:true,pts:0,by:e.by,at:e.at}}
+/* Cote d'une espèce = 2,5 × beauté × difficulté photo × rareté^1,7, arrondie à 5, entre 5 et 500.
+   Rareté = moyenne pondérée des trois raretés (ici, mondiale, période) ; les poids se règlent. */
+const DEFAULT_W={ici:40,monde:40,periode:20};
+const COMP_LABELS=['Beauté / iconicité','Rareté mondiale','Rareté ici','Rareté à cette période','Difficulté d\u2019une belle photo'];
+const COMP_LEVELS=[['banal','joli','beau','très beau','icône'],['partout','commun','localisé','rare','très rare'],['omniprésent','facile','à chercher','difficile','exceptionnel'],['pleine saison','présent','en baisse','retardataire','hors saison'],['pose','patience','approche','difficile','très difficile']];
+function rarity(c,w){const tot=(w.ici+w.monde+w.periode)||1;return (c[2]*w.ici+c[1]*w.monde+c[3]*w.periode)/tot}
+function rarityMul(U){return Math.pow(U,1.7)}
+function formulaPts(c,w){const raw=2.5*c[0]*c[4]*rarityMul(rarity(c,w));return Math.max(5,Math.min(500,Math.round(raw/5)*5))}
+function cleanComp(v){if(!Array.isArray(v)||v.length!==5||!v.every(Number.isFinite)) return null;return v.map(x=>Math.max(1,Math.min(5,Math.round(x*2)/2)))}
+function cleanW(v){if(!v||typeof v!=='object') return null;const o={};for(const k of ['ici','monde','periode']){if(!Number.isFinite(v[k])) return null;o[k]=Math.max(0,Math.min(100,Math.round(v[k])))}return (o.ici+o.monde+o.periode)>0?o:null}
+for(const sp of SPECIES) sp.pts=formulaPts(sp.c,DEFAULT_W);
+function newId(by,at){return by+'-'+at.toString(36)+'-'+Math.floor(Math.random()*1e6).toString(36)}
+function cleanEntry(e){
+  if(!e||typeof e!=='object'||!KINDS.has(e.k)||!PROFILES.includes(e.by)||!Number.isFinite(e.at)) return null;
+  const o={id:String(e.id||newId(e.by,e.at)).slice(0,60),at:e.at,by:e.by,k:e.k};
+  switch(e.k){
+    case 'tier': if(!PROFILES.includes(e.p)||!knownSpecies(e.s)||![0,1,2,3].includes(e.t)) return null; o.p=e.p;o.s=e.s;o.t=e.t;if(isLieuId(e.lieu)) o.lieu=e.lieu;break;
+    case 'unreset': if(!e.rid) return null; o.rid=String(e.rid).slice(0,60);break;
+    case 'lieuadd': {if(!/^l-[a-z0-9]{3,40}$/.test(String(e.lid||''))||!Number.isFinite(e.lat)||!Number.isFinite(e.lng)) return null; const n=String(e.n||'').trim().slice(0,40); if(!n) return null; o.lid=e.lid;o.n=n;o.lat=Math.max(-90,Math.min(90,e.lat));o.lng=Math.max(-180,Math.min(180,e.lng));o.r=Number.isFinite(e.r)?Math.max(1,Math.min(50,e.r)):9;break}
+    case 'profile': {if(!isLieuId(e.lid)||!e.p||typeof e.p!=='object') return null; const pp={};for(const [k,v] of Object.entries(e.p)){if(!knownSpecies(k)||!Array.isArray(v)||v.length!==2) continue;const a=Math.max(1,Math.min(5,Math.round(v[0]))),b=Math.max(1,Math.min(5,Math.round(v[1])));pp[k]=[a,b]} o.lid=e.lid;o.p=pp;o.m=String(e.m||'').slice(0,20);o.tot=Number(e.tot)||0;break}
+    case 'topn': if(!Number.isFinite(e.v)) return null; o.v=Math.max(0,Math.min(500,Math.round(e.v)));break;
+    case 'end': case 'resume': break;
+    case 'pts': if(!knownSpecies(e.s)) return null; o.s=e.s;o.v=(Number.isFinite(e.v)&&e.v>=0)?e.v:null;break;
+    case 'comp': {if(!knownSpecies(e.s)) return null; const c=cleanComp(e.v); if(!c) return null; o.s=e.s;o.v=c;break}
+    case 'add': {if(!isCustomId(e.cid)) return null; const c=cleanComp(e.c)||[3,3,3,3,3]; const n=String(e.n||'').trim().slice(0,40); if(!n) return null; o.cid=e.cid;o.n=n;o.l=String(e.l||'').trim().slice(0,40);o.g=Math.max(0,Math.min(GROUPS.length-1,e.g|0));o.c=c;o.like=[1,2,3].includes(e.like)?e.like:2;o.site=['PG','MV','PG+MV'].includes(e.site)?e.site:'PG+MV';break}
+    case 'xdel': if(!isCustomId(e.cid)) return null; o.cid=e.cid;break;
+    case 'w': {const w=cleanW(e.v); if(!w) return null; o.v=w;break}
+    case 'pct': if(!Array.isArray(e.v)||e.v.length!==3||!e.v.every(Number.isFinite)) return null; o.v=e.v.map(x=>Math.max(0,Math.min(100,x)));break;
+    case 'mode': o.v=e.v==='duel'?'duel':'each';break;
+    case 'name': if(!PROFILES.includes(e.p)) return null; o.p=e.p;o.v=String(e.v||'').slice(0,20);break;
+    case 'ico': if(!Number.isFinite(e.v)) return null; o.v=Math.max(1,Math.min(5,e.v));break;
+    case 'objpct': if(!Number.isFinite(e.v)) return null; o.v=Math.max(0,Math.min(500,e.v));break;
+    case 'obj': if(!PROFILES.includes(e.p)||!Array.isArray(e.v)) return null; o.p=e.p;o.v=e.v.filter(knownSpecies).slice(0,OBJ_MAX);break;
+    case 'bonus': if(!PROFILES.includes(e.p)||!Number.isFinite(e.v)) return null; o.bid=String(e.bid||o.id).slice(0,60);o.p=e.p;o.l=String(e.l||'').slice(0,60);o.v=e.v;break;
+    case 'bonusdel': if(!e.bid) return null; o.bid=String(e.bid).slice(0,60);break;
+    case 'note': if(!knownSpecies(e.s)) return null; o.s=e.s;o.v=String(e.v||'').slice(0,500);break;
+    case 'reset': break;
+  }
+  return o;
+}
+function sortLog(log){return log.slice().sort((a,b)=>a.at-b.at||(a.id<b.id?-1:a.id>b.id?1:0))}
+function migrateV1(st){
+  const out=[],at0=st.setAt||st.resetAt||0;
+  for(const e of st.events||[]) out.push({k:'tier',by:e.p,p:e.p,s:e.s,t:e.t,at:e.at,id:'v1-'+e.p+'-'+e.s+'-'+e.at});
+  for(const b of st.bonus||[]) out.push({k:'bonus',by:b.p,bid:b.id,p:b.p,l:b.l,v:b.v,at:b.at,id:'v1b-'+b.id});
+  for(const d of st.del||[]) out.push({k:'bonusdel',by:'p1',bid:d,at:at0,id:'v1d-'+d});
+  for(const [s,v] of Object.entries(st.pts||{})) out.push({k:'pts',by:'p1',s,v,at:at0,id:'v1p-'+s});
+  if(Array.isArray(st.pct)) out.push({k:'pct',by:'p1',v:st.pct,at:at0,id:'v1pct'});
+  if(st.mode) out.push({k:'mode',by:'p1',v:st.mode,at:at0,id:'v1mode'});
+  if(Array.isArray(st.names)) st.names.forEach((n,i)=>out.push({k:'name',by:'p1',p:PROFILES[i],v:n,at:at0,id:'v1n'+i}));
+  if(Number.isFinite(st.icoMul)) out.push({k:'ico',by:'p1',v:st.icoMul,at:at0,id:'v1ico'});
+  if(Number.isFinite(st.objPct)) out.push({k:'objpct',by:'p1',v:st.objPct,at:at0,id:'v1objpct'});
+  for(const p of PROFILES) if(st.obj&&st.obj[p]&&st.obj[p].length) out.push({k:'obj',by:p,p,v:st.obj[p],at:(st.objAt&&st.objAt[p])||at0,id:'v1obj'+p});
+  for(const [s,n] of Object.entries(st.notes||{})) if(n&&typeof n.t==='string') out.push({k:'note',by:'p1',s,v:n.t,at:n.at||at0,id:'v1note-'+s});
+  if(st.resetAt) out.push({k:'reset',by:'p1',at:st.resetAt,id:'v1reset'});
+  return out;
+}
+function normalizeLog(raw){
+  let entries=[];
+  if(raw&&Array.isArray(raw.log)) entries=raw.log; else if(raw&&Array.isArray(raw.events)) entries=migrateV1(raw); else if(Array.isArray(raw)) entries=raw;
+  const seen=new Set(),out=[];
+  for(const e of entries){const c=cleanEntry(e);if(!c||seen.has(c.id)) continue;seen.add(c.id);out.push(c)}
+  return out;
+}
+function emptyView(){return {custom:{},lieux:{},profiles:{},topN:0,ended:0,tiers:{p1:{},p2:{}},tierAt:{p1:{},p2:{}},tierLieu:{p1:{},p2:{}},pts:{},comp:{},w:Object.assign({},DEFAULT_W),pct:DEFAULT_PCT.slice(),mode:'each',names:DEFAULT_NAMES.slice(),icoMul:2,objPct:100,obj:{p1:[],p2:[]},bonus:[],bonusMap:new Map(),deleted:new Set(),notes:{},resetAt:0,events:[]}}
+function applyEntry(v,e){
+  switch(e.k){
+    case 'reset': if(v.cancelled&&v.cancelled.has(e.id)) break; v.resetAt=e.at;v.tiers={p1:{},p2:{}};v.tierAt={p1:{},p2:{}};v.tierLieu={p1:{},p2:{}};v.bonusMap.clear();v.notes={};v.events=[];v.ended=0;break;
+    case 'unreset': break;
+    case 'tier': v.tiers[e.p][e.s]=e.t;v.tierAt[e.p][e.s]=e.at;v.tierLieu[e.p][e.s]=e.lieu||null;v.events.push(e);break;
+    case 'lieuadd': v.lieux[e.lid]={id:e.lid,n:e.n,lat:e.lat,lng:e.lng,r:e.r,by:e.by,at:e.at};break;
+    case 'profile': v.profiles[e.lid]={p:e.p,m:e.m,tot:e.tot,by:e.by,at:e.at};break;
+    case 'topn': v.topN=e.v;break;
+    case 'end': v.ended=e.at;break;
+    case 'resume': v.ended=0;break;
+    case 'pts': if(e.v==null) delete v.pts[e.s]; else v.pts[e.s]=e.v;break;
+    case 'comp': v.comp[e.s]=e.v.slice();break;
+    case 'w': v.w=Object.assign({},e.v);break;
+    case 'pct': v.pct=e.v.slice();break;
+    case 'mode': v.mode=e.v;break;
+    case 'name': v.names[e.p==='p1'?0:1]=e.v||DEFAULT_NAMES[e.p==='p1'?0:1];break;
+    case 'ico': v.icoMul=e.v;break;
+    case 'objpct': v.objPct=e.v;break;
+    case 'obj': v.obj[e.p]=e.v.slice();break;
+    case 'bonus': if(!v.deleted.has(e.bid)) v.bonusMap.set(e.bid,{id:e.bid,p:e.p,l:e.l,v:e.v,at:e.at,by:e.by});break;
+    case 'bonusdel': v.deleted.add(e.bid);v.bonusMap.delete(e.bid);break;
+    case 'note': v.notes[e.s]={t:e.v,at:e.at,by:e.by};break;
+    case 'add': v.custom[e.cid]=customSpecies(e);break;
+    case 'xdel': delete v.custom[e.cid];break;
+  }
+  v.bonus=[...v.bonusMap.values()];
+}
+function fold(log){const v=emptyView();v.cancelled=new Set(log.filter(e=>e.k==='unreset').map(e=>e.rid));for(const e of sortLog(log)) applyEntry(v,e);for(const k of Object.keys(CUSTOM)) delete CUSTOM[k];Object.assign(CUSTOM,v.custom);return v}
+function lieuName(v,l){return l?(LIEUX[l]?LIEUX[l].n:(v&&v.lieux[l]?v.lieux[l].n:'lieu retiré')):'lieu non précisé'}
+function lieuProfile(v,l){if(!l) return null;if(v&&v.profiles[l]) return v.profiles[l].p;if(RARITY[l]) return RARITY[l];return null}
+function mergeLog(local,incoming){
+  const have=new Set(local.map(e=>e.id));let added=0;const inc=normalizeLog(incoming);
+  for(const e of inc){if(!have.has(e.id)){local.push(e);have.add(e.id);added++}}
+  const theirs=new Set(inc.map(e=>e.id));const extra=local.some(e=>!theirs.has(e.id));
+  return {added,extra};
+}
+function r1(x){return Math.round(x*10)/10}
+function compOf(v,sid,lieu){const sp=spOf(sid);if(v.comp[sid]) return v.comp[sid];const base=sp?sp.c.slice():[3,3,3,3,3];const pr=lieuProfile(v,lieu);if(pr&&pr[sid]){base[2]=pr[sid][0];base[3]=pr[sid][1]}return base}
+function compSource(v,sid,lieu){if(v.comp[sid]) return 'manuel';const pr=lieuProfile(v,lieu);return (pr&&pr[sid])?'gbif':'defaut'}
+function formulaOf(v,sid,lieu){return formulaPts(compOf(v,sid,lieu),v.w)}
+function basePts(v,sid,lieu){const x=v.pts[sid];return (typeof x==='number'&&x>=0)?x:formulaOf(v,sid,lieu)}
+function spName(sid){const sp=spOf(sid);return sp?sp.n:'espèce retirée'}
+function tierValue(v,sid,t,lieu){if(!t) return 0;const sp=spOf(sid);const mul=(t===3&&sp&&sp.ic)?v.icoMul:1;return r1(basePts(v,sid,lieu)*v.pct[t-1]/100*mul)}
+function isObj(v,p,sid){return v.obj[p].includes(sid)}
+function speciesEarned(v,cur,sid,lieus){ /* lieus : {p1:lieu de la coche, p2:…} */
+  lieus=lieus||v.tierLieu;const l1=lieus.p1[sid],l2=lieus.p2[sid];
+  const t1=cur.p1[sid]||0,t2=cur.p2[sid]||0;let v1=tierValue(v,sid,t1,l1),v2=tierValue(v,sid,t2,l2);
+  if(v.mode==='duel'){if(t1>t2) v2=0; else if(t2>t1) v1=0;}
+  if(v1>0&&t1===3&&isObj(v,'p1',sid)) v1=r1(v1*(1+v.objPct/100));
+  if(v2>0&&t2===3&&isObj(v,'p2',sid)) v2=r1(v2*(1+v.objPct/100));
+  return {p1:v1,p2:v2};
+}
+function computeScores(v,cur,withBonus,lieus){
+  const res={p1:{pts:0,n:0,tiers:[0,0,0],obj:0,kept:null},p2:{pts:0,n:0,tiers:[0,0,0],obj:0,kept:null}};
+  const earned={p1:[],p2:[]};
+  for(const sp of allSpecies()){
+    const t1=cur.p1[sp.id]||0,t2=cur.p2[sp.id]||0;
+    if(t1){res.p1.n++;res.p1.tiers[t1-1]++} if(t2){res.p2.n++;res.p2.tiers[t2-1]++}
+    const e=speciesEarned(v,cur,sp.id,lieus);
+    if(e.p1>0) earned.p1.push({s:sp.id,v:e.p1}); if(e.p2>0) earned.p2.push({s:sp.id,v:e.p2});
+    if(e.p1>0&&t1===3&&isObj(v,'p1',sp.id)) res.p1.obj++; if(e.p2>0&&t2===3&&isObj(v,'p2',sp.id)) res.p2.obj++;
+  }
+  for(const p of PROFILES){
+    let list=earned[p].sort((a,b)=>b.v-a.v);
+    if(v.topN>0&&list.length>v.topN){res[p].kept=new Set(list.slice(0,v.topN).map(x=>x.s));list=list.slice(0,v.topN)}
+    res[p].pts=list.reduce((a,x)=>a+x.v,0);
+  }
+  if(withBonus) for(const b of v.bonus) res[b.p].pts+=b.v;
+  res.p1.pts=r1(res.p1.pts);res.p2.pts=r1(res.p2.pts);return res;
+}
+function curve(v){ /* recalculée avec le barème actuel, dans l'ordre des coches et bonus */
+  const items=[...v.events.map(e=>({at:e.at,ev:e})),...v.bonus.map(b=>({at:b.at,bo:b}))].sort((a,b)=>a.at-b.at);
+  const cur={p1:{},p2:{}},lieus={p1:{},p2:{}},bonus={p1:0,p2:0},out=[];
+  for(const it of items){
+    let label;
+    if(it.ev){if(!spOf(it.ev.s)) continue;cur[it.ev.p][it.ev.s]=it.ev.t;lieus[it.ev.p][it.ev.s]=it.ev.lieu||null;label={p:it.ev.p,s:it.ev.s,t:it.ev.t}} else {bonus[it.bo.p]+=it.bo.v;label={p:it.bo.p,b:it.bo}}
+    const sc=computeScores(v,cur,false,lieus);
+    out.push({at:it.at,p1:r1(sc.p1.pts+bonus.p1),p2:r1(sc.p2.pts+bonus.p2),label});
+  }
+  return out;
+}
+/* Rareté ici / période calculée en direct depuis GBIF (hors bac à sable : version installée) */
+const GBIF_SYN={'Phoeniconaias minor':['Phoenicopterus minor'],'Ardea alba':['Egretta alba','Casmerodius albus'],'Bubulcus ibis':['Ardea ibis'],'Spatula clypeata':['Anas clypeata'],'Mareca penelope':['Anas penelope'],'Mareca strepera':['Anas strepera'],'Hieraaetus pennatus':['Aquila pennata'],'Clanga clanga':['Aquila clanga'],'Anarhynchus alexandrinus':['Charadrius alexandrinus'],'Calidris pugnax':['Philomachus pugnax'],'Chroicocephalus ridibundus':['Larus ridibundus'],'Ichthyaetus melanocephalus':['Larus melanocephalus'],'Chroicocephalus genei':['Larus genei'],'Larus michahellis':['Larus michaellis'],'Thalasseus sandvicensis':['Sterna sandvicensis'],'Hydroprogne caspia':['Sterna caspia'],'Dryobates minor':['Dendrocopos minor'],'Curruca melanocephala':['Sylvia melanocephala'],'Saxicola rubicola':['Saxicola torquatus','Saxicola torquata'],'Cyanistes caeruleus':['Parus caeruleus'],'Spinus spinus':['Carduelis spinus'],'Coloeus monedula':['Corvus monedula'],'Chloris chloris':['Carduelis chloris'],'Linaria cannabina':['Carduelis cannabina'],'Emberiza calandra':['Miliaria calandra'],'Microcarbo pygmaeus':['Phalacrocorax pygmeus'],'Regulus ignicapilla':['Regulus ignicapillus']};
+const GBIF_CLASS={b:212,m:359,h:[358,131],i:216};
+function gbifMonths(d){const m=(d||new Date()).getMonth()+1;const a=m===1?12:m-1,b=m===12?1:m+1;return {a,b,label:`${MONTHS_FR[a-1]}–${MONTHS_FR[b-1]}`}}
+async function gbifFacet(url){const r=await fetch(url,{headers:{Accept:'application/json'}});if(!r.ok) throw new Error('GBIF '+r.status);const j=await r.json();const d={};for(const f of (j.facets&&j.facets[0]&&j.facets[0].counts)||[]){const parts=String(f.name).split(' ');if(parts.length<2||!/^[a-z]/.test(parts[1])) continue;const key=parts[0]+' '+parts[1];d[key]=(d[key]||0)+f.count}return {counts:d,total:j.count||0}}
+async function gbifProfile(lat,lng,rkm,months){
+  const dl=rkm/111,dg=rkm/(111*Math.cos(lat*Math.PI/180));
+  const box=`decimalLatitude=${(lat-dl).toFixed(3)},${(lat+dl).toFixed(3)}&decimalLongitude=${(lng-dg).toFixed(3)},${(lng+dg).toFixed(3)}`;
+  const base=`https://api.gbif.org/v1/occurrence/search?limit=0&facet=scientificName&facetLimit=400&year=2010,2030&${box}`;
+  const out={};let tot=0;
+  for(const [kind,keys] of Object.entries(GBIF_CLASS)){
+    const tk=(Array.isArray(keys)?keys:[keys]).map(k=>'taxonKey='+k).join('&');
+    const mon=months.a<=months.b?`&month=${months.a},${months.b}`:`&month=${months.a},12`; /* fenêtre à cheval sur l'année : approximation */
+    const [y,pr]=await Promise.all([gbifFacet(`${base}&${tk}`),gbifFacet(`${base}&${tk}${mon}`)]);
+    if(kind==='b') tot=y.total;
+    if(!y.total) continue;
+    for(const sp of allSpecies()){
+      const k=sp.h&&sp.h.k?sp.h.k:'b';if(k!==kind) continue;
+      const names=[sp.l,...(GBIF_SYN[sp.l]||[])].map(n=>n.split(' ').slice(0,2).join(' '));
+      const cy=names.reduce((a,n)=>a+(y.counts[n]||0),0),cp=names.reduce((a,n)=>a+(pr.counts[n]||0),0);
+      if(!cy&&kind!=='b') continue; /* hors oiseaux : on garde la note manuelle quand GBIF ne connaît rien ici */
+      const sy=cy/y.total,ratio=(pr.total&&sy>0)?(cp/pr.total)/sy:0;
+      const ui=sy>=0.015?1:sy>=0.004?2:sy>=0.001?3:sy>=0.0002?4:5;
+      const up=cy===0?5:ratio>=0.8?1:ratio>=0.5?2:ratio>=0.25?3:ratio>=0.08?4:5;
+      out[sp.id]=[ui,up];
+    }
+  }
+  return {p:out,tot};
+}
+const TIER_NAMES=['','Flou','Banale','Portfolio'];
+function fmtPts(x){return Number.isInteger(x)?String(x):x.toLocaleString('fr-FR',{maximumFractionDigits:1})}
+function describeEntry(e,before){ /* before : état juste avant l'entrée */
+  const n=p=>before.names[p==='p1'?0:1],who=n(e.by),sp=e.s?spName(e.s):'';
+  switch(e.k){
+    case 'tier': {const pour=e.p!==e.by?' pour '+n(e.p):'';return e.t?`${who} coche${pour} ${sp} : ${TIER_NAMES[e.t]}${e.lieu?' · '+lieuName(before,e.lieu):''}`:`${who} décoche${pour} ${sp}`}
+    case 'unreset': return `${who} annule une remise à zéro`;
+    case 'lieuadd': return `${who} ${before.lieux[e.lid]?'modifie':'ajoute'} le lieu ${e.n} (${e.lat.toFixed(3)}, ${e.lng.toFixed(3)})`;
+    case 'profile': return `${who} calcule la rareté GBIF pour ${lieuName(before,e.lid)} (${Object.keys(e.p).length} espèces, ${e.m}${e.tot?', '+e.tot.toLocaleString('fr-FR')+' observations':''})`;
+    case 'topn': return e.v?`${who} limite le score aux ${e.v} meilleures prises`:`${who} compte toutes les prises dans le score`;
+    case 'end': return `${who} termine le duel`;
+    case 'resume': return `${who} reprend le duel`;
+    case 'pts': return `${who} fixe ${sp} à la main : ${fmtPts(basePts(before,e.s))} → ${e.v==null?fmtPts(formulaOf(before,e.s))+' (calculé)':fmtPts(e.v)} pts`;
+    case 'add': return `${who} ${before.custom[e.cid]?'modifie':'ajoute'} une espèce hors liste : ${e.n} (${e.c.join(' ')}, ${GROUPS[e.g]})`;
+    case 'xdel': return `${who} retire l'espèce hors liste ${before.custom[e.cid]?before.custom[e.cid].n:''}`;
+    case 'comp': {const b=compOf(before,e.s);const diffs=[];for(let i=0;i<5;i++) if(b[i]!==e.v[i]) diffs.push(`${COMP_LABELS[i].toLowerCase()} ${fmtPts(b[i])} → ${fmtPts(e.v[i])}`);const after=Object.assign({},before,{comp:Object.assign({},before.comp,{[e.s]:e.v})});return `${who} note ${sp} : ${diffs.join(', ')||'sans changement'} (cote ${fmtPts(basePts(before,e.s))} → ${fmtPts(basePts(after,e.s))})`}
+    case 'w': return `${who} change les poids de rareté : ici ${before.w.ici} / monde ${before.w.monde} / période ${before.w.periode} → ${e.v.ici} / ${e.v.monde} / ${e.v.periode}`;
+    case 'pct': return `${who} change le barème : ${before.pct.join('/')} → ${e.v.join('/')} %`;
+    case 'mode': return `${who} passe en mode « ${e.v==='duel'?'le meilleur rafle tout':'chacun ses points'} »`;
+    case 'name': return `${who} renomme ${n(e.p)} en ${e.v||'(vide)'}`;
+    case 'ico': return `${who} met le bonus iconique à ×${fmtPts(e.v)}`;
+    case 'objpct': return `${who} met le bonus objectif à +${fmtPts(e.v)} %`;
+    case 'obj': return `${who} définit les objectifs de ${n(e.p)} : ${e.v.length?e.v.map(spName).join(', '):'aucun'}`;
+    case 'bonus': return `${who} ajoute ${e.v>0?'+':''}${fmtPts(e.v)} pts à ${n(e.p)}${e.l?' : '+e.l:''}`;
+    case 'bonusdel': {const b=before.bonusMap.get(e.bid);return `${who} supprime un bonus${b?` (${b.v>0?'+':''}${fmtPts(b.v)} pour ${n(b.p)})`:''}`}
+    case 'note': return `${who} note sur ${sp} : « ${e.v.slice(0,60)}${e.v.length>60?'…':''} »`;
+    case 'reset': return `${who} remet tout à zéro`;
+  }
+  return who;
+}
+function history(log){ /* entrées décrites, de la plus récente à la plus ancienne */
+  const v=emptyView(),out=[];v.cancelled=new Set(log.filter(e=>e.k==='unreset').map(e=>e.rid));
+  for(const e of sortLog(log)){out.push({e,text:describeEntry(e,v)+(e.k==='reset'&&v.cancelled.has(e.id)?' (annulée)':'')});applyEntry(v,e)}
+  return out.reverse();
+}
+function encodeCode(entries){const json=JSON.stringify({v:2,log:entries});const bytes=new TextEncoder().encode(json);let bin='';for(let i=0;i<bytes.length;i+=0x8000) bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));return 'DUEL2.'+btoa(bin)}
+function decodeCode(txt){
+  txt=String(txt||'').trim();if(!txt) throw new Error('vide');
+  if(txt.startsWith('{')||txt.startsWith('[')) return JSON.parse(txt);
+  const b64=txt.replace(/^DUEL[12]\./,'').replace(/\s+/g,'');
+  const bin=atob(b64);const bytes=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script id="ui">
+(function(){
+const $=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s));
+const LS_LOG='duel-camargue-log-v2',LS_V1='duel-camargue-v1',LS_ME='duel-camargue-me',LS_DEV='duel-camargue-device',LS_CODEAT='duel-camargue-codeat',LS_LIEU='duel-camargue-lieu',LS_DISP='duel-camargue-display';
+const disp=Object.assign({cols:'auto',zoom:100},readLS(LS_DISP)||{});
+function applyDisplay(){document.body.classList.remove('cols-1','cols-2','cols-3');if(disp.cols!=='auto') document.body.classList.add('cols-'+disp.cols);
+  try{document.body.style.zoom=disp.zoom===100?'':(disp.zoom/100)}catch(e){}
+  const zv=$('#zoom-val');if(zv) zv.textContent=disp.zoom+' %';$$('#cols-seg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===disp.cols)));writeLS(LS_DISP,disp)}
+function readLS(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null}catch(e){return null}}
+function writeLS(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+let log=normalizeLog(readLS(LS_LOG)||readLS(LS_V1)||[]);
+let view=fold(log);
+const ui={tab:'birds',q:'',site:'all',like:'all',group:'all',sort:'group',taken:'all',ico:false,boardSort:'pts',device:readLS(LS_DEV)||'',me:readLS(LS_ME)||'',lieu:readLS(LS_LIEU)||'pg'};
+if(!PROFILES.includes(ui.device)) ui.device='';
+if(!PROFILES.includes(ui.me)) ui.me=ui.device||'p1';
+const other=p=>p==='p1'?'p2':'p1';
+const nameOf=p=>view.names[p==='p1'?0:1];
+const who=()=>ui.device||ui.me;
+const fmtTime=new Intl.DateTimeFormat('fr-FR',{weekday:'short',hour:'2-digit',minute:'2-digit'});
+const fmtDay=new Intl.DateTimeFormat('fr-FR',{weekday:'short',day:'numeric',month:'short'});
+const fmtHM=new Intl.DateTimeFormat('fr-FR',{hour:'2-digit',minute:'2-digit'});
+const fold0=s=>String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+let toastT;function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2400)}
+function persist(){writeLS(LS_LOG,{v:2,log})}
+function refresh(){view=fold(log)}
+function add(entry){
+  const e=cleanEntry(Object.assign({},entry,{at:Date.now(),by:who(),id:undefined}));
+  if(!e) return null; log.push(e);refresh();persist();scheduleDbWrite();return e;
+}
+
+/* ---- En-tête ---- */
+function renderHeader(){
+  const sc=computeScores(view,view.tiers,true);
+  for(const p of PROFILES){
+    const el=$('#pl-'+p),s=sc[p];
+    const lead=sc.p1.pts!==sc.p2.pts&&s.pts===Math.max(sc.p1.pts,sc.p2.pts);
+    el.querySelector('.name').innerHTML=esc(nameOf(p))+(lead?'<span class="lead">en tête</span>':'');
+    el.querySelector('.pts').textContent=fmtPts(s.pts);
+    el.querySelector('.meta').textContent=s.n+(s.n>1?' espèces':' espèce')+' · '+s.tiers[2]+' portfolio'+(s.obj?' · '+s.obj+(s.obj>1?' objectifs':' objectif'):'');
+    el.classList.toggle('me',ui.me===p);
+    el.setAttribute('aria-label','Cocher pour '+nameOf(p));
+  }
+  $$('#who-seg button').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.p===ui.me));b.textContent=nameOf(b.dataset.p)});
+  $('#lg1').textContent=view.pct[0]+' %';$('#lg2').textContent=view.pct[1]+' %';$('#lg3').textContent=view.pct[2]+' %';
+  $('#lgmode').textContent=view.mode==='duel'?'le meilleur rafle tout':'chacun ses points';
+  $('#lgico').textContent=fmtPts(view.icoMul);
+}
+
+/* ---- Liste ---- */
+function filtered(){
+  const q=fold0(ui.q.trim()),cur=view.tiers;
+  let list=allSpecies().filter(sp=>{
+    if(ui.site!=='all'&&!sp.site.includes(ui.site)) return false;
+    if(ui.like!=='all'&&String(sp.like)!==ui.like) return false;
+    if(ui.ico&&!sp.ic) return false;
+    if(ui.group!=='all'&&String(sp.g)!==ui.group) return false;
+    const mine=(cur[ui.me][sp.id]||0)>0;
+    if(ui.taken==='mine'&&!mine) return false;
+    if(ui.taken==='rest'&&mine) return false;
+    if(q&&!fold0(sp.n).includes(q)&&!fold0(sp.l).includes(q)&&!(sp.alt&&fold0(sp.alt).includes(q))) return false;
+    return true;
+  });
+  const bp=sp=>basePts(view,sp.id,ui.lieu);
+  if(ui.sort==='pts') list.sort((a,b)=>bp(b)-bp(a)||a.n.localeCompare(b.n,'fr'));
+  else if(ui.sort==='name') list.sort((a,b)=>a.n.localeCompare(b.n,'fr'));
+  else list.sort((a,b)=>a.g-b.g||bp(b)-bp(a)||a.n.localeCompare(b.n,'fr'));
+  return list;
+}
+function tierBtns(sp,p){
+  const t=view.tiers[p][sp.id]||0;
+  const lieu=(t&&view.tierLieu[p][sp.id])||ui.lieu;
+  return `<div class="tiers" role="group" aria-label="Qualité de la photo">`+[1,2,3].map(i=>`<button type="button" data-t="${i}" aria-pressed="${t===i}">${TIER_NAMES[i]}<span>${fmtPts(tierValue(view,sp.id,i,lieu))} pts</span></button>`).join('')+`</div>`;
+}
+function tagsHTML(sp,withGroup){
+  let t=`<span class="tag">${SITES[sp.site]}</span><span class="tag l${sp.like}">${LIKE[sp.like]}</span>`;
+  if(sp.ic) t+=`<span class="tag ic">★ Iconique ×${fmtPts(view.icoMul)}</span>`;
+  for(const p of PROFILES) if(isObj(view,p,sp.id)) t+=`<span class="tag obj ${p}">Objectif ${esc(nameOf(p))}</span>`;
+  if(withGroup) t+=`<span class="tag">${esc(GROUPS[sp.g])}</span>`;
+  return t;
+}
+function otherLine(sp){
+  const o=other(ui.me),t=view.tiers[o][sp.id]||0;
+  if(!t) return `${esc(nameOf(o))} : pas encore`;
+  const e=speciesEarned(view,view.tiers,sp.id);
+  return `${esc(nameOf(o))} : <b>${TIER_NAMES[t]}</b> (${fmtPts(e[o])} pts)`;
+}
+function cardHTML(sp){
+  const mine=view.tiers[ui.me][sp.id]||0;
+  return `<article class="card${mine?' taken':''}" data-id="${sp.id}">
+    <button type="button" class="head" aria-label="Détails : ${esc(sp.n)}">${drawSVG(sp,'c-'+sp.id)}</button>
+    <div class="info"><h3>${esc(sp.n)}</h3><p class="latin">${esc(sp.l)}</p><div class="tags">${tagsHTML(sp)}</div></div>
+    <div class="pts">${fmtPts(basePts(view,sp.id,ui.lieu))}<small>pts</small></div>
+    ${tierBtns(sp,ui.me)}
+    <div class="other">${otherLine(sp)}</div>
+  </article>`;
+}
+function renderList(){
+  const list=filtered(),box=$('#list');
+  if(!list.length){box.innerHTML='<p class="empty">Aucune espèce ne correspond. Élargissez les filtres.</p>';return}
+  let html='';
+  if(ui.sort==='group'){
+    let g=-1;
+    for(const sp of list){ if(sp.g!==g){ if(g>=0) html+='</div>'; g=sp.g; const n=list.filter(s=>s.g===g).length,taken=list.filter(s=>s.g===g&&(view.tiers[ui.me][s.id]||0)>0).length; html+=`<div class="group-h">${esc(GROUPS[g])}<span>${taken}/${n}</span></div><div class="cards">`; } html+=cardHTML(sp); }
+    html+='</div>';
+  } else html='<div class="cards">'+list.map(cardHTML).join('')+'</div>';
+  box.innerHTML=html;
+}
+function updateCard(sid){
+  const card=$('#list').querySelector(`.card[data-id="${sid}"]`);if(!card) return;
+  const sp=spOf(sid);if(!sp) return;const mine=view.tiers[ui.me][sid]||0;
+  card.classList.toggle('taken',mine>0);
+  card.querySelector('.tags').innerHTML=tagsHTML(sp);
+  const lieu=(mine&&view.tierLieu[ui.me][sid])||ui.lieu;
+  card.querySelectorAll('.tiers button').forEach(b=>{const i=Number(b.dataset.t);b.setAttribute('aria-pressed',String(mine===i));b.querySelector('span').textContent=fmtPts(tierValue(view,sid,i,lieu))+' pts'});
+  card.querySelector('.other').innerHTML=otherLine(sp);
+  card.querySelector('.pts').innerHTML=fmtPts(basePts(view,sid,ui.lieu))+'<small>pts</small>';
+}
+function afterChange(sid){
+  if(sid) updateCard(sid); else if(ui.tab==='birds') renderList();
+  renderHeader();
+  if(ui.tab==='board') renderBoard();
+  if(ui.tab==='stats') renderStats();
+  if(ui.tab==='settings') renderSettings();
+  if(sheetSid) renderSheet(sheetSid);
+}
+function setTier(p,sid,t){
+  const was=view.tiers[p][sid]||0,next=was===t?0:t;
+  add({k:'tier',p,s:sid,t:next,lieu:ui.lieu});
+  afterChange(sid);
+  const sp=spOf(sid);
+  if(next) toast(`${nameOf(p)} · ${sp.n} · ${TIER_NAMES[next]} : +${fmtPts(tierValue(view,sid,next,ui.lieu))} pts · ${lieuName(view,ui.lieu)}`); else toast(`${sp.n} décoché pour ${nameOf(p)}`);
+}
+
+/* ---- Feuille de détail ---- */
+let sheetSid=null,noteT=null;
+function openSheet(sid){
+  sheetSid=sid;
+  let bd=$('#backdrop');if(!bd){bd=document.createElement('div');bd.id='backdrop';bd.className='backdrop';bd.addEventListener('click',closeSheet);document.body.appendChild(bd)}
+  let sh=$('#sheet');if(!sh){sh=document.createElement('div');sh.id='sheet';sh.className='sheet';sh.setAttribute('role','dialog');sh.setAttribute('aria-modal','true');document.body.appendChild(sh);
+    sh.addEventListener('click',e=>{
+      const b=e.target.closest('button[data-t]');if(b){setTier(b.closest('.prow').dataset.p,sheetSid,Number(b.dataset.t));return}
+      const ob=e.target.closest('button[data-obj]');if(ob){toggleObjective(ob.dataset.obj,sheetSid);return}
+      const xe=e.target.closest('button[data-xedit]');if(xe){closeSheet();editCustom(xe.dataset.xedit);return}
+      const xd=e.target.closest('button[data-xdel]');if(xd){const sp=spOf(xd.dataset.xdel);if(xd.dataset.armed){add({k:'xdel',cid:xd.dataset.xdel});closeSheet();afterChange();toast((sp?sp.n:'Espèce')+' retirée (toujours dans l\u2019historique)')}else{xd.dataset.armed='1';xd.textContent='Confirmer ?'}return}
+      if(e.target.closest('.close')) closeSheet();
+    });
+    sh.addEventListener('change',e=>{
+      const sid=sheetSid;if(!sid) return;
+      if(e.target.id==='sheet-pts'){const raw=e.target.value.trim();const v=raw===''?null:Number(raw);if(v===null||(Number.isFinite(v)&&v>=0)){add({k:'pts',s:sid,v:v});afterChange(sid);toast(v===null?'Retour à la cote calculée':'Cote fixée à la main : '+fmtPts(v)+' pts')}return}
+      const ci=e.target.dataset.ci;if(ci!=null){const c=compOf(view,sid,ui.lieu).slice();c[Number(ci)]=Number(e.target.value);add({k:'comp',s:sid,v:c});afterChange(sid);toast('Notes fixées à la main pour tous les lieux');return}
+    });
+    sh.addEventListener('input',e=>{if(e.target.id==='sheet-note'){const sid=sheetSid;clearTimeout(noteT);noteT=setTimeout(()=>{if(sheetSid===sid) add({k:'note',s:sid,v:e.target.value.slice(0,500)})},800)}});
+  }
+  renderSheet(sid);bd.hidden=false;sh.hidden=false;
+}
+function toggleObjective(p,sid){
+  const list=view.obj[p].slice();const i=list.indexOf(sid);
+  if(i>=0) list.splice(i,1);
+  else { if(list.length>=OBJ_MAX){toast(`${nameOf(p)} a déjà ${OBJ_MAX} objectifs : retirez-en un d'abord`);return} list.push(sid); }
+  add({k:'obj',p,v:list});afterChange(sid);
+  toast(i>=0?`${spName(sid)} retiré des objectifs de ${nameOf(p)}`:`${spName(sid)} : objectif de ${nameOf(p)} (+${fmtPts(view.objPct)} % en portfolio)`);
+}
+function closeSheet(){sheetSid=null;const bd=$('#backdrop'),sh=$('#sheet');if(bd) bd.hidden=true;if(sh) sh.hidden=true}
+function renderSheet(sid){
+  const sp=spOf(sid);if(!sp){closeSheet();return}
+  const cur=view.tiers,earned=speciesEarned(view,cur,sid);
+  const c=compOf(view,sid,ui.lieu),U=rarity(c,view.w),mul=rarityMul(U),f=formulaOf(view,sid,ui.lieu),manual=view.pts[sid],src=compSource(view,sid,ui.lieu);
+  const rows=PROFILES.map(p=>{const t=cur[p][sid]||0,ob=isObj(view,p,sid),at=view.tierAt[p][sid],tl=view.tierLieu[p][sid];return `<div class="prow ${p}" data-p="${p}"><div class="pname"><span>${esc(nameOf(p))}</span><span class="earned">${fmtPts(earned[p])} pts</span></div>
+    ${tierBtns(sp,p)}
+    <div class="when"><span>${t&&at?'Coché '+fmtTime.format(new Date(at))+(tl?' · '+esc(lieuName(view,tl)):''):'Pas encore de photo'}</span><button type="button" class="objbtn${ob?' on':''}" data-obj="${p}" aria-pressed="${ob}">${ob?'★ Objectif':'☆ En faire un objectif'}</button></div></div>`}).join('');
+  const comps=COMP_LABELS.map((lab,i)=>`<div class="crow"><label for="comp-${i}">${lab}${(i===2||i===3)?` <small>(${esc(lieuName(view,ui.lieu))}${src==='gbif'?', GBIF':src==='manuel'?', à la main':''})</small>`:''}</label><select id="comp-${i}" data-ci="${i}">${[1,2,3,4,5].map(n=>`<option value="${n}"${c[i]===n?' selected':''}>${n} · ${COMP_LEVELS[i][n-1]}</option>`).join('')}</select></div>`).join('');
+  const tip=TIPS[sid];
+  const note=view.notes[sid]?view.notes[sid].t:'';
+  $('#sheet').innerHTML=`<div class="grab"></div><div class="hd"><div class="head">${drawSVG(sp,'s-'+sid)}</div><div><h2>${esc(sp.n)}</h2><p class="latin" style="margin:0;font-style:italic;color:var(--ink-2);font-size:13px">${esc(sp.l)}</p>
+    <div class="tags">${tagsHTML(sp,true)}</div></div><button type="button" class="close" aria-label="Fermer">×</button></div>
+    ${tip?`<div class="tip"><b>Sur le terrain</b> ${esc(tip)}</div>`:''}
+    <div class="cote"><div class="cote-h"><span>Cote à ${esc(lieuName(view,ui.lieu))}</span><b>${fmtPts(basePts(view,sid,ui.lieu))} pts</b></div>
+      ${comps}
+      <p class="calc">Rareté pondérée ${fmtPts(r1(U))} (ici ${view.w.ici} %, monde ${view.w.monde} %, période ${view.w.periode} %) → ×${fmtPts(r1(mul))}. Cote = 2,5 × ${c[0]} × ${c[4]} × ${fmtPts(r1(mul))} = <b>${fmtPts(f)} pts</b>${manual!=null?` · remplacée à la main par <b>${fmtPts(manual)}</b>`:''}</p>
+      <div class="ptsedit"><label for="sheet-pts">Forcer la cote</label><input id="sheet-pts" type="number" min="0" max="2000" step="5" value="${manual!=null?manual:''}" placeholder="${f}"> pts <span class="muted">(vide = calculée)</span></div>
+    </div>
+    ${sp.ic?`<p class="muted" style="margin:8px 0 0">★ Iconique : la photo portfolio vaut ×${fmtPts(view.icoMul)}. En objectif personnel, elle rapporte encore +${fmtPts(view.objPct)} %.</p>`:`<p class="muted" style="margin:8px 0 0">En objectif personnel (${OBJ_MAX} par joueur), un portfolio rapporte +${fmtPts(view.objPct)} %.</p>`}
+    ${sp.custom?`<p class="muted" style="margin:6px 0 0">Espèce hors liste ajoutée par ${esc(nameOf(sp.by))}. <button type="button" class="btn small" data-xedit="${sp.id}">Modifier</button> <button type="button" class="btn small danger" data-xdel="${sp.id}">Retirer</button></p>`:''}
+    ${rows}
+    <div class="prow"><label for="sheet-note">Note partagée (où, quand, quel affût…)</label><textarea id="sheet-note" maxlength="500" placeholder="Ex. : au 2e observatoire, à droite du ponton, 9 h">${esc(note)}</textarea></div>`;
+}
+
+/* ---- Stats ---- */
+let histAll=false;
+function renderBilan(){
+  const box=$('#bilan');const cur=view.tiers,sc=computeScores(view,cur,true);
+  $('#end-row').hidden=!!view.ended;
+  if(!view.ended){box.hidden=true;return}
+  const lead=sc.p1.pts===sc.p2.pts?null:(sc.p1.pts>sc.p2.pts?'p1':'p2');
+  const first=view.events.length?Math.min(...view.events.map(e=>e.at)):view.ended,dur=Math.max(0,view.ended-first);
+  const h=Math.floor(dur/3600e3),d=Math.floor(h/24);
+  const best=p=>allSpecies().filter(sp=>(cur[p][sp.id]||0)>0).map(sp=>({sp,v:speciesEarned(view,cur,sp.id)[p],t:cur[p][sp.id]})).sort((a,b)=>b.v-a.v).slice(0,5);
+  const lines=[`Duel photo Camargue · ${fmtDay.format(new Date(first))} → ${fmtDay.format(new Date(view.ended))}`,lead?`${nameOf(lead)} l'emporte : ${fmtPts(sc[lead].pts)} à ${fmtPts(sc[other(lead)].pts)}`:`Égalité parfaite : ${fmtPts(sc.p1.pts)} partout`,...PROFILES.map(p=>`${nameOf(p)} : ${fmtPts(sc[p].pts)} pts, ${sc[p].n} espèces, ${sc[p].tiers[2]} portfolio. Meilleures prises : ${best(p).map(x=>`${x.sp.n} (${fmtPts(x.v)})`).join(', ')||'aucune'}`)];
+  box.hidden=false;
+  box.innerHTML=`<h2>${lead?esc(nameOf(lead))+' remporte le duel':'Égalité'}</h2><p class="hint">${esc(fmtDay.format(new Date(first)))} → ${esc(fmtDay.format(new Date(view.ended)))}${d?` · ${d} j ${h%24} h`:h?` · ${h} h`:''}</p>
+    <div class="tiles">${PROFILES.map(p=>`<div class="tile ${p}"><div class="lbl">${esc(nameOf(p))}</div><div class="big">${fmtPts(sc[p].pts)}</div><div class="sub"><b>${sc[p].n}</b> espèces · <b>${sc[p].tiers[2]}</b> portfolio${view.topN?` · top ${view.topN}`:''}</div></div>`).join('')}</div>
+    ${PROFILES.map(p=>`<div class="field"><label>Meilleures prises de ${esc(nameOf(p))}</label><ul class="feed">${best(p).map(x=>`<li><span class="t"></span><span>${esc(x.sp.n)} · ${TIER_NAMES[x.t]}</span><span class="v">${fmtPts(x.v)}</span></li>`).join('')||'<li class="muted">Aucune prise.</li>'}</ul></div>`).join('')}
+    <div class="row" style="margin-top:10px"><button type="button" class="btn primary" id="bilan-copy">Copier le bilan</button><button type="button" class="btn" id="bilan-resume">Reprendre</button><button type="button" class="btn danger" id="bilan-new">Nouveau duel (tout à zéro)</button></div>`;
+  $('#bilan-copy').addEventListener('click',()=>copyText(lines.join('\n'),'Bilan copié'));
+  $('#bilan-resume').addEventListener('click',()=>{add({k:'resume'});afterChange();toast('Le duel reprend')});
+  let armed=null;$('#bilan-new').addEventListener('click',e=>{if(armed){clearTimeout(armed);add({k:'reset'});add({k:'resume'});afterChange();toast('Nouveau duel : tout est à zéro');return}e.target.textContent='Confirmer : tout effacer ?';armed=setTimeout(()=>{armed=null;e.target.textContent='Nouveau duel (tout à zéro)'},5000)});
+}
+function renderStats(){
+  const cur=view.tiers,sc=computeScores(view,cur,true);
+  renderBilan();
+  $('#tiles').innerHTML=PROFILES.map(p=>{const s=sc[p];const bonus=view.bonus.filter(b=>b.p===p).reduce((a,b)=>a+b.v,0);
+    return `<div class="tile ${p}"><div class="lbl">${esc(nameOf(p))}</div><div class="big">${fmtPts(s.pts)}</div><div class="sub"><b>${s.n}</b> espèce${s.n>1?'s':''} · <b>${s.tiers[2]}</b> portfolio · <b>${s.tiers[1]}</b> banale${s.tiers[1]>1?'s':''} · <b>${s.tiers[0]}</b> flou${s.tiers[0]>1?'s':''}${s.obj?` · <b>${s.obj}</b> objectif${s.obj>1?'s':''}`:''}${bonus?` · bonus <b>${bonus>0?'+':''}${fmtPts(bonus)}</b>`:''}</div></div>`}).join('');
+  renderChart();
+  const mx=Math.max(1,...PROFILES.flatMap(p=>sc[p].tiers));
+  $('#bars').innerHTML=[3,2,1].map(t=>`<div class="bar-h t${t}">${TIER_NAMES[t]} <span>${view.pct[t-1]} % des points</span></div>`+PROFILES.map(p=>`<div class="bar ${p}"><span>${esc(nameOf(p))}</span><div class="track"><div class="fill" style="width:${Math.round(sc[p].tiers[t-1]/mx*100)}%"></div></div><span class="num">${sc[p].tiers[t-1]}</span></div>`).join('')).join('');
+  renderHistory();renderTable();
+}
+function renderHistory(){
+  const h=history(log);const shown=histAll?h:h.slice(0,25);
+  $('#hist').innerHTML=shown.length?shown.map(({e,text})=>`<li><span class="t">${fmtHM.format(new Date(e.at))}<br><small>${esc(fmtDay.format(new Date(e.at)))}</small></span><span><i class="dot ${e.by}"></i>${esc(text)}${e.k==='reset'&&!view.cancelled.has(e.id)?` <button type="button" class="btn small" data-unreset="${esc(e.id)}">Annuler</button>`:''}</span><span class="v">${e.k==='tier'&&e.t&&spOf(e.s)?'+'+fmtPts(tierValue(view,e.s,e.t,e.lieu)):''}</span></li>`).join('')
+    :'<li><span class="t">—</span><span class="muted">Rien pour l’instant. Chaque coche, changement de cote ou de réglage apparaîtra ici avec son auteur.</span><span></span></li>';
+  const btn=$('#hist-more');btn.hidden=h.length<=25;btn.textContent=histAll?'Réduire':`Voir tout (${h.length})`;
+}
+function niceStep(span,target){const raw=span/target;const p=Math.pow(10,Math.floor(Math.log10(raw)));for(const m of [1,2,2.5,5,10]){if(raw<=m*p) return m*p}return 10*p}
+function renderChart(){
+  const wrap=$('#chart-wrap');const old=wrap.querySelector('svg');if(old) old.remove();
+  const pts=curve(view);
+  const W=360,H=230,ml=40,mr=16,mt=14,mb=34,iw=W-ml-mr,ih=H-mt-mb;
+  const svgNS='http://www.w3.org/2000/svg';
+  if(!pts.length){
+    wrap.insertAdjacentHTML('beforeend',`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Courbe vide"><rect x="${ml}" y="${mt}" width="${iw}" height="${ih}" fill="none" stroke="var(--line)"/><text x="${ml+iw/2}" y="${mt+ih/2}" text-anchor="middle" fill="var(--ink-2)" font-size="12">La courbe se dessinera dès la première photo cochée.</text></svg>`);
+    $('#chart-legend').innerHTML='';return;
+  }
+  const now=Date.now();
+  let t0=pts[0].at,t1=Math.max(pts[pts.length-1].at,now);
+  if(t1-t0<3600e3){t0-=1800e3;t1+=1800e3}
+  const ymax=Math.max(10,...pts.map(p=>Math.max(p.p1,p.p2)));
+  const ystep=niceStep(ymax,4),ytop=Math.ceil(ymax/ystep)*ystep;
+  const X=t=>ml+(t-t0)/(t1-t0)*iw,Y=v=>mt+ih-v/ytop*ih;
+  let g='';
+  for(let v=0;v<=ytop+1e-9;v+=ystep){const y=Y(v);g+=`<line x1="${ml}" x2="${ml+iw}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke="var(--line)" stroke-width="1"/><text x="${ml-6}" y="${(y+4).toFixed(1)}" text-anchor="end" font-size="11" fill="var(--ink-2)">${fmtPts(v)}</text>`}
+  const spanH=(t1-t0)/3600e3;const stepH=[1,2,3,6,12,24].find(s=>spanH/s<=6)||24;
+  let lastDay='';const first=new Date(t0);first.setMinutes(0,0,0);let tt=first.getTime();while(tt<t0) tt+=stepH*3600e3;
+  for(;tt<=t1;tt+=stepH*3600e3){const d=new Date(tt),day=fmtDay.format(d),x=X(tt);const lbl=(day!==lastDay?day+' ':'')+fmtHM.format(d);lastDay=day;
+    const anchor=x>W-48?'end':(x<ml+40?'start':'middle');
+    g+=`<line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${mt+ih}" y2="${mt+ih+4}" stroke="var(--ink-2)"/><text x="${x.toFixed(1)}" y="${mt+ih+16}" text-anchor="${anchor}" font-size="10.5" fill="var(--ink-2)">${esc(lbl)}</text>`}
+  g+=`<line x1="${ml}" x2="${ml+iw}" y1="${mt+ih}" y2="${mt+ih}" stroke="var(--ink-2)" stroke-width="1"/>`;
+  const series=p=>{let d=`M${X(t0).toFixed(1)},${Y(0).toFixed(1)}`;let prev=0;for(const pt of pts){d+=` H${X(pt.at).toFixed(1)} V${Y(pt[p]).toFixed(1)}`;prev=pt[p]}d+=` H${X(t1).toFixed(1)}`;return {d,last:prev}};
+  const sl={p1:series('p1'),p2:series('p2')};
+  for(const p of PROFILES) g+=`<path d="${sl[p].d}" fill="none" stroke="var(--${p})" stroke-width="2" stroke-linejoin="round"/>`;
+  for(const p of PROFILES) for(const pt of pts){ if(pt.label.p!==p) continue; g+=`<circle cx="${X(pt.at).toFixed(1)}" cy="${Y(pt[p]).toFixed(1)}" r="4" fill="var(--${p})" stroke="var(--surface)" stroke-width="2"/>`; }
+  const lab=PROFILES.map(p=>({p,y:Y(sl[p].last)-6,v:sl[p].last})).sort((a,b)=>a.y-b.y);
+  if(lab.length===2&&lab[1].y-lab[0].y<14){const mid=(lab[0].y+lab[1].y)/2;lab[0].y=mid-7;lab[1].y=mid+7}
+  for(const l of lab){const y=Math.min(mt+ih-2,Math.max(mt+9,l.y));const txt=`${nameOf(l.p)} ${fmtPts(l.v)}`;const tw=txt.length*6.4+8;
+    g+=`<rect x="${(ml+iw-2-tw).toFixed(1)}" y="${(y-6).toFixed(1)}" width="${tw.toFixed(1)}" height="14" rx="4" fill="var(--surface)" opacity=".9"/><text x="${ml+iw-6}" y="${(y+4).toFixed(1)}" text-anchor="end" font-size="11" font-weight="700" fill="var(--ink)">${esc(txt)}</text>`}
+  g+=`<line id="xhair" x1="0" x2="0" y1="${mt}" y2="${mt+ih}" stroke="var(--ink-2)" stroke-dasharray="3 3" style="display:none"/>`;
+  const svg=document.createElementNS(svgNS,'svg');svg.setAttribute('viewBox',`0 0 ${W} ${H}`);svg.setAttribute('role','img');svg.setAttribute('aria-label','Évolution des points dans le temps');svg.innerHTML=g;wrap.appendChild(svg);
+  $('#chart-legend').innerHTML=PROFILES.map(p=>`<span class="${p}"><i></i>${esc(nameOf(p))}</span>`).join('');
+  const tip=$('#tip'),xh=svg.querySelector('#xhair');
+  const onMove=ev=>{const r=svg.getBoundingClientRect();const x=(ev.clientX-r.left)/r.width*W;if(x<ml||x>ml+iw){tip.classList.remove('show');xh.style.display='none';return}
+    const t=t0+(x-ml)/iw*(t1-t0);let cur=null;for(const pt of pts){if(pt.at<=t) cur=pt; else break}
+    const v1=cur?cur.p1:0,v2=cur?cur.p2:0;
+    xh.setAttribute('x1',x.toFixed(1));xh.setAttribute('x2',x.toFixed(1));xh.style.display='';
+    tip.innerHTML=`${esc(fmtTime.format(new Date(t)))}<br>${esc(nameOf('p1'))} ${fmtPts(v1)} · ${esc(nameOf('p2'))} ${fmtPts(v2)}`;
+    const px=x/W*r.width;tip.style.left=Math.max(70,Math.min(r.width-70,px))+'px';tip.style.top='26px';tip.classList.add('show');};
+  svg.addEventListener('pointermove',onMove);svg.addEventListener('pointerdown',onMove);
+  svg.addEventListener('pointerleave',()=>{tip.classList.remove('show');xh.style.display='none'});
+}
+function renderTable(){
+  const w=$('#tblwrap');if(w.classList.contains('hide')) return;
+  const rows=[...view.events.filter(e=>spOf(e.s)).map(e=>({at:e.at,who:nameOf(e.p),what:spName(e.s),q:e.t?TIER_NAMES[e.t]:'décoché',v:e.t?tierValue(view,e.s,e.t):0})),...view.bonus.map(b=>({at:b.at,who:nameOf(b.p),what:'Bonus : '+(b.l||'sans motif'),q:'',v:b.v}))].sort((a,b)=>a.at-b.at);
+  w.innerHTML=`<table class="tbl"><thead><tr><th>Heure</th><th>Qui</th><th>Quoi</th><th>Qualité</th><th>Pts</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(fmtTime.format(new Date(r.at)))}</td><td>${esc(r.who)}</td><td>${esc(r.what)}</td><td>${r.q}</td><td>${fmtPts(r.v)}</td></tr>`).join('')||'<tr><td colspan="5" class="muted">Aucune prise.</td></tr>'}</tbody></table>`;
+}
+
+/* ---- Réglages ---- */
+function renderSettings(){
+  $$('#dev-seg button').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.p===ui.device));b.textContent=nameOf(b.dataset.p)});
+  $('#name1').value=view.names[0];$('#name2').value=view.names[1];
+  $('#pct1').value=view.pct[0];$('#pct2').value=view.pct[1];$('#pct3').value=view.pct[2];
+  $('#mode-each').checked=view.mode!=='duel';$('#mode-duel').checked=view.mode==='duel';
+  $('#icomul').value=view.icoMul;$('#objbonus').value=view.objPct;$('#topn').value=view.topN||'';
+  renderLieux();
+  $('#w-ici').value=view.w.ici;$('#w-monde').value=view.w.monde;$('#w-periode').value=view.w.periode;
+  $('#bonus-p').innerHTML=PROFILES.map(p=>`<option value="${p}">${esc(nameOf(p))}</option>`).join('');
+  customForm();renderCustomList();renderObjectives();renderBonusList();renderPtsList();
+}
+let editingCid=null;
+function customForm(){
+  const g=$('#x-g');if(!g.options.length) GROUPS.forEach((n,i)=>{const o=document.createElement('option');o.value=String(i);o.textContent=n;g.appendChild(o)});
+  const cs=$('#x-comps');if(!cs.children.length) cs.innerHTML=COMP_LABELS.map((lab,i)=>`<div class="crow"><label for="x-c${i}">${lab}</label><select id="x-c${i}" data-xc="${i}">${[1,2,3,4,5].map(n=>`<option value="${n}"${n===3?' selected':''}>${n} · ${COMP_LEVELS[i][n-1]}</option>`).join('')}</select></div>`).join('');
+}
+function editCustom(cid){
+  const sp=spOf(cid);if(!sp) return;editingCid=cid;showTab('settings');customForm();
+  $('#x-n').value=sp.n;$('#x-l').value=sp.l;$('#x-g').value=String(sp.g);$('#x-site').value=sp.site;$('#x-like').value=String(sp.like);
+  const c=compOf(view,cid);for(let i=0;i<5;i++) $('#x-c'+i).value=String(c[i]);
+  $('#x-add').textContent='Enregistrer';$('#x-title').textContent='Modifier '+sp.n;$('#x-cancel').hidden=false;
+  $('#panel-custom').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function resetCustomForm(){editingCid=null;$('#x-n').value='';$('#x-l').value='';$('#x-site').value='PG+MV';$('#x-like').value='2';for(let i=0;i<5;i++){const el=$('#x-c'+i);if(el) el.value='3'}$('#x-add').textContent='Ajouter';$('#x-title').textContent='Espèce hors liste';$('#x-cancel').hidden=true}
+function renderCustomList(){
+  const l=Object.values(view.custom).sort((a,b)=>b.at-a.at);
+  $('#xlist').innerHTML=l.length?l.map(sp=>`<li><span><b>${esc(sp.n)}</b> <span class="muted">${esc(GROUPS[sp.g])} · ${fmtPts(basePts(view,sp.id))} pts · ajoutée par ${esc(nameOf(sp.by))}</span></span><button type="button" class="btn small" data-xedit="${sp.id}">Modifier</button><button type="button" class="btn small danger" data-xdel="${sp.id}" aria-label="Retirer ${esc(sp.n)}">×</button></li>`).join(''):'<li class="muted">Aucune pour l\u2019instant. Une rareté imprévue ? Ajoutez-la ici avec ses cinq notes.</li>';
+}
+function allLieux(){return Object.assign({},LIEUX,view.lieux)}
+function renderLieuChips(){
+  const L=allLieux();if(!L[ui.lieu]) ui.lieu='pg';
+  $('#lieu-chips').innerHTML=Object.entries(L).map(([id,l])=>`<button type="button" class="chip" data-v="${id}" aria-pressed="${ui.lieu===id}">${esc(l.n)}</button>`).join('')+`<button type="button" class="chip" data-v="__add" aria-pressed="false">+ Autre lieu</button>`;
+}
+function renderLieux(){
+  const L=allLieux();
+  $('#lieux').innerHTML=Object.entries(L).map(([id,l])=>{const pr=view.profiles[id];const builtin=!!RARITY[id]&&!pr;return `<li><span><b>${esc(l.n)}</b> <span class="muted">${l.lat.toFixed(3)}, ${l.lng.toFixed(3)} · ±${l.r} km · ${pr?`GBIF ${esc(pr.m)} (${Object.keys(pr.p).length} esp., par ${esc(nameOf(pr.by))})`:builtin?'GBIF oct.–nov. (intégré)':'notes manuelles'}</span></span><button type="button" class="btn small" data-gbif="${id}">Recalculer GBIF</button>${LIEUX[id]?'':`<button type="button" class="btn small" data-lieudel="${id}" aria-label="Retirer ce lieu">×</button>`}</li>`}).join('');
+  $('#gbif-note').textContent=(window.claude&&typeof window.claude.use==='function')?'Le calcul GBIF en direct ne fonctionne pas dans la version « lien Claude » (bac à sable sans accès réseau) : il marche dans la version installée depuis GitHub Pages. Les deux sites de Camargue sont déjà calculés.':'Le calcul interroge api.gbif.org (données eBird, iNaturalist, Faune-France…) sur un carré autour du lieu, pour l\u2019année entière et pour la période en cours.';
+}
+async function computeGbif(lid){
+  const L=allLieux()[lid];if(!L) return;const btn=$(`#lieux button[data-gbif="${lid}"]`);if(btn){btn.disabled=true;btn.textContent='Calcul…'}
+  try{const months=gbifMonths(new Date());const res=await gbifProfile(L.lat,L.lng,L.r,months);
+    if(!Object.keys(res.p).length) throw new Error('aucune donnée');
+    add({k:'profile',lid,p:res.p,m:months.label,tot:res.tot});afterChange();toast(`Rareté GBIF calculée pour ${L.n} : ${Object.keys(res.p).length} espèces`);}
+  catch(e){toast('Calcul GBIF impossible ici : '+(e.message||'réseau bloqué'));}
+  finally{if(btn){btn.disabled=false;btn.textContent='Recalculer GBIF'}}
+}
+function renderObjectives(){
+  $('#objectives').innerHTML=PROFILES.map(p=>{const l=view.obj[p];return `<div class="field"><label>Objectifs de ${esc(nameOf(p))} (${l.length}/${OBJ_MAX})</label>
+    <ul class="bonuslist">${l.length?l.map(sid=>{const sp=spOf(sid);if(!sp) return '';const done=(view.tiers[p][sid]||0)===3;return `<li><span><b style="color:var(--${p})">${esc(sp.n)}</b>${done?' <span class="ok">atteint</span>':''}</span><span class="muted">+${fmtPts(view.objPct)} %</span><button type="button" class="btn small" data-obj-del="${p}|${sid}" aria-label="Retirer cet objectif">×</button></li>`}).join(''):'<li class="muted">Aucun objectif : ouvrez une espèce et touchez « En faire un objectif ».</li>'}</ul></div>`}).join('');
+}
+function renderBonusList(){
+  const l=view.bonus.slice().sort((a,b)=>b.at-a.at);
+  $('#bonuslist').innerHTML=l.length?l.map(b=>`<li><span><b style="color:var(--${b.p})">${esc(nameOf(b.p))}</b> · ${esc(b.l||'sans motif')} <span class="muted">${esc(fmtTime.format(new Date(b.at)))}</span></span><span class="num" style="font-weight:700">${b.v>0?'+':''}${fmtPts(b.v)}</span><button type="button" class="btn small" data-del="${esc(b.id)}" aria-label="Supprimer ce bonus">×</button></li>`).join(''):'<li class="muted">Aucun bonus pour l’instant.</li>';
+}
+function renderPtsList(){
+  const q=fold0(($('#ptsq').value||'').trim());
+  const list=allSpecies().filter(sp=>!q||fold0(sp.n).includes(q)||fold0(sp.l).includes(q)||(sp.alt&&fold0(sp.alt).includes(q))).sort((a,b)=>basePts(view,b.id)-basePts(view,a.id)||a.n.localeCompare(b.n,'fr'));
+  $('#ptslist').innerHTML=list.map(sp=>{const v=basePts(view,sp.id),f=formulaOf(view,sp.id),manual=view.pts[sp.id]!=null,chg=manual||view.comp[sp.id];const c=compOf(view,sp.id);
+    return `<div class="ptrow${chg?' changed':''}" data-id="${sp.id}"><div class="head">${drawSVG(sp,'p-'+sp.id)}</div><div class="nm">${esc(sp.n)}<small> · ${c.join(' ')}${manual?' · forcée':''}</small></div><input type="number" min="0" max="2000" step="5" value="${v}" aria-label="Cote de ${esc(sp.n)}"></div>`}).join('');
+}
+
+/* ---- Partage : base partagée de la page (si accès), sinon codes de téléphone à téléphone ---- */
+let dbRef=null,dbTimer=null,dbWriting=false,dbDirty=false,lastDbJson=null;
+function setSync(cls,txt,hint){const s=$('#sync');s.className='sync '+cls;s.querySelector('span').textContent=txt;if(hint) $('#sync-hint').textContent=hint}
+async function initDb(){
+  let db=null;
+  try{ if(window.claude&&typeof window.claude.use==='function') db=await window.claude.use('db'); }catch(e){db=null}
+  if(!db){ setSync('','local'); return; }
+  try{ dbRef=db.doc('sync/journal'); }catch(e){ setSync('','local'); return; }
+  setSync('on','partagé','Cette page a une mémoire partagée : tout ce que l’un fait arrive chez l’autre dès qu’il ouvre le lien connecté à Claude avec un accès en écriture (invitation par e-mail). Les codes ci-dessous restent le secours sans réseau ou sans accès.');
+  dbRef.onSnapshot(snap=>{
+    if(!snap.exists){ if(log.length) scheduleDbWrite(); return; }
+    const remote=snap.data();
+    const {added,extra}=mergeLog(log,remote);
+    if(added){ refresh(); persist(); renderAll(); toast(added+(added>1?' nouveautés reçues':' nouveauté reçue')); }
+    if(extra) scheduleDbWrite(); else lastDbJson=JSON.stringify({v:2,log});
+    setSync('on',snap.metadata&&snap.metadata.fromCache?'partagé (cache)':'partagé');
+  },err=>{ setSync('err','synchro arrêtée'); });
+}
+function scheduleDbWrite(){ if(!dbRef) return; dbDirty=true; clearTimeout(dbTimer); dbTimer=setTimeout(flushDb,1200); }
+async function flushDb(){
+  if(!dbRef||dbWriting||!dbDirty) return;
+  dbDirty=false;const json=JSON.stringify({v:2,log});
+  if(json===lastDbJson) return;
+  dbWriting=true;
+  try{ await dbRef.set(JSON.parse(json)); lastDbJson=json; setSync('on','partagé'); }
+  catch(e){ const code=e&&e.code; if(code==='invalid_argument') setSync('err','lecture seule',"Votre accès à cette page est en lecture seule : vos coches restent sur ce téléphone. Demandez une invitation en écriture ou utilisez les codes ci-dessous."); else { setSync('err','synchro en attente'); dbDirty=true; setTimeout(flushDb,3000+Math.random()*2000); } }
+  finally{ dbWriting=false; if(dbDirty) scheduleDbWrite(); }
+}
+let lastCode='';
+function makeCode(delta){
+  let entries=log;
+  if(delta){const since=Number(readLS(LS_CODEAT))||0;entries=log.filter(e=>e.by===who()&&e.at>since);
+    if(!entries.length){toast('Rien de nouveau depuis le dernier code : envoyez le code complet');return null}}
+  const code=encodeCode(entries);lastCode=code;$('#code-out').value=code;
+  writeLS(LS_CODEAT,Date.now());
+  $('#code-info').textContent=`${entries.length} entrée${entries.length>1?'s':''} · ${code.length} caractères`;
+  renderQR(code);
+  return code;
+}
+function renderQR(code){
+  const box=$('#qr');box.innerHTML='';
+  if(typeof QRCode==='undefined'){box.textContent='QR indisponible hors connexion : copiez le code texte.';return}
+  if(code.length>2300){box.textContent='Code trop long pour un QR lisible : envoyez le code texte, ou générez seulement les nouveautés.';return}
+  try{new QRCode(box,{text:code,width:260,height:260,correctLevel:QRCode.CorrectLevel.L});box.setAttribute('aria-label','QR code à scanner avec l’autre téléphone')}
+  catch(e){box.textContent='QR impossible pour ce code : utilisez le code texte.'}
+}
+async function copyText(txt,okMsg){
+  try{ await navigator.clipboard.writeText(txt); toast(okMsg); }
+  catch(err){ const out=$('#code-out'); out.classList.remove('hide'); out.focus(); out.select(); toast('Sélectionnez et copiez le code affiché'); }
+}
+function mergeFrom(txt){
+  const msg=$('#merge-msg');
+  try{ const data=decodeCode(txt); const {added}=mergeLog(log,data); refresh();persist();scheduleDbWrite();renderAll();
+    msg.textContent=added?`Fusion faite : ${added} nouveauté${added>1?'s':''} ajoutée${added>1?'s':''}.`:'Rien de nouveau dans ce code.';msg.className='ok';$('#code-in').value=''; }
+  catch(err){ msg.textContent='Code illisible : collez le code complet, tel qu’il a été copié.'; msg.className='muted'; }
+}
+
+/* ---- Choix du téléphone ---- */
+function renderDevicePicker(){
+  let el=$('#devpick');
+  if(!ui.device){
+    if(!el){el=document.createElement('div');el.id='devpick';el.className='sheet';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');document.body.appendChild(el);
+      el.innerHTML=`<div class="grab"></div><h2 style="font-family:var(--font-display);font-size:20px;margin:4px 0 6px">Ce téléphone, c’est qui ?</h2><p class="muted" style="margin:0 0 12px">Chaque modification sera signée de ce nom dans l’historique. Ça se change dans Réglages.</p><div class="tiers">${PROFILES.map(p=>`<button type="button" data-dev="${p}" style="min-height:52px;font-size:16px">${esc(nameOf(p))}</button>`).join('')}</div>`;
+      el.addEventListener('click',e=>{const b=e.target.closest('button[data-dev]');if(!b) return;setDevice(b.dataset.dev);el.hidden=true;$('#devbd').hidden=true;toast('Bienvenue '+nameOf(ui.device))});
+      const bd=document.createElement('div');bd.id='devbd';bd.className='backdrop';document.body.appendChild(bd);
+    }
+    el.hidden=false;$('#devbd').hidden=false;
+  }
+}
+function setDevice(p){ui.device=p;writeLS(LS_DEV,p);setMe(p);if(ui.tab==='settings') renderSettings()}
+
+/* ---- Rendu global et événements ---- */
+function renderBoard(){
+  const cur=view.tiers,sc=computeScores(view,cur,true);
+  const left=ui.me,right=other(ui.me);
+  $('#board').innerHTML=[left,right].map(p=>{
+    let items=allSpecies().filter(sp=>(cur[p][sp.id]||0)>0).map(sp=>({sp,t:cur[p][sp.id],at:view.tierAt[p][sp.id]||0,v:speciesEarned(view,cur,sp.id)[p]}));
+    if(ui.boardSort==='time') items.sort((a,b)=>b.at-a.at); else if(ui.boardSort==='name') items.sort((a,b)=>a.sp.n.localeCompare(b.sp.n,'fr')); else items.sort((a,b)=>b.v-a.v||a.sp.n.localeCompare(b.sp.n,'fr'));
+    const o=other(p),s=sc[p],kept=s.kept;
+    return `<div class="bcol ${p}"><div class="bh"><div class="nm">${esc(nameOf(p))}${p===ui.me?' <span class="muted">(moi)</span>':''}</div><div class="big">${fmtPts(s.pts)}</div><div class="sub">${s.n} espèce${s.n>1?'s':''} · ${s.tiers[2]} portfolio${view.topN?` · top ${view.topN} compté`:''}</div></div>
+      ${items.length?items.map(it=>`<button type="button" class="bitem${kept&&!kept.has(it.sp.id)?' out':''}" data-id="${it.sp.id}"><div class="head">${drawSVG(it.sp,'b'+p+'-'+it.sp.id)}</div><div><b>${esc(it.sp.n)}</b><div class="meta"><span class="tq t${it.t}"></span>${TIER_NAMES[it.t]}<span class="bp">${fmtPts(it.v)} pts</span>${(cur[o][it.sp.id]||0)>0?`<span class="also ${o}" title="aussi chez ${esc(nameOf(o))}"></span>`:''}${kept&&!kept.has(it.sp.id)?'<span class="muted">hors top</span>':''}</div></div></button>`).join(''):`<div class="bempty">Rien de coché pour ${esc(nameOf(p))}.</div>`}
+    </div>`}).join('');
+}
+function renderAll(){renderHeader();renderLieuChips();if(ui.tab==='birds') renderList(); else if(ui.tab==='board') renderBoard(); else if(ui.tab==='stats') renderStats(); else renderSettings(); if(sheetSid) renderSheet(sheetSid)}
+function showTab(t){ui.tab=t;for(const k of ['birds','board','stats','settings']){$('#tab-'+k).setAttribute('aria-selected',String(k===t));$('#view-'+k).hidden=k!==t}renderAll();window.scrollTo({top:0})}
+$$('.tabs button').forEach(b=>b.addEventListener('click',()=>showTab(b.id.replace('tab-',''))));
+function setMe(p){ui.me=p;writeLS(LS_ME,ui.me);renderHeader();if(ui.tab==='birds') renderList();if(ui.tab==='board') renderBoard()}
+$$('.player').forEach(b=>b.addEventListener('click',()=>{setMe(b.dataset.p);toast('Je coche pour '+nameOf(ui.me))}));
+$('#who-seg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b) return;setMe(b.dataset.p)});
+$('#dev-seg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b) return;setDevice(b.dataset.p);toast('Ce téléphone est celui de '+nameOf(ui.device))});
+$('#q').addEventListener('input',e=>{ui.q=e.target.value;renderList()});
+for(const [id,key] of [['#site-chips','site'],['#like-chips','like']]) $(id).addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b||b.id==='ico-chip') return;ui[key]=b.dataset.v;$$(id+' .chip:not(#ico-chip)').forEach(c=>c.setAttribute('aria-pressed',String(c===b)));renderList()});
+$('#ico-chip').addEventListener('click',e=>{ui.ico=!ui.ico;e.currentTarget.setAttribute('aria-pressed',String(ui.ico));renderList()});
+const gs=$('#group-sel');GROUPS.forEach((g,i)=>{const o=document.createElement('option');o.value=String(i);o.textContent=g;gs.appendChild(o)});
+gs.addEventListener('change',e=>{ui.group=e.target.value;renderList()});
+$('#sort-sel').addEventListener('change',e=>{ui.sort=e.target.value;renderList()});
+$('#taken-chips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b) return;ui.taken=b.dataset.v;$$('#taken-chips .chip').forEach(c=>c.setAttribute('aria-pressed',String(c===b)));renderList()});
+$('#board-sort').addEventListener('change',e=>{ui.boardSort=e.target.value;renderBoard()});
+$('#board').addEventListener('click',e=>{const it=e.target.closest('.bitem');if(it) openSheet(it.dataset.id)});
+$('#list').addEventListener('click',e=>{
+  const card=e.target.closest('.card');if(!card) return;const sid=card.dataset.id;
+  const tb=e.target.closest('.tiers button');if(tb){setTier(ui.me,sid,Number(tb.dataset.t));return}
+  if(e.target.closest('.head')||e.target.closest('.info')) openSheet(sid);
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheetSid) closeSheet()});
+
+$('#name1').addEventListener('change',e=>{add({k:'name',p:'p1',v:(e.target.value.trim()||'Joueur 1').slice(0,20)});afterChange()});
+$('#name2').addEventListener('change',e=>{add({k:'name',p:'p2',v:(e.target.value.trim()||'Joueur 2').slice(0,20)});afterChange()});
+[['#pct1',0],['#pct2',1],['#pct3',2]].forEach(([id,i])=>$(id).addEventListener('change',e=>{const v=Number(e.target.value);if(Number.isFinite(v)){const pct=view.pct.slice();pct[i]=Math.max(0,Math.min(100,v));add({k:'pct',v:pct});afterChange()}}));
+$('#mode-each').addEventListener('change',()=>{add({k:'mode',v:'each'});afterChange()});
+$('#mode-duel').addEventListener('change',()=>{add({k:'mode',v:'duel'});afterChange()});
+$('#icomul').addEventListener('change',e=>{const v=Number(e.target.value);if(Number.isFinite(v)){add({k:'ico',v:Math.max(1,Math.min(5,v))});afterChange()}});
+$('#topn').addEventListener('change',e=>{const v=e.target.value.trim()===''?0:Number(e.target.value);if(Number.isFinite(v)){add({k:'topn',v:Math.max(0,v)});afterChange();toast(v?`Seules les ${Math.round(v)} meilleures prises comptent`:'Toutes les prises comptent')}});
+$('#objbonus').addEventListener('change',e=>{const v=Number(e.target.value);if(Number.isFinite(v)){add({k:'objpct',v:Math.max(0,Math.min(500,v))});afterChange()}});
+['#w-ici','#w-monde','#w-periode'].forEach(id=>$(id).addEventListener('change',()=>{const w={ici:Number($('#w-ici').value),monde:Number($('#w-monde').value),periode:Number($('#w-periode').value)};if(cleanW(w)){add({k:'w',v:w});afterChange();toast('Poids de rareté enregistrés : toutes les cotes calculées suivent')}else toast('Mettez au moins un poids au-dessus de 0')}));
+$('#x-add').addEventListener('click',()=>{
+  const n=$('#x-n').value.trim();if(!n){toast('Donnez un nom à l\u2019espèce');$('#x-n').focus();return}
+  const c=[0,1,2,3,4].map(i=>Number($('#x-c'+i).value));
+  const cid=editingCid||('x-'+Date.now().toString(36)+Math.floor(Math.random()*1e6).toString(36));
+  add({k:'add',cid,n,l:$('#x-l').value.trim(),g:Number($('#x-g').value),c,like:Number($('#x-like').value),site:$('#x-site').value});
+  const was=!!editingCid;resetCustomForm();afterChange();renderCustomList();
+  toast(was?'Espèce modifiée':`${n} ajoutée : ${fmtPts(basePts(view,cid))} pts`);
+});
+$('#x-cancel').addEventListener('click',resetCustomForm);
+$('#xlist').addEventListener('click',e=>{
+  const xe=e.target.closest('button[data-xedit]');if(xe){editCustom(xe.dataset.xedit);return}
+  const xd=e.target.closest('button[data-xdel]');if(xd){if(xd.dataset.armed){add({k:'xdel',cid:xd.dataset.xdel});afterChange();renderCustomList();toast('Espèce retirée (toujours dans l\u2019historique)')}else{xd.dataset.armed='1';xd.textContent='Confirmer ?';xd.setAttribute('aria-label','Confirmer le retrait')}}
+});
+$('#lieu-chips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b) return;if(b.dataset.v==='__add'){showTab('settings');$('#panel-lieux').scrollIntoView({behavior:'smooth',block:'start'});$('#l-n').focus();return}ui.lieu=b.dataset.v;writeLS(LS_LIEU,ui.lieu);renderLieuChips();renderList();toast('Je suis à '+lieuName(view,ui.lieu)+' : cotes mises à jour')});
+$('#l-add').addEventListener('click',()=>{const n=$('#l-n').value.trim(),lat=Number($('#l-lat').value),lng=Number($('#l-lng').value),r=Number($('#l-r').value)||9;
+  if(!n||!Number.isFinite(lat)||!Number.isFinite(lng)){toast('Nom, latitude et longitude sont nécessaires');return}
+  const lid='l-'+Date.now().toString(36)+Math.floor(Math.random()*1e6).toString(36);add({k:'lieuadd',lid,n,lat,lng,r});$('#l-n').value='';$('#l-lat').value='';$('#l-lng').value='';ui.lieu=lid;writeLS(LS_LIEU,lid);afterChange();renderLieuChips();toast(`${n} ajouté : calcul GBIF en cours…`);computeGbif(lid)});
+$('#l-geo').addEventListener('click',()=>{if(!navigator.geolocation){toast('Position indisponible ici');return}navigator.geolocation.getCurrentPosition(pos=>{$('#l-lat').value=pos.coords.latitude.toFixed(4);$('#l-lng').value=pos.coords.longitude.toFixed(4);toast('Position remplie')},()=>toast('Position refusée ou indisponible'),{timeout:8000})});
+$('#lieux').addEventListener('click',e=>{const g=e.target.closest('button[data-gbif]');if(g){computeGbif(g.dataset.gbif);return}const d=e.target.closest('button[data-lieudel]');if(d){const lid=d.dataset.lieudel;if(d.dataset.armed){const L=allLieux()[lid];add({k:'lieuadd',lid,n:L.n,lat:L.lat,lng:L.lng,r:L.r});toast('Suppression des lieux non prévue : le lieu reste, retirez-le du choix en n\u2019y cochant rien')}else{d.dataset.armed='1';d.textContent='?'}}});
+$('#add-custom').addEventListener('click',()=>{resetCustomForm();showTab('settings');customForm();$('#panel-custom').scrollIntoView({behavior:'smooth',block:'start'});$('#x-n').focus()});
+$('#objectives').addEventListener('click',e=>{const b=e.target.closest('button[data-obj-del]');if(!b) return;const [p,sid]=b.dataset.objDel.split('|');toggleObjective(p,sid)});
+$('#bonus-add').addEventListener('click',()=>{const v=Number($('#bonus-v').value);if(!Number.isFinite(v)||v===0){toast('Indiquez un nombre de points (positif ou négatif)');return}
+  const p=$('#bonus-p').value,l=$('#bonus-l').value.trim();add({k:'bonus',p,l,v});$('#bonus-l').value='';$('#bonus-v').value='';afterChange();toast(`Bonus ${v>0?'+':''}${fmtPts(v)} pour ${nameOf(p)}`)});
+$('#bonuslist').addEventListener('click',e=>{const b=e.target.closest('button[data-del]');if(!b) return;add({k:'bonusdel',bid:b.dataset.del});afterChange()});
+$('#ptsq').addEventListener('input',renderPtsList);
+$('#ptslist').addEventListener('change',e=>{const row=e.target.closest('.ptrow');if(!row||e.target.tagName!=='INPUT') return;const sid=row.dataset.id,v=Number(e.target.value);if(!Number.isFinite(v)||v<0) return;
+  add({k:'pts',s:sid,v:v===formulaOf(view,sid)?null:v});afterChange(sid);renderPtsList()});
+let resetPtsArmed=null;
+$('#pts-reset').addEventListener('click',e=>{const changed=allSpecies().filter(sp=>view.pts[sp.id]!=null||view.comp[sp.id]);if(!changed.length){toast('Les cotes sont déjà celles par défaut');return}
+  if(resetPtsArmed){clearTimeout(resetPtsArmed);resetPtsArmed=null;for(const sp of changed){if(view.pts[sp.id]!=null) add({k:'pts',s:sp.id,v:null});if(view.comp[sp.id]) add({k:'comp',s:sp.id,v:sp.c})}afterChange();e.target.textContent='Valeurs par défaut';toast('Cotes remises par défaut');return}
+  e.target.textContent='Confirmer ?';resetPtsArmed=setTimeout(()=>{resetPtsArmed=null;e.target.textContent='Valeurs par défaut'},4000)});
+$('#code-full').addEventListener('click',()=>{const c=makeCode(false);if(c) copyText(c,'Code complet copié : envoyez-le à l’autre téléphone')});
+$('#code-delta').addEventListener('click',()=>{const c=makeCode(true);if(c) copyText(c,'Nouveautés copiées : envoyez-les à l’autre téléphone')});
+$('#code-share').addEventListener('click',async()=>{const c=lastCode||makeCode(false);if(!c) return;if(navigator.share){try{await navigator.share({title:'Duel photo Camargue',text:c});return}catch(e){}}copyText(c,'Partage indisponible ici : code copié')});
+$('#merge-code').addEventListener('click',()=>mergeFrom($('#code-in').value));
+let resetArmed=null;
+$('#reset-all').addEventListener('click',e=>{if(resetArmed){clearTimeout(resetArmed);resetArmed=null;add({k:'reset'});afterChange();e.target.textContent='Tout effacer';toast('Tout est effacé (annulable dans l\u2019historique, onglet Stats)');return}
+  e.target.textContent='Confirmer l’effacement ?';resetArmed=setTimeout(()=>{resetArmed=null;e.target.textContent='Tout effacer'},5000)});
+$('#tbl-toggle').addEventListener('click',e=>{const w=$('#tblwrap');const open=w.classList.toggle('hide');e.target.setAttribute('aria-expanded',String(!open));e.target.textContent=open?'Voir le tableau des prises':'Masquer le tableau';renderTable()});
+$('#hist-more').addEventListener('click',()=>{histAll=!histAll;renderHistory()});
+$('#hist').addEventListener('click',e=>{const b=e.target.closest('button[data-unreset]');if(!b) return;add({k:'unreset',rid:b.dataset.unreset});afterChange();toast('Remise à zéro annulée : les prises sont de retour')});
+$('#end-duel').addEventListener('click',e=>{if(e.target.dataset.armed){add({k:'end'});afterChange();window.scrollTo({top:0});toast('Duel terminé. « Reprendre » pour continuer.');return}e.target.dataset.armed='1';e.target.textContent='Confirmer la fin du duel ?';setTimeout(()=>{delete e.target.dataset.armed;e.target.textContent='Terminer le duel'},5000)});
+
+$('#cols-seg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b) return;disp.cols=b.dataset.v;applyDisplay()});
+$('#zoom-minus').addEventListener('click',()=>{disp.zoom=Math.max(70,disp.zoom-10);applyDisplay()});
+$('#zoom-plus').addEventListener('click',()=>{disp.zoom=Math.min(160,disp.zoom+10);applyDisplay()});
+$('#zoom-reset').addEventListener('click',()=>{disp.zoom=100;applyDisplay()});
+applyDisplay();
+renderAll();
+renderDevicePicker();
+initDb();
+})();
+</script>
+
+<script>if('serviceWorker' in navigator&&location.protocol==='https:'){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}</script>
+</body>
+</html>
