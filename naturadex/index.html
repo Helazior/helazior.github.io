@@ -136,6 +136,7 @@ body.cols-2 .card h3,body.cols-3 .card h3{font-size:15px} body.cols-2 .tiers but
 .tag{font-size:11px;padding:1px 7px;border-radius:999px;background:var(--surface-2);color:var(--ink-2);letter-spacing:.02em;font-weight:600}
 .tag.l3{background:var(--t3-soft);color:var(--t3)} .tag.l2{background:var(--accent-soft);color:var(--accent)}
 .tag.ic{background:var(--t2);color:#fff}
+.tag.crit{background:var(--ink);color:var(--bg)}
 .tag.obj{color:#fff} .tag.obj.p1{background:var(--p1)} .tag.obj.p2{background:var(--p2)}
 .prow .when{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 .cote{margin-top:12px;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--surface-2)}
@@ -338,9 +339,15 @@ table.tbl th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:
       <select id="group-sel" aria-label="Famille"><option value="all">Toutes les familles</option></select>
       <select id="sort-sel" aria-label="Tri">
         <option value="group">Par famille</option>
-        <option value="pts">Points décroissants</option>
-        <option value="name">Nom A→Z</option>
+        <option value="pts">Par points</option>
+        <option value="name">Par nom</option>
+        <option value="c0">Par beauté</option>
+        <option value="c1">Par rareté mondiale</option>
+        <option value="c2">Par rareté ici</option>
+        <option value="c3">Par rareté à cette période</option>
+        <option value="c4">Par difficulté photo</option>
       </select>
+      <button type="button" class="btn small" id="sort-dir" aria-label="Sens du tri" title="Sens du tri">↓ décroissant</button>
     </div>
     <div class="chips" id="taken-chips" role="group" aria-label="Prises">
       <button type="button" class="chip" data-v="all" aria-pressed="true">Toutes</button>
@@ -457,6 +464,7 @@ table.tbl th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:
     <div class="field"><div class="inl"><label for="w-ici" style="width:140px">Rareté ici</label><input id="w-ici" type="number" min="0" max="100" step="5"> %</div></div>
     <div class="field"><div class="inl"><label for="w-monde" style="width:140px">Rareté mondiale</label><input id="w-monde" type="number" min="0" max="100" step="5"> %</div></div>
     <div class="field"><div class="inl"><label for="w-periode" style="width:140px">Rareté à cette période</label><input id="w-periode" type="number" min="0" max="100" step="5"> %</div></div>
+    <div class="field"><div class="inl"><label for="w-photo" style="width:140px">Difficulté photo : part GBIF</label><input id="w-photo" type="number" min="0" max="100" step="10"> %</div><p class="hint" style="margin:4px 0 0">GBIF donne la part des observations accompagnées d'une photo : une espèce entendue partout mais rarement photographiée (bouscarle, râle, troglodyte) est notée plus difficile. Biais connus : les raretés sont photographiées « pour preuve » et les espèces banales ne le sont pas, d'où une part réduite par défaut. 0 % = seulement la note à la main.</p></div>
     <p class="hint">Baisser le poids « période » limite les points gagnés sur un retardataire vu par chance.</p>
     <div class="row" style="margin-top:8px"><input type="search" id="ptsq" placeholder="Filtrer…" aria-label="Filtrer les espèces" style="flex:1"><button class="btn small" type="button" id="pts-reset">Valeurs par défaut</button></div>
     <div class="ptslist" id="ptslist"></div>
@@ -693,9 +701,14 @@ const SPECIES=SPECIES_RAW.map(r=>({id:r[0],n:r[1],l:r[2],g:r[3],c:r[4],like:r[5]
 /* Rareté mondiale : nombre d'observations GBIF 2010–2026 dans le monde, converti en note 1–5 (seuils par classe : les mammifères, reptiles et insectes sont bien moins signalés que les oiseaux). */
 const WORLD={"flamant-rose":495865,"flamant-nain":57746,"heron-cendre":6789223,"grande-aigrette":12152769,"aigrette-garzette":3463518,"heron-garde-boeufs":3225579,"bihoreau-gris":2808657,"crabier-chevelu":247345,"heron-pourpre":776884,"butor-etoile":370892,"ibis-falcinelle":1347877,"spatule-blanche":1235959,"cigogne-blanche":1709910,"cigogne-noire":346142,"grand-cormoran":5747378,"cormoran-pygmee":147184,"ibis-sacre":360809,"canard-colvert":26972733,"sarcelle-hiver":6430568,"canard-souchet":5721836,"canard-siffleur":2328038,"canard-pilet":3079564,"canard-chipeau":6223206,"nette-rousse":379909,"fuligule-milouin":1429808,"fuligule-morillon":3210284,"fuligule-nyroca":145112,"tadorne-belon":2070605,"oie-cendree":4270615,"cygne-tubercule":5798923,"erismature-tete-blanche":51765,"grebe-castagneux":2599695,"grebe-huppe":3008305,"grebe-cou-noir":1262883,"busard-roseaux":2986225,"busard-saint-martin":4335018,"buse-variable":6658339,"faucon-crecerelle":4875107,"epervier-europe":2280678,"milan-noir":2532458,"milan-royal":1898679,"balbuzard-pecheur":7139397,"faucon-pelerin":2471667,"faucon-emerillon":1753984,"elanion-blanc":634251,"aigle-botte":481137,"circaete":430866,"aigle-criard":233168,"pygargue-queue-blanche":1862412,"hibou-marais":401178,"cheveche":542493,"effraie":305653,"hibou-moyen-duc":313988,"foulque-macroule":5018585,"gallinule":5413988,"rale-eau":862168,"taleve-sultane":652465,"marouette-ponctuee":81585,"grue-cendree":2226832,"avocette":1073818,"echasse-blanche":1335766,"vanneau-huppe":3542821,"pluvier-dore":779394,"pluvier-argente":2065916,"grand-gravelot":1439586,"gravelot-collier-interrompu":433473,"becasseau-variable":2537089,"becasseau-minute":453538,"combattant-varie":1235698,"becassine-marais":1799828,"becassine-sourde":120750,"barge-queue-noire":1123794,"courlis-cendre":1975445,"chevalier-gambette":2289526,"chevalier-arlequin":483120,"chevalier-aboyeur":1639934,"chevalier-culblanc":1379527,"chevalier-guignette":2280440,"oedicneme":181061,"huitrier-pie":3390944,"tournepierre":1824078,"mouette-rieuse":5215269,"mouette-melanocephale":700087,"goeland-railleur":152238,"goeland-leucophee":1658041,"goeland-brun":8090377,"goeland-cendre":2459361,"sterne-caugek":1039474,"sterne-caspienne":2206981,"martin-pecheur":2248512,"huppe-fasciee":1151707,"pic-vert":2121812,"pic-epeiche":4699659,"pic-epeichette":533848,"panure-moustaches":417236,"lusciniole":46429,"bouscarle-cetti":1320333,"cisticole-joncs":1036284,"remiz-penduline":178373,"gorgebleue":826624,"bruant-roseaux":2516657,"fauvette-melanocephale":951505,"fauvette-tete-noire":4939092,"pouillot-veloce":5955313,"roitelet-triple-bandeau":760937,"roitelet-huppe":2413253,"tarier-patre":2235207,"rougequeue-noir":2204747,"rougegorge":8635174,"troglodyte":5021082,"accenteur-mouchet":3180565,"merle-noir":11499339,"grive-musicienne":3657087,"grive-litorne":2239193,"grive-mauvis":1548692,"mesange-charbonniere":10857071,"mesange-bleue":9057035,"orite-longue-queue":2713456,"tarin-aulnes":2407746,"etourneau":24969351,"pie-bavarde":7223256,"geai-chenes":3719539,"choucas":4229269,"corneille-noire":5270832,"pipit-farlouse":2724162,"pipit-spioncelle":350549,"bergeronnette-grise":5871497,"bergeronnette-ruisseaux":1745718,"alouette-champs":2929208,"cochevis-huppe":889435,"moineau-domestique":23154896,"moineau-friquet":3569960,"pinson-arbres":8607079,"verdier":5055545,"chardonneret":5576150,"linotte":2470010,"serin-cini":1411382,"grimpereau-jardins":1641828,"pie-grieche-meridionale":195614,"bruant-proyer":952197,"bruant-zizi":467145,"hirondelle-rustique":14478083,"pigeon-ramier":8496417,"tourterelle-turque":9072446,"faisan-colchide":2888981,"perdrix-rouge":372136,"ragondin":147242,"cheval-camargue":86671,"taureau-camargue":433579,"sanglier":1784881,"renard":1751852,"lapin":1380804,"lievre":1700133,"chevreuil":2377031,"herisson":842855,"ecureuil":860780,"pipistrelle":3014051,"castor":338592,"loutre":206494,"genette":27745,"blaireau":417197,"cistude":43550,"tortue-floride":230738,"lezard-murailles":346845,"couleuvre-viperine":27371,"couleuvre-montpellier":25080,"rainette":53132,"grenouille-rieuse":77081,"sympetrum":465917,"aeshne-mixte":257147,"trithemis":33230,"crocothemis":181525,"anax-empereur":411795,"agrion-elegant":625229,"vulcain":2348080,"belle-dame":1025442,"souci":317498,"azure-porte-queue":59200,"mante":140746,"criquet-egyptien":49280,"argiope":149690,"xylocope":57288};
 const WORLD_THRESH={b:[5e6,1.5e6,3e5,5e4],m:[1.5e6,4e5,8e4,1.5e4],hi:[1e6,3e5,7e4,1.5e4]};
+/* Part des observations GBIF accompagnées d'une photo (StillImage / toutes), par espèce : indicateur de « photographiabilité ».
+   Une espèce entendue partout mais rarement photographiée (râle, bouscarle, hulotte) a une part faible. Converti en note 1–5 par classe. */
+const PHOTO={"flamant-rose":40711,"flamant-nain":3610,"heron-cendre":346779,"grande-aigrette":400182,"aigrette-garzette":137826,"heron-garde-boeufs":96829,"bihoreau-gris":140273,"crabier-chevelu":15427,"heron-pourpre":39982,"butor-etoile":17294,"ibis-falcinelle":40075,"spatule-blanche":97638,"cigogne-blanche":163444,"cigogne-noire":22709,"grand-cormoran":230923,"cormoran-pygmee":11525,"ibis-sacre":14239,"canard-colvert":885701,"sarcelle-hiver":140915,"canard-souchet":150115,"canard-siffleur":83764,"canard-pilet":78759,"canard-chipeau":153661,"nette-rousse":35660,"fuligule-milouin":71943,"fuligule-morillon":146410,"fuligule-nyroca":10436,"tadorne-belon":87033,"oie-cendree":200449,"cygne-tubercule":235590,"erismature-tete-blanche":5163,"grebe-castagneux":95088,"grebe-huppe":169992,"grebe-cou-noir":49781,"busard-roseaux":131332,"busard-saint-martin":88763,"buse-variable":329275,"faucon-crecerelle":231525,"epervier-europe":88444,"milan-noir":112875,"milan-royal":83205,"balbuzard-pecheur":180381,"faucon-pelerin":75961,"faucon-emerillon":33748,"elanion-blanc":17707,"aigle-botte":17407,"circaete":20042,"aigle-criard":4963,"pygargue-queue-blanche":76644,"hibou-marais":23374,"cheveche":31733,"effraie":10802,"hibou-moyen-duc":33818,"foulque-macroule":239215,"gallinule":231374,"rale-eau":19156,"taleve-sultane":19404,"marouette-ponctuee":4843,"grue-cendree":79560,"avocette":64725,"echasse-blanche":72249,"vanneau-huppe":131065,"pluvier-dore":32922,"pluvier-argente":59527,"grand-gravelot":55513,"gravelot-collier-interrompu":15882,"becasseau-variable":76591,"becasseau-minute":19810,"combattant-varie":72181,"becassine-marais":60200,"becassine-sourde":5092,"barge-queue-noire":88534,"courlis-cendre":73441,"chevalier-gambette":107831,"chevalier-arlequin":27267,"chevalier-aboyeur":59052,"chevalier-culblanc":46057,"chevalier-guignette":87588,"oedicneme":6258,"huitrier-pie":128201,"tournepierre":93002,"mouette-rieuse":249090,"mouette-melanocephale":25575,"goeland-railleur":6522,"goeland-leucophee":74504,"goeland-brun":99450,"goeland-cendre":72565,"sterne-caugek":34315,"sterne-caspienne":42480,"martin-pecheur":100222,"huppe-fasciee":46500,"pic-vert":51969,"pic-epeiche":217451,"pic-epeichette":23644,"panure-moustaches":18515,"lusciniole":905,"bouscarle-cetti":10794,"cisticole-joncs":16140,"remiz-penduline":9968,"gorgebleue":74231,"bruant-roseaux":105635,"fauvette-melanocephale":18395,"fauvette-tete-noire":78777,"pouillot-veloce":105859,"roitelet-triple-bandeau":23758,"roitelet-huppe":48365,"tarier-patre":157949,"rougequeue-noir":108352,"rougegorge":244250,"troglodyte":72184,"accenteur-mouchet":77559,"merle-noir":291349,"grive-musicienne":104610,"grive-litorne":120745,"grive-mauvis":55469,"mesange-charbonniere":268991,"mesange-bleue":202108,"orite-longue-queue":105068,"tarin-aulnes":55817,"etourneau":316372,"pie-bavarde":193575,"geai-chenes":129048,"choucas":132761,"corneille-noire":135705,"pipit-farlouse":92605,"pipit-spioncelle":18129,"bergeronnette-grise":257921,"bergeronnette-ruisseaux":61047,"alouette-champs":46410,"cochevis-huppe":20828,"moineau-domestique":478881,"moineau-friquet":143062,"pinson-arbres":250606,"verdier":126491,"chardonneret":169643,"linotte":106459,"serin-cini":35990,"grimpereau-jardins":35981,"pie-grieche-meridionale":4932,"bruant-proyer":30993,"bruant-zizi":12369,"hirondelle-rustique":220342,"pigeon-ramier":210309,"tourterelle-turque":156278,"faisan-colchide":105747,"perdrix-rouge":10548,"ragondin":39766,"cheval-camargue":21922,"taureau-camargue":38916,"sanglier":72290,"renard":151462,"lapin":59912,"lievre":116948,"chevreuil":224234,"herisson":84775,"ecureuil":132641,"pipistrelle":15239,"castor":46081,"loutre":12609,"genette":2815,"blaireau":34811,"cistude":8960,"tortue-floride":177114,"lezard-murailles":108675,"couleuvre-viperine":8568,"couleuvre-montpellier":6360,"rainette":5546,"grenouille-rieuse":18689,"sympetrum":120798,"aeshne-mixte":46216,"trithemis":16732,"crocothemis":60769,"anax-empereur":50255,"agrion-elegant":150116,"vulcain":443876,"belle-dame":281493,"souci":51922,"azure-porte-queue":26558,"mante":100677,"criquet-egyptien":32527,"argiope":99649,"xylocope":21323};
+const PHOTO_THRESH={b:[0.07,0.045,0.03,0.02],m:[0.2,0.12,0.08,0.05],hi:[0.6,0.4,0.25,0.15]};
+function photoNote(share,kind){const t=PHOTO_THRESH[kind]||PHOTO_THRESH.b;return share>=t[0]?1:share>=t[1]?2:share>=t[2]?3:share>=t[3]?4:5}
 function worldKind(sp){const k=sp.h&&sp.h.k;return k==='m'?'m':k?'hi':'b'}
 function worldNote(count,kind){const t=WORLD_THRESH[kind]||WORLD_THRESH.b;return count>=t[0]?1:count>=t[1]?2:count>=t[2]?3:count>=t[3]?4:5}
-for(const sp of SPECIES){const c=WORLD[sp.id];if(Number.isFinite(c)){sp.wc=c;sp.wm=worldNote(c,worldKind(sp))}}
+for(const sp of SPECIES){const c=WORLD[sp.id];if(Number.isFinite(c)){sp.wc=c;sp.wm=worldNote(c,worldKind(sp))}const ph=PHOTO[sp.id];if(Number.isFinite(ph)&&Number.isFinite(c)&&c>0){sp.ps=ph/c;sp.pd=photoNote(sp.ps,worldKind(sp))}}
 const SPECIES_BY=Object.fromEntries(SPECIES.map(s=>[s.id,s]));
 const PROFILES=['p1','p2'];
 
@@ -978,14 +991,15 @@ function customSpecies(e){const g=Math.max(0,Math.min(GROUPS.length-1,e.g|0));re
 /* Cote d'une espèce = 2,5 × beauté × difficulté photo × rareté^1,7, arrondie à 5, entre 5 et 500.
    Rareté = moyenne pondérée des trois raretés (ici, mondiale, période) ; les poids se règlent. */
 const DEFAULT_W={ici:40,monde:40,periode:20};
+const DEFAULT_DW=30; /* part (%) de la note GBIF « photographiabilité » dans la difficulté photo ; le reste = note à la main */
 const COMP_LABELS=['Beauté / iconicité','Rareté mondiale','Rareté ici','Rareté à cette période','Difficulté d\u2019une belle photo'];
 const COMP_LEVELS=[['banal','joli','beau','très beau','icône'],['partout','commun','localisé','rare','très rare'],['omniprésent','facile','à chercher','difficile','exceptionnel'],['pleine saison','présent','en baisse','retardataire','hors saison'],['pose','patience','approche','difficile','très difficile']];
 function rarity(c,w){const tot=(w.ici+w.monde+w.periode)||1;return (c[2]*w.ici+c[1]*w.monde+c[3]*w.periode)/tot}
 function rarityMul(U){return Math.pow(U,1.7)}
 function formulaPts(c,w){const raw=2.5*c[0]*c[4]*rarityMul(rarity(c,w));return Math.max(5,Math.min(500,Math.round(raw/5)*5))}
 function cleanComp(v){if(!Array.isArray(v)||v.length!==5||!v.every(Number.isFinite)) return null;return v.map(x=>Math.max(1,Math.min(5,Math.round(x*2)/2)))}
-function cleanW(v){if(!v||typeof v!=='object') return null;const o={};for(const k of ['ici','monde','periode']){if(!Number.isFinite(v[k])) return null;o[k]=Math.max(0,Math.min(100,Math.round(v[k])))}return (o.ici+o.monde+o.periode)>0?o:null}
-for(const sp of SPECIES){const c=sp.c.slice();if(sp.wm) c[1]=sp.wm;sp.pts=formulaPts(c,DEFAULT_W)}
+function cleanW(v){if(!v||typeof v!=='object') return null;const o={};for(const k of ['ici','monde','periode']){if(!Number.isFinite(v[k])) return null;o[k]=Math.max(0,Math.min(100,Math.round(v[k])))}if(Number.isFinite(v.photo)) o.photo=Math.max(0,Math.min(100,Math.round(v.photo)));return (o.ici+o.monde+o.periode)>0?o:null}
+for(const sp of SPECIES){const c=sp.c.slice();if(sp.wm) c[1]=sp.wm;if(sp.pd) c[4]=Math.round((c[4]*(1-DEFAULT_DW/100)+sp.pd*DEFAULT_DW/100)*2)/2;sp.pts=formulaPts(c,DEFAULT_W)}
 function newId(by,at){return by+'-'+at.toString(36)+'-'+Math.floor(Math.random()*1e6).toString(36)}
 function cleanEntry(e){
   if(!e||typeof e!=='object'||!KINDS.has(e.k)||!PROFILES.includes(e.by)||!Number.isFinite(e.at)) return null;
@@ -1094,7 +1108,7 @@ function mergeLog(local,incoming){
   return {added,extra};
 }
 function r1(x){return Math.round(x*10)/10}
-function compOf(v,sid,lieu){const sp=spOf(sid);if(v.comp[sid]) return v.comp[sid];const base=sp?sp.c.slice():[3,3,3,3,3];if(sp&&sp.wm) base[1]=sp.wm;const pr=lieuProfile(v,lieu);if(pr&&pr[sid]){base[2]=pr[sid][0];base[3]=pr[sid][1]}return base}
+function compOf(v,sid,lieu){const sp=spOf(sid);if(v.comp[sid]) return v.comp[sid];const base=sp?sp.c.slice():[3,3,3,3,3];if(sp&&sp.wm) base[1]=sp.wm;if(sp&&sp.pd){const dw=(v.w.photo!=null?v.w.photo:DEFAULT_DW)/100;base[4]=Math.round((base[4]*(1-dw)+sp.pd*dw)*2)/2}const pr=lieuProfile(v,lieu);if(pr&&pr[sid]){base[2]=pr[sid][0];base[3]=pr[sid][1]}return base}
 function compSource(v,sid,lieu){if(v.comp[sid]) return 'manuel';const pr=lieuProfile(v,lieu);return (pr&&pr[sid])?'gbif':'defaut'}
 function formulaOf(v,sid,lieu){return formulaPts(compOf(v,sid,lieu),v.w)}
 function basePts(v,sid,lieu){const x=v.pts[sid];return (typeof x==='number'&&x>=0)?x:formulaOf(v,sid,lieu)}
@@ -1183,7 +1197,7 @@ function describeEntry(e,before){ /* before : état juste avant l'entrée */
     case 'add': return `${who} ${before.custom[e.cid]?'modifie':'ajoute'} une espèce hors liste : ${e.n} (${e.c.join(' ')}, ${GROUPS[e.g]})`;
     case 'xdel': return `${who} retire l'espèce hors liste ${before.custom[e.cid]?before.custom[e.cid].n:''}`;
     case 'comp': {const b=compOf(before,e.s);const diffs=[];for(let i=0;i<5;i++) if(b[i]!==e.v[i]) diffs.push(`${COMP_LABELS[i].toLowerCase()} ${fmtPts(b[i])} → ${fmtPts(e.v[i])}`);const after=Object.assign({},before,{comp:Object.assign({},before.comp,{[e.s]:e.v})});return `${who} note ${sp} : ${diffs.join(', ')||'sans changement'} (cote ${fmtPts(basePts(before,e.s))} → ${fmtPts(basePts(after,e.s))})`}
-    case 'w': return `${who} change les poids de rareté : ici ${before.w.ici} / monde ${before.w.monde} / période ${before.w.periode} → ${e.v.ici} / ${e.v.monde} / ${e.v.periode}`;
+    case 'w': return `${who} change les poids : rareté ici ${before.w.ici} / monde ${before.w.monde} / période ${before.w.periode} → ${e.v.ici} / ${e.v.monde} / ${e.v.periode}${e.v.photo!=null?`, part GBIF de la difficulté photo ${before.w.photo!=null?before.w.photo:DEFAULT_DW} → ${e.v.photo} %`:''}`;
     case 'pct': return `${who} change le barème : ${before.pct.join('/')} → ${e.v.join('/')} %`;
     case 'mode': return `${who} passe en mode « ${e.v==='duel'?'le meilleur rafle tout':'chacun ses points'} »`;
     case 'name': return `${who} renomme ${n(e.p)} en ${e.v||'(vide)'}`;
@@ -1228,7 +1242,7 @@ function readLS(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):nu
 function writeLS(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 let log=normalizeLog(readLS(LS_LOG)||readLS(LS_V1)||[]);
 let view=fold(log);
-const ui={tab:'birds',q:'',site:'all',like:'all',group:'all',sort:'group',taken:'all',ico:false,boardSort:'pts',device:readLS(LS_DEV)||'',me:readLS(LS_ME)||'',lieu:readLS(LS_LIEU)||'pg'};
+const ui={tab:'birds',q:'',site:'all',like:'all',group:'all',sort:'group',dir:-1,taken:'all',ico:false,boardSort:'pts',device:readLS(LS_DEV)||'',me:readLS(LS_ME)||'',lieu:readLS(LS_LIEU)||'pg'};
 if(!PROFILES.includes(ui.device)) ui.device='';
 if(!PROFILES.includes(ui.me)) ui.me=ui.device||'p1';
 const other=p=>p==='p1'?'p2':'p1';
@@ -1278,10 +1292,11 @@ function filtered(){
     if(q&&!fold0(sp.n).includes(q)&&!fold0(sp.l).includes(q)&&!(sp.alt&&fold0(sp.alt).includes(q))) return false;
     return true;
   });
-  const bp=sp=>basePts(view,sp.id,ui.lieu);
-  if(ui.sort==='pts') list.sort((a,b)=>bp(b)-bp(a)||a.n.localeCompare(b.n,'fr'));
-  else if(ui.sort==='name') list.sort((a,b)=>a.n.localeCompare(b.n,'fr'));
-  else list.sort((a,b)=>a.g-b.g||bp(b)-bp(a)||a.n.localeCompare(b.n,'fr'));
+  const bp=sp=>basePts(view,sp.id,ui.lieu),d=-ui.dir; /* dir -1 = décroissant (le plus fort d'abord) */
+  if(ui.sort==='pts') list.sort((a,b)=>d*(bp(b)-bp(a))||a.n.localeCompare(b.n,'fr'));
+  else if(ui.sort==='name') list.sort((a,b)=>ui.dir*a.n.localeCompare(b.n,'fr'));
+  else if(/^c[0-4]$/.test(ui.sort)){const i=Number(ui.sort[1]);const cv=sp=>compOf(view,sp.id,ui.lieu)[i];list.sort((a,b)=>d*(cv(b)-cv(a))||bp(b)-bp(a)||a.n.localeCompare(b.n,'fr'))}
+  else list.sort((a,b)=>a.g-b.g||d*(bp(b)-bp(a))||a.n.localeCompare(b.n,'fr'));
   return list;
 }
 function tierBtns(sp,p){
@@ -1292,6 +1307,7 @@ function tierBtns(sp,p){
 function tagsHTML(sp,withGroup){
   const lk=likeOf(view,sp,ui.lieu);
   let t=`<span class="tag">${SITES[sp.site]}</span><span class="tag l${lk}">${LIKE[lk]}</span>`;
+  if(!withGroup&&/^c[0-4]$/.test(ui.sort)){const i=Number(ui.sort[1]);const c=compOf(view,sp.id,ui.lieu)[i];t+=`<span class="tag crit">${['Beauté','Monde','Ici','Période','Photo'][i]} ${fmtPts(c)} · ${Number.isInteger(c)?COMP_LEVELS[i][c-1]:'calculé'}</span>`}
   if(sp.ic) t+=`<span class="tag ic">★ Iconique ×${fmtPts(view.icoMul)}</span>`;
   for(const p of PROFILES) if(isObj(view,p,sp.id)) t+=`<span class="tag obj ${p}">Objectif ${esc(nameOf(p))}</span>`;
   if(withGroup) t+=`<span class="tag">${esc(GROUPS[sp.g])}</span>`;
@@ -1391,10 +1407,18 @@ function renderSheet(sid){
     ${tierBtns(sp,p)}
     <div class="when"><span>${t&&at?'Coché '+fmtTime.format(new Date(at))+(tl?' · '+esc(lieuName(view,tl)):''):'Pas encore de photo'}</span><button type="button" class="objbtn${ob?' on':''}" data-obj="${p}" aria-pressed="${ob}">${ob?'★ Objectif':'☆ En faire un objectif'}</button></div>
     ${t?`<div class="photo-row">${photoOf(p,sid)?`<img src="${photoOf(p,sid)}" alt="Photo de ${esc(nameOf(p))}">`:''}<div class="btns"><label class="btn small"><input type="file" accept="image/*" data-photo="${p}">${photoOf(p,sid)?'Remplacer la photo':'+ Ajouter la photo (vignette)'}</label>${photoOf(p,sid)?`<button type="button" class="btn small" data-photo-del="${p}">Retirer</button>`:''}</div></div>`:''}</div>`}).join('');
-  const comps=COMP_LABELS.map((lab,i)=>`<div class="crow"><label for="comp-${i}">${lab}${(i===2||i===3)?` <small>(${esc(lieuName(view,ui.lieu))}${src==='gbif'?', GBIF':src==='manuel'?', à la main':''})</small>`:(i===1&&sp.wc)?` <small>(${sp.wc.toLocaleString('fr-FR')} obs. GBIF monde${src==='manuel'?', à la main':''})</small>`:''}</label><select id="comp-${i}" data-ci="${i}">${[1,2,3,4,5].map(n=>`<option value="${n}"${c[i]===n?' selected':''}>${n} · ${COMP_LEVELS[i][n-1]}</option>`).join('')}</select></div>`).join('');
+  const comps=COMP_LABELS.map((lab,i)=>`<div class="crow"><label for="comp-${i}">${lab}${(i===2||i===3)?` <small>(${esc(lieuName(view,ui.lieu))}${src==='gbif'?', GBIF':src==='manuel'?', à la main':''})</small>`:(i===1&&sp.wc)?` <small>(${sp.wc.toLocaleString('fr-FR')} obs. GBIF monde${src==='manuel'?', à la main':''})</small>`:(i===4&&sp.ps!=null)?` <small>(${(sp.ps*100).toFixed(1).replace('.',',')} % des obs. GBIF ont une photo → note ${sp.pd} ; à la main ${sp.c[4]}${src==='manuel'?' ; fixée à la main':''})</small>`:''}</label><select id="comp-${i}" data-ci="${i}">${(Number.isInteger(c[i])?[1,2,3,4,5]:[1,2,3,4,5,c[i]].sort((a,b)=>a-b)).map(n=>`<option value="${n}"${c[i]===n?' selected':''}>${fmtPts(n)} · ${Number.isInteger(n)?COMP_LEVELS[i][n-1]:'calculé'}</option>`).join('')}</select></div>`).join('');
   const tipAll=TIPS[sid]||{};const tipGen=typeof tipAll==='string'?tipAll:tipAll.g;const tipLieu=typeof tipAll==='object'?tipAll[ui.lieu]:null;
   const canListen=!(sp.h&&sp.h.k==='m')&&!(sp.h&&sp.h.k==='h'&&sp.h.t!=='frog')&&!(sp.h&&sp.h.k==='i'&&sp.h.t!=='grasshopper');
-  const listen=canListen&&!sp.custom?`<a class="btn small" href="https://xeno-canto.org/explore?query=${encodeURIComponent(sp.l.split(' /')[0].replace(' sp.',''))}" target="_blank" rel="noopener">▶ Écouter (xeno-canto)</a>`:'';
+  const latin=sp.l.split(' /')[0].replace(' sp.','');
+  const slug=sp.n.replace(/œ/g,'oe').replace(/Œ/g,'oe').replace(/æ/g,'ae').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/['\u2019 ]+/g,'.').replace(/[^a-z0-9.-]/g,'');
+  const isBird=!(sp.h&&sp.h.k);
+  const links=sp.custom?'':[
+    canListen?`<a class="btn small" href="https://xeno-canto.org/explore?query=${encodeURIComponent(latin)}" target="_blank" rel="noopener">▶ Écouter</a>`:'',
+    isBird?`<a class="btn small" href="https://www.oiseaux.net/oiseaux/${slug}.html" target="_blank" rel="noopener">Fiche oiseaux.net</a>`:`<a class="btn small" href="https://fr.wikipedia.org/w/index.php?search=${encodeURIComponent(latin)}&go=Go" target="_blank" rel="noopener">Fiche Wikipédia</a>`,
+    `<a class="btn small" href="https://www.inaturalist.org/taxa/search?q=${encodeURIComponent(latin)}" target="_blank" rel="noopener">Photos iNaturalist</a>`
+  ].filter(Boolean).join(' ');
+  const listen=links;
   const note=view.notes[sid]?view.notes[sid].t:'';
   $('#sheet').innerHTML=`<div class="grab"></div><div class="hd"><div class="head">${drawSVG(sp,'s-'+sid)}</div><div><h2>${esc(sp.n)}</h2><p class="latin" style="margin:0;font-style:italic;color:var(--ink-2);font-size:13px">${esc(sp.l)}</p>
     <div class="tags">${tagsHTML(sp,true)}</div></div><button type="button" class="close" aria-label="Fermer">×</button></div>
@@ -1505,7 +1529,7 @@ function renderSettings(){
   $('#mode-each').checked=view.mode!=='duel';$('#mode-duel').checked=view.mode==='duel';
   $('#icomul').value=view.icoMul;$('#objbonus').value=view.objPct;$('#topn').value=view.topN||'';
   renderLieux();
-  $('#w-ici').value=view.w.ici;$('#w-monde').value=view.w.monde;$('#w-periode').value=view.w.periode;
+  $('#w-ici').value=view.w.ici;$('#w-monde').value=view.w.monde;$('#w-periode').value=view.w.periode;$('#w-photo').value=view.w.photo!=null?view.w.photo:DEFAULT_DW;
   $('#bonus-p').innerHTML=PROFILES.map(p=>`<option value="${p}">${esc(nameOf(p))}</option>`).join('');
   customForm();renderCustomList();renderObjectives();renderBonusList();renderPtsList();
 }
@@ -1679,7 +1703,9 @@ for(const [id,key] of [['#site-chips','site'],['#like-chips','like']]) $(id).add
 $('#ico-chip').addEventListener('click',e=>{ui.ico=!ui.ico;e.currentTarget.setAttribute('aria-pressed',String(ui.ico));renderList()});
 const gs=$('#group-sel');GROUPS.forEach((g,i)=>{const o=document.createElement('option');o.value=String(i);o.textContent=g;gs.appendChild(o)});
 gs.addEventListener('change',e=>{ui.group=e.target.value;renderList()});
-$('#sort-sel').addEventListener('change',e=>{ui.sort=e.target.value;renderList()});
+function sortDirLabel(){const asc=ui.dir>0;const s=ui.sort;const lbl=s==='name'?(asc?'↑ A→Z':'↓ Z→A'):s==='c0'?(asc?'↑ du moins beau au plus beau':'↓ du plus beau au moins beau'):/^c[1-3]$/.test(s)?(asc?'↑ du plus commun au plus rare':'↓ du plus rare au plus commun'):s==='c4'?(asc?'↑ du plus facile au plus difficile':'↓ du plus difficile au plus facile'):(asc?'↑ croissant':'↓ décroissant');$('#sort-dir').textContent=lbl}
+$('#sort-sel').addEventListener('change',e=>{ui.sort=e.target.value;ui.dir=ui.sort==='name'?1:-1;sortDirLabel();renderList()});
+$('#sort-dir').addEventListener('click',()=>{ui.dir=-ui.dir;sortDirLabel();renderList()});
 $('#taken-chips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b) return;ui.taken=b.dataset.v;$$('#taken-chips .chip').forEach(c=>c.setAttribute('aria-pressed',String(c===b)));renderList()});
 $('#board-sort').addEventListener('change',e=>{ui.boardSort=e.target.value;renderBoard()});
 $('#board').addEventListener('click',e=>{const it=e.target.closest('.bitem');if(it) openSheet(it.dataset.id)});
@@ -1698,7 +1724,7 @@ $('#mode-duel').addEventListener('change',()=>{add({k:'mode',v:'duel'});afterCha
 $('#icomul').addEventListener('change',e=>{const v=Number(e.target.value);if(Number.isFinite(v)){add({k:'ico',v:Math.max(1,Math.min(5,v))});afterChange()}});
 $('#topn').addEventListener('change',e=>{const v=e.target.value.trim()===''?0:Number(e.target.value);if(Number.isFinite(v)){add({k:'topn',v:Math.max(0,v)});afterChange();toast(v?`Seules les ${Math.round(v)} meilleures prises comptent`:'Toutes les prises comptent')}});
 $('#objbonus').addEventListener('change',e=>{const v=Number(e.target.value);if(Number.isFinite(v)){add({k:'objpct',v:Math.max(0,Math.min(500,v))});afterChange()}});
-['#w-ici','#w-monde','#w-periode'].forEach(id=>$(id).addEventListener('change',()=>{const w={ici:Number($('#w-ici').value),monde:Number($('#w-monde').value),periode:Number($('#w-periode').value)};if(cleanW(w)){add({k:'w',v:w});afterChange();toast('Poids de rareté enregistrés : toutes les cotes calculées suivent')}else toast('Mettez au moins un poids au-dessus de 0')}));
+['#w-ici','#w-monde','#w-periode','#w-photo'].forEach(id=>$(id).addEventListener('change',()=>{const w={ici:Number($('#w-ici').value),monde:Number($('#w-monde').value),periode:Number($('#w-periode').value),photo:Number($('#w-photo').value)};if(cleanW(w)){add({k:'w',v:w});afterChange();toast('Poids enregistrés : toutes les cotes calculées suivent')}else toast('Mettez au moins un poids de rareté au-dessus de 0')}));
 $('#x-add').addEventListener('click',()=>{
   const n=$('#x-n').value.trim();if(!n){toast('Donnez un nom à l\u2019espèce');$('#x-n').focus();return}
   const c=[0,1,2,3,4].map(i=>Number($('#x-c'+i).value));
