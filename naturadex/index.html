@@ -138,6 +138,12 @@ body.cols-2 .card h3,body.cols-3 .card h3{font-size:15px}
 .qr img,.qr canvas{background:#fff;padding:10px;border-radius:var(--radius-card);max-width:100%;height:auto}
 .objbtn{border:0;background:var(--surface-2);border-radius:999px;padding:5px 10px;font-size:12.5px;font-weight:700;color:var(--ink-2);cursor:pointer}
 .objbtn.on{background:var(--ico-fill);color:var(--ico-on)}
+.objbtn.on[data-favp]{background:var(--t3-fill);color:var(--t3-on)}
+.favbtn{border:0;background:transparent;font-size:20px;line-height:1;padding:2px 4px;cursor:pointer;color:var(--ink-2);opacity:.55}
+.favbtn.on{color:var(--t3);opacity:1}
+.card .pts .favbtn{display:block;margin:4px 0 0 auto}
+.tag.fav{background:var(--t3-fill);color:var(--t3-on)}
+.chips .chip.fav[aria-pressed="true"]{background:var(--t3-fill);color:var(--t3-on)}
 .card .pts{grid-area:pts;text-align:right;font-family:var(--font-display);font-weight:800;font-size:22px;line-height:1;font-variant-numeric:tabular-nums;padding-top:2px}
 .card .pts small{display:block;font-size:11px;font-weight:600;color:var(--ink-2);font-family:var(--font-body);margin-top:2px}
 .tiers{grid-area:tiers;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}
@@ -313,6 +319,7 @@ table.tbl th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:
       <button type="button" class="chip" data-v="2" aria-pressed="false">Possibles</button>
       <button type="button" class="chip" data-v="3" aria-pressed="false">Rares</button>
       <button type="button" class="chip ico" id="ico-chip" aria-pressed="false">★ Iconiques</button>
+      <button type="button" class="chip fav" id="fav-chip" aria-pressed="false">♥ Mes favoris</button>
     </div>
     <div class="row">
       <select id="group-sel" aria-label="Famille"><option value="all">Toutes les familles</option></select>
@@ -427,6 +434,9 @@ table.tbl th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:
     <div class="field"><div class="inl"><label for="objbonus" style="width:200px">Objectif atteint en portfolio</label>+ <input id="objbonus" type="number" min="0" max="500" step="10"> %</div></div>
     <div class="field"><div class="inl"><label for="topn" style="width:200px">Ne compter que les meilleures prises</label><input id="topn" type="number" min="0" max="500" step="1" placeholder="toutes"> prises</div><p class="hint" style="margin:4px 0 0">Vide ou 0 : tout compte. Avec 10, seules les 10 espèces qui rapportent le plus à chacun entrent dans le score ; les bonus manuels s'ajoutent toujours.</p></div>
     <div id="objectives"></div>
+    <h2 style="margin-top:14px">Favoris</h2>
+    <p class="hint">Les espèces qu'on rêve de voir, sans bonus : chacun les coche d'un cœur, et les autres les voient sur les cartes.</p>
+    <div id="favorites"></div>
   </div>
   <div class="panel">
     <h2>Bonus et malus manuels</h2>
@@ -987,7 +997,7 @@ const RARITY={pg:{"flamant-rose":[1,1],"flamant-nain":[4,3],"heron-cendre":[1,1]
 const MONTHS_FR=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
 const GBIF_COUNTS={"pg":{"flamant-rose":[1448,12366,2],"flamant-nain":[12,244,123],"heron-cendre":[981,7749,9],"grande-aigrette":[1001,6697,8],"aigrette-garzette":[1852,13413,1],"heron-garde-boeufs":[439,4255,30],"bihoreau-gris":[113,3081,81],"crabier-chevelu":[15,2232,121],"heron-pourpre":[8,2521,131],"butor-etoile":[23,795,118],"ibis-falcinelle":[165,7981,68],"spatule-blanche":[100,2882,86],"cigogne-blanche":[657,5899,20],"cigogne-noire":[38,217,113],"grand-cormoran":[639,4381,22],"cormoran-pygmee":[0,0,0],"ibis-sacre":[56,431,103],"canard-colvert":[1272,10075,4],"sarcelle-hiver":[807,3323,14],"canard-souchet":[380,2251,35],"canard-siffleur":[99,561,87],"canard-pilet":[34,299,114],"canard-chipeau":[129,1487,78],"nette-rousse":[53,2325,105],"fuligule-milouin":[45,342,109],"fuligule-morillon":[12,41,124],"fuligule-nyroca":[0,0,0],"tadorne-belon":[253,4155,47],"oie-cendree":[82,436,94],"cygne-tubercule":[896,6906,12],"erismature-tete-blanche":[0,0,0],"grebe-castagneux":[157,1384,71],"grebe-huppe":[236,2681,53],"grebe-cou-noir":[168,873,66],"busard-roseaux":[1287,7048,3],"busard-saint-martin":[252,1298,48],"buse-variable":[638,3643,23],"faucon-crecerelle":[393,2395,32],"epervier-europe":[155,797,72],"milan-noir":[6,2593,132],"milan-royal":[111,376,82],"balbuzard-pecheur":[65,472,100],"faucon-pelerin":[81,369,95],"faucon-emerillon":[87,402,93],"elanion-blanc":[2,0,140],"aigle-botte":[181,729,63],"circaete":[11,1001,126],"aigle-criard":[55,303,104],"pygargue-queue-blanche":[2,0,141],"hibou-marais":[0,27,0],"cheveche":[3,27,138],"effraie":[110,492,83],"hibou-moyen-duc":[3,37,139],"foulque-macroule":[767,6885,16],"gallinule":[1059,6908,5],"rale-eau":[544,2318,26],"taleve-sultane":[233,2573,55],"marouette-ponctuee":[0,0,0],"grue-cendree":[188,2411,61],"avocette":[496,4585,27],"echasse-blanche":[160,7115,69],"vanneau-huppe":[370,2284,36],"pluvier-dore":[61,456,101],"pluvier-argente":[354,2366,38],"grand-gravelot":[195,1408,60],"gravelot-collier-interrompu":[73,1872,98],"becasseau-variable":[225,1807,57],"becasseau-minute":[93,951,91],"combattant-varie":[175,1218,64],"becassine-marais":[561,2257,25],"becassine-sourde":[6,30,133],"barge-queue-noire":[49,1143,108],"courlis-cendre":[370,2121,37],"chevalier-gambette":[277,2335,45],"chevalier-arlequin":[234,2317,54],"chevalier-aboyeur":[182,1588,62],"chevalier-culblanc":[306,1775,44],"chevalier-guignette":[226,1817,56],"oedicneme":[9,88,129],"huitrier-pie":[14,1491,122],"tournepierre":[168,1242,67],"mouette-rieuse":[1039,9529,7],"mouette-melanocephale":[43,1824,111],"goeland-railleur":[105,1534,85],"goeland-leucophee":[951,7950,11],"goeland-brun":[24,175,117],"goeland-cendre":[4,22,136],"sterne-caugek":[258,1700,46],"sterne-caspienne":[96,1170,89],"martin-pecheur":[1058,4399,6],"huppe-fasciee":[51,1440,107],"pic-vert":[11,122,127],"pic-epeiche":[30,192,115],"pic-epeichette":[16,182,120],"panure-moustaches":[159,939,70],"lusciniole":[99,792,88],"bouscarle-cetti":[970,6671,10],"cisticole-joncs":[238,4024,52],"remiz-penduline":[152,571,73],"gorgebleue":[109,232,84],"bruant-roseaux":[461,2113,29],"fauvette-melanocephale":[640,4537,21],"fauvette-tete-noire":[202,1143,58],"pouillot-veloce":[684,2518,18],"roitelet-triple-bandeau":[137,401,77],"roitelet-huppe":[80,233,96],"tarier-patre":[314,1092,43],"rougequeue-noir":[250,1022,49],"rougegorge":[702,1936,17],"troglodyte":[151,578,74],"accenteur-mouchet":[28,127,116],"merle-noir":[172,972,65],"grive-musicienne":[95,399,90],"grive-litorne":[4,27,137],"grive-mauvis":[12,38,125],"mesange-charbonniere":[334,2341,40],"mesange-bleue":[417,1444,31],"orite-longue-queue":[70,438,99],"tarin-aulnes":[52,99,106],"etourneau":[807,5103,15],"pie-bavarde":[658,4351,19],"geai-chenes":[6,51,134],"choucas":[492,2698,28],"corneille-noire":[382,2338,33],"pipit-farlouse":[382,1638,34],"pipit-spioncelle":[42,242,112],"bergeronnette-grise":[331,1252,41],"bergeronnette-ruisseaux":[79,220,97],"alouette-champs":[145,1202,75],"cochevis-huppe":[335,2715,39],"moineau-domestique":[862,6465,13],"moineau-friquet":[144,1154,76],"pinson-arbres":[322,1402,42],"verdier":[59,938,102],"chardonneret":[242,2288,51],"linotte":[89,574,92],"serin-cini":[22,219,119],"grimpereau-jardins":[11,142,128],"pie-grieche-meridionale":[5,37,135],"bruant-proyer":[121,1154,80],"bruant-zizi":[9,58,130],"hirondelle-rustique":[196,3845,59],"pigeon-ramier":[123,1706,79],"tourterelle-turque":[567,4477,24],"faisan-colchide":[250,1621,50],"perdrix-rouge":[45,334,110]},"mv":{"flamant-rose":[964,7200,14],"flamant-nain":[0,0,0],"heron-cendre":[1006,7023,12],"grande-aigrette":[1050,6973,8],"aigrette-garzette":[1038,8259,10],"heron-garde-boeufs":[491,4316,38],"bihoreau-gris":[54,1712,115],"crabier-chevelu":[16,1770,129],"heron-pourpre":[12,2627,134],"butor-etoile":[91,2079,108],"ibis-falcinelle":[114,4513,103],"spatule-blanche":[84,2314,109],"cigogne-blanche":[492,6285,37],"cigogne-noire":[148,781,94],"grand-cormoran":[953,5961,15],"cormoran-pygmee":[0,0,0],"ibis-sacre":[3,51,139],"canard-colvert":[1044,8172,9],"sarcelle-hiver":[684,3564,24],"canard-souchet":[538,3140,33],"canard-siffleur":[136,769,97],"canard-pilet":[115,596,102],"canard-chipeau":[314,2514,57],"nette-rousse":[96,2479,106],"fuligule-milouin":[126,916,99],"fuligule-morillon":[37,442,119],"fuligule-nyroca":[3,64,140],"tadorne-belon":[199,3286,80],"oie-cendree":[408,2227,45],"cygne-tubercule":[552,4686,32],"erismature-tete-blanche":[0,0,0],"grebe-castagneux":[243,1796,72],"grebe-huppe":[518,3979,34],"grebe-cou-noir":[391,1873,51],"busard-roseaux":[715,4839,21],"busard-saint-martin":[278,1618,65],"buse-variable":[653,4088,25],"faucon-crecerelle":[450,2763,43],"epervier-europe":[399,1904,49],"milan-noir":[14,4957,133],"milan-royal":[277,717,66],"balbuzard-pecheur":[156,1001,92],"faucon-pelerin":[169,950,84],"faucon-emerillon":[265,915,68],"elanion-blanc":[5,57,137],"aigle-botte":[215,756,77],"circaete":[47,2742,116],"aigle-criard":[21,100,127],"pygargue-queue-blanche":[0,0,0],"hibou-marais":[10,73,135],"cheveche":[27,433,124],"effraie":[62,284,113],"hibou-moyen-duc":[15,102,130],"foulque-macroule":[696,5591,23],"gallinule":[394,2589,50],"rale-eau":[620,2503,28],"taleve-sultane":[36,403,120],"marouette-ponctuee":[0,46,0],"grue-cendree":[302,1221,58],"avocette":[157,1736,90],"echasse-blanche":[19,4260,128],"vanneau-huppe":[512,2803,36],"pluvier-dore":[143,674,95],"pluvier-argente":[322,1312,56],"grand-gravelot":[128,639,98],"gravelot-collier-interrompu":[24,709,126],"becasseau-variable":[187,878,83],"becasseau-minute":[56,416,114],"combattant-varie":[122,1169,101],"becassine-marais":[578,2399,30],"becassine-sourde":[31,97,122],"barge-queue-noire":[15,664,131],"courlis-cendre":[595,3342,29],"chevalier-gambette":[206,1396,78],"chevalier-arlequin":[153,1582,93],"chevalier-aboyeur":[250,2226,71],"chevalier-culblanc":[481,3469,40],"chevalier-guignette":[233,2089,73],"oedicneme":[92,2695,107],"huitrier-pie":[4,361,138],"tournepierre":[9,91,136],"mouette-rieuse":[881,6088,16],"mouette-melanocephale":[63,1168,111],"goeland-railleur":[137,817,96],"goeland-leucophee":[801,6789,17],"goeland-brun":[15,87,132],"goeland-cendre":[0,39,0],"sterne-caugek":[157,623,91],"sterne-caspienne":[160,1976,89],"martin-pecheur":[1001,4268,13],"huppe-fasciee":[25,2281,125],"pic-vert":[124,1345,100],"pic-epeiche":[109,685,104],"pic-epeichette":[161,792,88],"panure-moustaches":[289,858,62],"lusciniole":[360,1247,53],"bouscarle-cetti":[1784,8434,2],"cisticole-joncs":[258,4526,70],"remiz-penduline":[1011,1575,11],"gorgebleue":[488,1135,39],"bruant-roseaux":[1737,3104,4],"fauvette-melanocephale":[1322,5118,7],"fauvette-tete-noire":[1745,4418,3],"pouillot-veloce":[2017,3691,1],"roitelet-triple-bandeau":[652,1051,26],"roitelet-huppe":[206,347,79],"tarier-patre":[404,1417,46],"rougequeue-noir":[403,1108,47],"rougegorge":[1623,3194,5],"troglodyte":[471,963,41],"accenteur-mouchet":[275,471,67],"merle-noir":[518,1473,35],"grive-musicienne":[402,774,48],"grive-litorne":[35,224,121],"grive-mauvis":[44,99,117],"mesange-charbonniere":[702,2989,22],"mesange-bleue":[1500,3011,6],"orite-longue-queue":[193,967,82],"tarin-aulnes":[228,395,75],"etourneau":[562,4305,31],"pie-bavarde":[323,3291,55],"geai-chenes":[63,295,112],"choucas":[283,2844,63],"corneille-noire":[365,3508,52],"pipit-farlouse":[735,2036,20],"pipit-spioncelle":[230,492,74],"bergeronnette-grise":[293,929,61],"bergeronnette-ruisseaux":[196,415,81],"alouette-champs":[409,3138,44],"cochevis-huppe":[457,2646,42],"moineau-domestique":[621,3832,27],"moineau-friquet":[163,811,87],"pinson-arbres":[771,2134,18],"verdier":[297,1678,60],"chardonneret":[757,3489,19],"linotte":[165,625,86],"serin-cini":[169,399,85],"grimpereau-jardins":[41,321,118],"pie-grieche-meridionale":[103,1194,105],"bruant-proyer":[340,3178,54],"bruant-zizi":[31,145,123],"hirondelle-rustique":[281,4135,64],"pigeon-ramier":[302,2359,59],"tourterelle-turque":[222,2006,76],"faisan-colchide":[262,2379,69],"perdrix-rouge":[70,981,110]}}; /* {lieu:{espèce:[obs. oct.–nov., obs. année, rang oct.–nov.]}} carré ±9 km, 2010–2026 */
 const LIEU_INFO={pg:'Parc : 10 h – 17 h d\u2019octobre à mars, sortie ouverte jusqu\u2019au coucher du soleil ; 7 km de sentiers sur 60 ha ; entrée 8 € (à vérifier sur parcornithologique.com)',mv:'Sentier de la Palunette : 2,5 km, 2 observatoires et une plateforme ; 15 km de pistes ; parking au bout d\u2019une piste de 2 km depuis Mas-Thibert (horaires sur marais-vigueirat.reserves-naturelles.org)'};
-const KINDS=new Set(['tier','pts','comp','w','pct','mode','name','ico','objpct','obj','bonus','bonusdel','note','reset','unreset','add','xdel','lieuadd','profile','topn','end','resume','player','lieusp','lieudel']);
+const KINDS=new Set(['tier','pts','comp','w','pct','mode','name','ico','objpct','obj','bonus','bonusdel','note','reset','unreset','add','xdel','lieuadd','profile','topn','end','resume','player','lieusp','lieudel','fav']);
 const isLieuId=l=>!!LIEUX[l]||/^l-[a-z0-9]{3,40}$/.test(String(l||''));
 /* Espèces hors liste : ajoutées par les joueurs (entrée « add »), identifiant x-…, dessin générique par famille. */
 const CUSTOM={};
@@ -1137,6 +1147,7 @@ function cleanEntry(e){
     case 'ico': if(!Number.isFinite(e.v)) return null; o.v=Math.max(1,Math.min(5,e.v));break;
     case 'objpct': if(!Number.isFinite(e.v)) return null; o.v=Math.max(0,Math.min(500,e.v));break;
     case 'obj': if(!PROFILES.includes(e.p)||!Array.isArray(e.v)) return null; o.p=e.p;o.v=e.v.filter(knownSpecies).slice(0,OBJ_MAX);break;
+    case 'fav': if(!PROFILES.includes(e.p)||!knownSpecies(e.s)) return null; o.p=e.p;o.s=e.s;o.on=e.on!==false;break;
     case 'bonus': if(!PROFILES.includes(e.p)||!Number.isFinite(e.v)) return null; o.bid=String(e.bid||o.id).slice(0,60);o.p=e.p;o.l=String(e.l||'').slice(0,60);o.v=e.v;break;
     case 'bonusdel': if(!e.bid) return null; o.bid=String(e.bid).slice(0,60);break;
     case 'note': if(!knownSpecies(e.s)) return null; o.s=e.s;o.v=String(e.v||'').slice(0,500);break;
@@ -1169,7 +1180,7 @@ function normalizeLog(raw){
   return out;
 }
 const perPlayer=f=>Object.fromEntries(PROFILES.map(p=>[p,f()]));
-function emptyView(){return {custom:{},lieux:{},profiles:{},lieuSpecies:{},present:{},topN:0,ended:0,players:DEFAULT_PLAYERS.slice(),tiers:perPlayer(()=>({})),tierAt:perPlayer(()=>({})),tierLieu:perPlayer(()=>({})),pts:{},comp:{},w:Object.assign({},DEFAULT_W),pct:DEFAULT_PCT.slice(),mode:'each',names:Object.assign({},DEFAULT_NAMES),icoMul:2,objPct:100,obj:perPlayer(()=>[]),bonus:[],bonusMap:new Map(),deleted:new Set(),notes:{},resetAt:0,events:[]}}
+function emptyView(){return {custom:{},lieux:{},profiles:{},lieuSpecies:{},present:{},topN:0,ended:0,players:DEFAULT_PLAYERS.slice(),tiers:perPlayer(()=>({})),tierAt:perPlayer(()=>({})),tierLieu:perPlayer(()=>({})),pts:{},comp:{},w:Object.assign({},DEFAULT_W),pct:DEFAULT_PCT.slice(),mode:'each',names:Object.assign({},DEFAULT_NAMES),icoMul:2,objPct:100,obj:perPlayer(()=>[]),fav:perPlayer(()=>({})),bonus:[],bonusMap:new Map(),deleted:new Set(),notes:{},resetAt:0,events:[]}}
 function applyEntry(v,e){
   switch(e.k){
     case 'reset': if(v.cancelled&&v.cancelled.has(e.id)) break; v.resetAt=e.at;v.tiers=perPlayer(()=>({}));v.tierAt=perPlayer(()=>({}));v.tierLieu=perPlayer(()=>({}));v.bonusMap.clear();v.notes={};v.events=[];v.ended=0;break;
@@ -1192,6 +1203,7 @@ function applyEntry(v,e){
     case 'ico': v.icoMul=e.v;break;
     case 'objpct': v.objPct=e.v;break;
     case 'obj': v.obj[e.p]=e.v.slice();break;
+    case 'fav': if(e.on) v.fav[e.p][e.s]=e.at; else delete v.fav[e.p][e.s];break;
     case 'bonus': if(!v.deleted.has(e.bid)) v.bonusMap.set(e.bid,{id:e.bid,p:e.p,l:e.l,v:e.v,at:e.at,by:e.by});break;
     case 'bonusdel': v.deleted.add(e.bid);v.bonusMap.delete(e.bid);break;
     case 'note': v.notes[e.s]={t:e.v,at:e.at,by:e.by};break;
@@ -1240,6 +1252,7 @@ function basePts(v,sid,lieu){const x=v.pts[sid];return (typeof x==='number'&&x>=
 function spName(sid){const sp=spOf(sid);return sp?sp.n:'espèce retirée'}
 function tierValue(v,sid,t,lieu){if(!t) return 0;const sp=spOf(sid);const mul=(t===3&&sp&&sp.ic)?v.icoMul:1;return r1(basePts(v,sid,lieu)*v.pct[t-1]/100*mul)}
 function isObj(v,p,sid){return v.obj[p].includes(sid)}
+function isFav(v,p,sid){return !!(v.fav[p]&&v.fav[p][sid])}
 function speciesEarned(v,cur,sid,lieus){ /* points marqués par chaque joueur sur cette espèce ; lieus : {p:{sid:lieu}} */
   lieus=lieus||v.tierLieu;const out={};let best=0;
   for(const p of v.players){const t=(cur[p]&&cur[p][sid])||0;if(t>best) best=t}
@@ -1419,6 +1432,7 @@ function describeEntry(e,before){ /* before : état juste avant l'entrée */
     case 'ico': return `${who} met le bonus iconique à ×${fmtPts(e.v)}`;
     case 'objpct': return `${who} met le bonus objectif à +${fmtPts(e.v)} %`;
     case 'obj': return `${who} définit les objectifs de ${n(e.p)} : ${e.v.length?e.v.map(spName).join(', '):'aucun'}`;
+    case 'fav': return e.on?`${who} met ${sp} en favori${e.p!==e.by?' pour '+n(e.p):''}`:`${who} retire ${sp} des favoris${e.p!==e.by?' de '+n(e.p):''}`;
     case 'bonus': return `${who} ajoute ${e.v>0?'+':''}${fmtPts(e.v)} pts à ${n(e.p)}${e.l?' : '+e.l:''}`;
     case 'bonusdel': {const b=before.bonusMap.get(e.bid);return `${who} supprime un bonus${b?` (${b.v>0?'+':''}${fmtPts(b.v)} pour ${n(b.p)})`:''}`}
     case 'note': return `${who} note sur ${sp} : « ${e.v.slice(0,60)}${e.v.length>60?'…':''} »`;
@@ -1472,7 +1486,7 @@ function readLS(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):nu
 function writeLS(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 let log=normalizeLog(readLS(LS_LOG)||readLS(LS_V1)||[]);
 let view=fold(log);
-const ui={tab:'birds',q:'',site:readLS(LS_SITE)||'all',like:'all',group:'all',sort:'group',dir:-1,taken:'all',ico:false,boardSort:'pts',device:readLS(LS_DEV)||'',me:readLS(LS_ME)||'',lieu:readLS(LS_LIEU)||'pg'};
+const ui={tab:'birds',q:'',site:readLS(LS_SITE)||'all',like:'all',group:'all',sort:'group',dir:-1,taken:'all',ico:false,fav:false,boardSort:'pts',device:readLS(LS_DEV)||'',me:readLS(LS_ME)||'',lieu:readLS(LS_LIEU)||'pg'};
 const others=p=>view.players.filter(x=>x!==p);
 const nameOf=p=>view.names[p]||DEFAULT_NAMES[p]||p;
 function checkPlayers(){ /* le téléphone et le profil actif doivent être des joueurs de la partie */
@@ -1517,6 +1531,7 @@ function filtered(){
     if(ui.site!=='all'&&!sitesOf(view,sp).includes(ui.site)) return false;
     if(ui.like!=='all'&&String(likeOf(view,sp,spLieu(sp)))!==ui.like) return false;
     if(ui.ico&&!sp.ic) return false;
+    if(ui.fav&&!isFav(view,ui.me,sp.id)) return false;
     if(ui.group!=='all'&&String(sp.g)!==ui.group) return false;
     const mine=(cur[ui.me][sp.id]||0)>0;
     if(ui.taken==='mine'&&!mine) return false;
@@ -1560,6 +1575,7 @@ function tagsHTML(sp,withGroup){
   if(!withGroup&&/^c[0-4]$/.test(ui.sort)){const i=Number(ui.sort[1]);const c=compOf(view,sp.id,spLieu(sp))[i];t+=`<span class="tag crit">${['Beauté','Monde','Ici','Période','Photo'][i]} ${fmtPts(c)} · ${Number.isInteger(c)?COMP_LEVELS[i][c-1]:'calculé'}</span>`}
   if(sp.ic) t+=`<span class="tag ic">★ Iconique ×${fmtPts(view.icoMul)}</span>`;
   for(const p of view.players) if(isObj(view,p,sp.id)) t+=`<span class="tag obj ${p}">Objectif ${esc(nameOf(p))}</span>`;
+  for(const p of view.players) if(p!==ui.me&&isFav(view,p,sp.id)) t+=`<span class="tag fav">♥ ${esc(nameOf(p))}</span>`;
   if(withGroup) t+=`<span class="tag">${esc(GROUPS[sp.g])}</span>`;
   return t;
 }
@@ -1575,7 +1591,7 @@ function cardHTML(sp){
   return `<article class="card${mine?' taken':''}" data-id="${sp.id}">
     <button type="button" class="head" aria-label="Détails : ${esc(sp.n)}">${headHTML(sp,'c-'+sp.id)}${photoOf(ui.me,sp.id)&&mine?`<img class="ph" src="${photoOf(ui.me,sp.id)}" alt="">`:''}</button>
     <div class="info"><h3>${esc(sp.n)}</h3><p class="latin">${esc(sp.l)}</p><div class="tags">${tagsHTML(sp)}</div></div>
-    <div class="pts">${fmtPts(basePts(view,sp.id,spLieu(sp)))}<small>pts</small></div>
+    <div class="pts">${fmtPts(basePts(view,sp.id,spLieu(sp)))}<small>pts</small><button type="button" class="favbtn${isFav(view,ui.me,sp.id)?' on':''}" data-fav="${sp.id}" aria-pressed="${isFav(view,ui.me,sp.id)}" aria-label="Favori">${isFav(view,ui.me,sp.id)?'♥':'♡'}</button></div>
     ${tierBtns(sp,ui.me)}
     <div class="other">${otherLine(sp)}</div>
   </article>`;
@@ -1600,7 +1616,7 @@ function updateCard(sid){
   const lieu=(mine&&view.tierLieu[ui.me][sid])||spLieu(sp);
   card.querySelectorAll('.tiers button').forEach(b=>{const i=Number(b.dataset.t);b.setAttribute('aria-pressed',String(mine===i));b.querySelector('span').textContent=fmtPts(tierValue(view,sid,i,lieu))+' pts'});
   card.querySelector('.other').innerHTML=otherLine(sp);
-  card.querySelector('.pts').innerHTML=fmtPts(basePts(view,sid,spLieu(sp)))+'<small>pts</small>';
+  const fv=isFav(view,ui.me,sid);card.querySelector('.pts').innerHTML=fmtPts(basePts(view,sid,spLieu(sp)))+`<small>pts</small><button type="button" class="favbtn${fv?' on':''}" data-fav="${sid}" aria-pressed="${fv}" aria-label="Favori">${fv?'♥':'♡'}</button>`;
 }
 function afterChange(sid){
   if(sid) updateCard(sid); else if(ui.tab==='birds') renderList();
@@ -1626,6 +1642,7 @@ function openSheet(sid){
     sh.addEventListener('click',e=>{
       const b=e.target.closest('button[data-t]');if(b){setTier(b.closest('.prow').dataset.p,sheetSid,Number(b.dataset.t));return}
       const ob=e.target.closest('button[data-obj]');if(ob){toggleObjective(ob.dataset.obj,sheetSid);return}
+      const fb=e.target.closest('button[data-favp]');if(fb){toggleFav(fb.dataset.favp,sheetSid);return}
       const pd=e.target.closest('button[data-photo-del]');if(pd){delPhoto(pd.dataset.photoDel,sheetSid);return}
       const xe=e.target.closest('button[data-xedit]');if(xe){closeSheet();editCustom(xe.dataset.xedit);return}
       const xd=e.target.closest('button[data-xdel]');if(xd){const sp=spOf(xd.dataset.xdel);if(xd.dataset.armed){add({k:'xdel',cid:xd.dataset.xdel});closeSheet();afterChange();toast((sp?sp.n:'Espèce')+' retirée (toujours dans l\u2019historique)')}else{xd.dataset.armed='1';xd.textContent='Confirmer ?'}return}
@@ -1641,6 +1658,10 @@ function openSheet(sid){
   }
   renderSheet(sid);bd.hidden=false;sh.hidden=false;
 }
+function toggleFav(p,sid){
+  const on=!isFav(view,p,sid);add({k:'fav',p,s:sid,on});afterChange(sid);
+  toast(on?`${spName(sid)} en favori${p!==ui.me?' pour '+nameOf(p):''} : les autres le voient sur la carte`:`${spName(sid)} retiré des favoris${p!==ui.me?' de '+nameOf(p):''}`);
+}
 function toggleObjective(p,sid){
   const list=view.obj[p].slice();const i=list.indexOf(sid);
   if(i>=0) list.splice(i,1);
@@ -1655,7 +1676,7 @@ function renderSheet(sid){
   const lieu=spLieu(sp);const c=compOf(view,sid,lieu),U=rarity(c,view.w),mul=rarityMul(U),f=formulaOf(view,sid,lieu),manual=view.pts[sid],src=compSource(view,sid,lieu);
   const rows=view.players.map(p=>{const t=cur[p][sid]||0,ob=isObj(view,p,sid),at=view.tierAt[p][sid],tl=view.tierLieu[p][sid];return `<div class="prow ${p}" data-p="${p}"><div class="pname"><span>${esc(nameOf(p))}</span><span class="earned">${fmtPts(earned[p])} pts</span></div>
     ${tierBtns(sp,p)}
-    <div class="when"><span>${t&&at?'Coché '+fmtTime.format(new Date(at))+(tl?' · '+esc(lieuName(view,tl)):''):'Pas encore de photo'}</span><button type="button" class="objbtn${ob?' on':''}" data-obj="${p}" aria-pressed="${ob}">${ob?'★ Objectif':'☆ En faire un objectif'}</button></div>
+    <div class="when"><span>${t&&at?'Coché '+fmtTime.format(new Date(at))+(tl?' · '+esc(lieuName(view,tl)):''):'Pas encore de photo'}</span><span><button type="button" class="objbtn${isFav(view,p,sid)?' on':''}" data-favp="${p}" aria-pressed="${isFav(view,p,sid)}">${isFav(view,p,sid)?'♥ Favori':'♡ Favori'}</button> <button type="button" class="objbtn${ob?' on':''}" data-obj="${p}" aria-pressed="${ob}">${ob?'★ Objectif':'☆ En faire un objectif'}</button></span></div>
     ${t?`<div class="photo-row">${photoOf(p,sid)?`<img src="${photoOf(p,sid)}" alt="Photo de ${esc(nameOf(p))}">`:''}<div class="btns"><label class="btn small"><input type="file" accept="image/*" data-photo="${p}">${photoOf(p,sid)?'Remplacer la photo':'+ Ajouter la photo (vignette)'}</label>${photoOf(p,sid)?`<button type="button" class="btn small" data-photo-del="${p}">Retirer</button>`:''}</div></div>`:''}</div>`}).join('');
   const comps=COMP_LABELS.map((lab,i)=>`<div class="crow"><label for="comp-${i}">${lab}${(i===2||i===3)?` <small>(${esc(lieuName(view,lieu))}${src==='gbif'?', GBIF':src==='manuel'?', à la main':''})</small>`:(i===0&&sp.auto)?` <small>(estimée d\u2019après la famille${sp.fam?' '+esc(sp.fam):''}, à ajuster${src==='manuel'?' ; fixée à la main':''})</small>`:(i===1&&sp.wc)?` <small>(${sp.wc.toLocaleString('fr-FR')} obs. GBIF monde${src==='manuel'?', à la main':''})</small>`:(i===4&&sp.ps!=null)?` <small>(${(sp.ps*100).toFixed(1).replace('.',',')} % des obs. GBIF ont une photo → note ${sp.pd}${sp.auto?'':' ; à la main '+sp.c[4]}${src==='manuel'?' ; fixée à la main':''})</small>`:''}</label><select id="comp-${i}" data-ci="${i}">${(Number.isInteger(c[i])?[1,2,3,4,5]:[1,2,3,4,5,c[i]].sort((a,b)=>a-b)).map(n=>`<option value="${n}"${c[i]===n?' selected':''}>${fmtPts(n)} · ${Number.isInteger(n)?COMP_LEVELS[i][n-1]:'calculé'}</option>`).join('')}</select></div>`).join('');
   const tipAll=TIPS[sid]||{};const tipGen=typeof tipAll==='string'?tipAll:tipAll.g;
@@ -1682,6 +1703,7 @@ function renderSheet(sid){
       <div class="ptsedit"><label for="sheet-pts">Forcer la cote</label><input id="sheet-pts" type="number" min="0" max="2000" step="5" value="${manual!=null?manual:''}" placeholder="${f}"> pts <span class="muted">(vide = calculée)</span></div>
     </div>
     ${sp.ic?`<p class="muted" style="margin:8px 0 0">★ Iconique : la photo portfolio vaut ×${fmtPts(view.icoMul)}. En objectif personnel, elle rapporte encore +${fmtPts(view.objPct)} %.</p>`:`<p class="muted" style="margin:8px 0 0">En objectif personnel (${OBJ_MAX} par joueur), un portfolio rapporte +${fmtPts(view.objPct)} %.</p>`}
+    <p class="muted" style="margin:4px 0 0">♥ Favori : sans effet sur les points, en nombre illimité ; les autres voient vos favoris sur les cartes pour vous prévenir quand ils repèrent l\u2019espèce.</p>
     ${sp.custom?`<p class="muted" style="margin:6px 0 0">Espèce hors liste ajoutée par ${esc(nameOf(sp.by))}. <button type="button" class="btn small" data-xedit="${sp.id}">Modifier</button> <button type="button" class="btn small danger" data-xdel="${sp.id}">Retirer</button></p>`:''}
     ${rows}
     <div class="prow"><label for="sheet-note">Note partagée (où, quand, quel affût…)</label><textarea id="sheet-note" maxlength="500" placeholder="Ex. : au 2e observatoire, à droite du ponton, 9 h">${esc(note)}</textarea></div>`;
@@ -1784,7 +1806,7 @@ function renderSettings(){
   renderLieux();
   $('#w-ici').value=view.w.ici;$('#w-monde').value=view.w.monde;$('#w-periode').value=view.w.periode;$('#w-photo').value=view.w.photo!=null?view.w.photo:DEFAULT_DW;
   $('#bonus-p').innerHTML=view.players.map(p=>`<option value="${p}">${esc(nameOf(p))}</option>`).join('');
-  customForm();renderCustomList();renderObjectives();renderBonusList();renderPtsList();
+  customForm();renderCustomList();renderObjectives();renderFavs();renderBonusList();renderPtsList();
 }
 function renderPlayers(){
   const ps=view.players;
@@ -1850,6 +1872,11 @@ async function computeGbif(lid){
 function renderObjectives(){
   $('#objectives').innerHTML=view.players.map(p=>{const l=view.obj[p];return `<div class="field"><label>Objectifs de ${esc(nameOf(p))} (${l.length}/${OBJ_MAX})</label>
     <ul class="bonuslist">${l.length?l.map(sid=>{const sp=spOf(sid);if(!sp) return '';const done=(view.tiers[p][sid]||0)===3;return `<li><span><b style="color:var(--${p})">${esc(sp.n)}</b>${done?' <span class="ok">atteint</span>':''}</span><span class="muted">+${fmtPts(view.objPct)} %</span><button type="button" class="btn small" data-obj-del="${p}|${sid}" aria-label="Retirer cet objectif">×</button></li>`}).join(''):'<li class="muted">Aucun objectif : ouvrez une espèce et touchez « En faire un objectif ».</li>'}</ul></div>`}).join('');
+}
+function renderFavs(){
+  const box=$('#favorites');if(!box) return;
+  box.innerHTML=view.players.map(p=>{const l=Object.entries(view.fav[p]||{}).sort((a,b)=>b[1]-a[1]).map(([sid])=>spOf(sid)).filter(Boolean);return `<div class="field"><label>Favoris de ${esc(nameOf(p))} (${l.length})</label>
+    <ul class="bonuslist">${l.length?l.map(sp=>{const t=view.tiers[p][sp.id]||0;return `<li><span><b style="color:var(--${p})">${esc(sp.n)}</b>${t?` <span class="ok">${TIER_NAMES[t]}</span>`:''}</span><span class="muted">${fmtPts(basePts(view,sp.id,spLieu(sp)))} pts</span><button type="button" class="btn small" data-fav-del="${p}|${sp.id}" aria-label="Retirer ce favori">×</button></li>`}).join(''):'<li class="muted">Aucun favori : touchez le cœur d\u2019une espèce.</li>'}</ul></div>`}).join('');
 }
 function renderBonusList(){
   const l=view.bonus.slice().sort((a,b)=>b.at-a.at);
@@ -1977,8 +2004,9 @@ $('#scoreboard').addEventListener('click',e=>{const b=e.target.closest('.player'
 $('#who-seg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b) return;setMe(b.dataset.p)});
 $('#dev-seg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b) return;setDevice(b.dataset.p);toast('Ce téléphone est celui de '+nameOf(ui.device))});
 $('#q').addEventListener('input',e=>{ui.q=e.target.value;renderList()});
-for(const [id,key] of [['#like-chips','like']]) $(id).addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b||b.id==='ico-chip') return;ui[key]=b.dataset.v;$$(id+' .chip:not(#ico-chip)').forEach(c=>c.setAttribute('aria-pressed',String(c===b)));renderList()});
+for(const [id,key] of [['#like-chips','like']]) $(id).addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b||b.id==='ico-chip'||b.id==='fav-chip') return;ui[key]=b.dataset.v;$$(id+' .chip:not(#ico-chip):not(#fav-chip)').forEach(c=>c.setAttribute('aria-pressed',String(c===b)));renderList()});
 $('#ico-chip').addEventListener('click',e=>{ui.ico=!ui.ico;e.currentTarget.setAttribute('aria-pressed',String(ui.ico));renderList()});
+$('#fav-chip').addEventListener('click',e=>{ui.fav=!ui.fav;e.currentTarget.setAttribute('aria-pressed',String(ui.fav));renderList()});
 const gs=$('#group-sel');GROUPS.forEach((g,i)=>{const o=document.createElement('option');o.value=String(i);o.textContent=g;gs.appendChild(o)});
 gs.addEventListener('change',e=>{ui.group=e.target.value;renderList()});
 function sortDirLabel(){const asc=ui.dir>0;const s=ui.sort;const lbl=s==='name'?(asc?'↑ A→Z':'↓ Z→A'):s==='c0'?(asc?'↑ du moins beau au plus beau':'↓ du plus beau au moins beau'):/^c[1-3]$/.test(s)?(asc?'↑ du plus commun au plus rare':'↓ du plus rare au plus commun'):s==='c4'?(asc?'↑ du plus facile au plus difficile':'↓ du plus difficile au plus facile'):(asc?'↑ croissant':'↓ décroissant');$('#sort-dir').textContent=lbl}
@@ -1990,6 +2018,7 @@ $('#board').addEventListener('click',e=>{const it=e.target.closest('.bitem');if(
 $('#list').addEventListener('click',e=>{
   const card=e.target.closest('.card');if(!card) return;const sid=card.dataset.id;
   const tb=e.target.closest('.tiers button');if(tb){setTier(ui.me,sid,Number(tb.dataset.t));return}
+  const fb=e.target.closest('button[data-fav]');if(fb){toggleFav(ui.me,sid);return}
   if(e.target.closest('.head')||e.target.closest('.info')) openSheet(sid);
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheetSid) closeSheet()});
@@ -2039,6 +2068,7 @@ $('#lieux').addEventListener('click',e=>{const g=e.target.closest('button[data-g
   else{d.dataset.armed='1';d.textContent='Confirmer ?';setTimeout(()=>{if(d.isConnected){delete d.dataset.armed;d.textContent='Retirer'}},5000)}}});
 $('#add-custom').addEventListener('click',()=>{resetCustomForm();showTab('settings');customForm();$('#panel-custom').scrollIntoView({behavior:'smooth',block:'start'});$('#x-n').focus()});
 $('#objectives').addEventListener('click',e=>{const b=e.target.closest('button[data-obj-del]');if(!b) return;const [p,sid]=b.dataset.objDel.split('|');toggleObjective(p,sid)});
+$('#favorites').addEventListener('click',e=>{const b=e.target.closest('button[data-fav-del]');if(!b) return;const [p,sid]=b.dataset.favDel.split('|');toggleFav(p,sid)});
 $('#bonus-add').addEventListener('click',()=>{const v=Number($('#bonus-v').value);if(!Number.isFinite(v)||v===0){toast('Indiquez un nombre de points (positif ou négatif)');return}
   const p=$('#bonus-p').value,l=$('#bonus-l').value.trim();add({k:'bonus',p,l,v});$('#bonus-l').value='';$('#bonus-v').value='';afterChange();toast(`Bonus ${v>0?'+':''}${fmtPts(v)} pour ${nameOf(p)}`)});
 $('#bonuslist').addEventListener('click',e=>{const b=e.target.closest('button[data-del]');if(!b) return;add({k:'bonusdel',bid:b.dataset.del});afterChange()});
