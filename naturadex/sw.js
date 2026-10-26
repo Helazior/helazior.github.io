@@ -1,4 +1,4 @@
-const CACHE='naturadex-v202610261730';
+const CACHE='naturadex-v202610261737';
 const ASSETS=['./','./index.html','./manifest.webmanifest','./icon.svg','./icon-192.png','./icon-512.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>Promise.allSettled(ASSETS.map(a=>c.add(new Request(a,{cache:'reload'}))))).then(()=>self.skipWaiting()))});
 const IMG='naturadex-img'; /* photos Wikipédia des espèces découvertes : gardées après le premier affichage, pour le hors connexion */

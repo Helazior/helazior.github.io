@@ -1125,7 +1125,9 @@ const EXTRA_HEADS={
   'Canis lupus familiaris':{k:'m',c:'#b08a5a',ears:'round',bigears:1,ec:'#8a6a3a',ei:'#a07a4a',sn:'#c9a878',snr:13,nose:K,ey:{i:'#5a3a22'}},
   'Buthus occitanus':{k:'i',t:'scorpion',c:'#d8b84a',tail:'#c9a030'},
   'Euscorpius flavicaudis':{k:'i',t:'scorpion',c:'#2a2a28',tail:'#c9a030'},
-  'Euscorpius italicus':{k:'i',t:'scorpion',c:'#3a3a34',tail:'#5a5a50'}
+  'Euscorpius italicus':{k:'i',t:'scorpion',c:'#3a3a34',tail:'#5a5a50'},
+  'Tetratrichobothrius flavicaudis':{k:'i',t:'scorpion',c:'#2a2a28',tail:'#c9a030'},
+  'Euscorpius niciensis':{k:'i',t:'scorpion',c:'#3a3a34',tail:'#6a6a50'}
 };
 function discoveredSpecies(s,lid){const g=Math.max(0,Math.min(GROUPS.length-1,s.g|0));const x=EXTRA_HEADS[s.l];const h=x||GEN_HEAD[g];const kind=(h.k==='m')?'m':h.k?'hi':'b';
   const dom=DOMESTIC.has(s.l);const sp={id:s.id,n:s.n,l:s.l,g,c:[dom?1:(s.bp||3),3,3,3,3],like:2,site:'',h,ic:false,alt:'',disc:true,auto:true,drawn:!!x,dom,fam:s.fam||'',lieux:[lid],wk:!!s.wk};
@@ -1388,6 +1390,8 @@ const GROUP_FAM={Charadriidae:4,Scolopacidae:4,Recurvirostridae:4,Haematopodidae
 function groupOf(kind,order,family){if(kind==='m') return 10;if(kind==='h') return 11;if(kind==='i') return 12;if(GROUP_FAM[family]!=null) return GROUP_FAM[family];if(GROUP_ORDER[order]!=null) return GROUP_ORDER[order];return 9}
 async function gbifMatch(name){const r=await fetchJson(`https://api.gbif.org/v1/species/match?kingdom=Animalia&name=${encodeURIComponent(name)}`);
   if(!r||!['EXACT','FUZZY'].includes(r.matchType)||!['SPECIES','SUBSPECIES'].includes(r.rank)||r.kingdom!=='Animalia') return null;
+  const cn=canon(r.canonicalName||name);
+  if(DOMESTIC.has(cn)) return {key:r.usageKey,l:cn,order:r.order||'',family:r.family||'',cls:r['class']||''}; /* le chien reste un chien : GBIF en fait un synonyme du loup (Canis lupus) */
   const key=r.speciesKey||r.acceptedUsageKey||r.usageKey;if(!key) return null;
   return {key,l:canon(r.species||r.canonicalName||name),order:r.order||'',family:r.family||'',cls:r['class']||''}}
 async function wikiBatch(names){ /* titres français et vignettes ≤ 300 px, 50 noms par appel */
