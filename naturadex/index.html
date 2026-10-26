@@ -307,7 +307,6 @@ table.tbl th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:
     <p class="sun" id="sun-line"></p>
     <div class="who"><span>Vignettes</span><span class="seg" id="img-seg"><button type="button" data-v="draw" aria-pressed="true">Dessins</button><button type="button" data-v="photo" aria-pressed="false">Photos</button></span><span class="muted" id="img-msg" style="font-size:12px"></span></div>
     <input class="search" id="q" type="search" placeholder="Chercher une espèce (flamant, martin…)" aria-label="Chercher une espèce" autocomplete="off">
-    <div class="chips" id="site-chips" role="group" aria-label="Lieu des espèces"></div>
     <div class="chips" id="like-chips" role="group" aria-label="Probabilité">
       <button type="button" class="chip" data-v="all" aria-pressed="true">Toutes</button>
       <button type="button" class="chip" data-v="1" aria-pressed="false">Communes</button>
@@ -1461,7 +1460,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
 <script id="ui">
 (function(){
 const $=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s));
-const LS_LOG='duel-camargue-log-v2',LS_V1='duel-camargue-v1',LS_ME='duel-camargue-me',LS_DEV='duel-camargue-device',LS_CODEAT='duel-camargue-codeat',LS_LIEU='duel-camargue-lieu',LS_DISP='duel-camargue-display';
+const LS_LOG='duel-camargue-log-v2',LS_V1='duel-camargue-v1',LS_ME='duel-camargue-me',LS_DEV='duel-camargue-device',LS_CODEAT='duel-camargue-codeat',LS_LIEU='duel-camargue-lieu',LS_SITE='duel-camargue-site',LS_DISP='duel-camargue-display';
 const disp=Object.assign({cols:'auto',zoom:100,skin:'auto',photos:false},readLS(LS_DISP)||{});
 function applyDisplay(){document.body.classList.remove('cols-1','cols-2','cols-3');if(disp.cols!=='auto') document.body.classList.add('cols-'+disp.cols);
   if(disp.skin&&disp.skin!=='auto') document.documentElement.setAttribute('data-skin',disp.skin); else document.documentElement.removeAttribute('data-skin');
@@ -1473,7 +1472,7 @@ function readLS(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):nu
 function writeLS(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 let log=normalizeLog(readLS(LS_LOG)||readLS(LS_V1)||[]);
 let view=fold(log);
-const ui={tab:'birds',q:'',site:readLS(LS_LIEU)&&!LIEUX[readLS(LS_LIEU)]?readLS(LS_LIEU):'all',like:'all',group:'all',sort:'group',dir:-1,taken:'all',ico:false,boardSort:'pts',device:readLS(LS_DEV)||'',me:readLS(LS_ME)||'',lieu:readLS(LS_LIEU)||'pg'};
+const ui={tab:'birds',q:'',site:readLS(LS_SITE)||'all',like:'all',group:'all',sort:'group',dir:-1,taken:'all',ico:false,boardSort:'pts',device:readLS(LS_DEV)||'',me:readLS(LS_ME)||'',lieu:readLS(LS_LIEU)||'pg'};
 const others=p=>view.players.filter(x=>x!==p);
 const nameOf=p=>view.names[p]||DEFAULT_NAMES[p]||p;
 function checkPlayers(){ /* le téléphone et le profil actif doivent être des joueurs de la partie */
@@ -1516,7 +1515,7 @@ function filtered(){
   const q=fold0(ui.q.trim()),cur=view.tiers;
   let list=allSpecies().filter(sp=>{
     if(ui.site!=='all'&&!sitesOf(view,sp).includes(ui.site)) return false;
-    if(ui.like!=='all'&&String(likeOf(view,sp,ui.lieu))!==ui.like) return false;
+    if(ui.like!=='all'&&String(likeOf(view,sp,spLieu(sp)))!==ui.like) return false;
     if(ui.ico&&!sp.ic) return false;
     if(ui.group!=='all'&&String(sp.g)!==ui.group) return false;
     const mine=(cur[ui.me][sp.id]||0)>0;
@@ -1525,10 +1524,10 @@ function filtered(){
     if(q&&!fold0(sp.n).includes(q)&&!fold0(sp.l).includes(q)&&!(sp.alt&&fold0(sp.alt).includes(q))) return false;
     return true;
   });
-  const bp=sp=>basePts(view,sp.id,ui.lieu),d=-ui.dir; /* dir -1 = décroissant (le plus fort d'abord) */
+  const bp=sp=>basePts(view,sp.id,spLieu(sp)),d=-ui.dir; /* dir -1 = décroissant (le plus fort d'abord) */
   if(ui.sort==='pts') list.sort((a,b)=>d*(bp(b)-bp(a))||a.n.localeCompare(b.n,'fr'));
   else if(ui.sort==='name') list.sort((a,b)=>ui.dir*a.n.localeCompare(b.n,'fr'));
-  else if(/^c[0-4]$/.test(ui.sort)){const i=Number(ui.sort[1]);const cv=sp=>compOf(view,sp.id,ui.lieu)[i];list.sort((a,b)=>d*(cv(b)-cv(a))||bp(b)-bp(a)||a.n.localeCompare(b.n,'fr'))}
+  else if(/^c[0-4]$/.test(ui.sort)){const i=Number(ui.sort[1]);const cv=sp=>compOf(view,sp.id,spLieu(sp))[i];list.sort((a,b)=>d*(cv(b)-cv(a))||bp(b)-bp(a)||a.n.localeCompare(b.n,'fr'))}
   else list.sort((a,b)=>a.g-b.g||d*(bp(b)-bp(a))||a.n.localeCompare(b.n,'fr'));
   return list;
 }
@@ -1548,22 +1547,24 @@ async function loadWikiPhotos(){ /* photos Wikipédia des espèces dessinées (l
   catch(e){msg.textContent='';toast('Photos indisponibles (pas de réseau ?) : dessins conservés')}
   finally{wikiLoading=false;renderAll()}
 }
+/* Lieu qui sert à coter une espèce : le lieu choisi ; en « Tous les lieux », le lieu courant si l'espèce y est connue, sinon le premier lieu où elle l'est. */
+function spLieu(sp){if(ui.site!=='all') return ui.lieu;const ls=sitesOf(view,sp);return (!ls.length||ls.includes(ui.lieu))?ui.lieu:ls[0]}
 function tierBtns(sp,p){
   const t=view.tiers[p][sp.id]||0;
-  const lieu=(t&&view.tierLieu[p][sp.id])||ui.lieu;
+  const lieu=(t&&view.tierLieu[p][sp.id])||spLieu(sp);
   return `<div class="tiers" role="group" aria-label="Qualité de la photo">`+[1,2,3].map(i=>`<button type="button" data-t="${i}" aria-pressed="${t===i}">${TIER_NAMES[i]}<span>${fmtPts(tierValue(view,sp.id,i,lieu))} pts</span></button>`).join('')+`</div>`;
 }
 function tagsHTML(sp,withGroup){
-  const lk=likeOf(view,sp,ui.lieu);
+  const lk=likeOf(view,sp,spLieu(sp));
   const st=siteTag(sp);let t=`${st?`<span class="tag">${esc(st)}</span>`:''}<span class="tag l${lk}">${LIKE[lk]}</span>`;
-  if(!withGroup&&/^c[0-4]$/.test(ui.sort)){const i=Number(ui.sort[1]);const c=compOf(view,sp.id,ui.lieu)[i];t+=`<span class="tag crit">${['Beauté','Monde','Ici','Période','Photo'][i]} ${fmtPts(c)} · ${Number.isInteger(c)?COMP_LEVELS[i][c-1]:'calculé'}</span>`}
+  if(!withGroup&&/^c[0-4]$/.test(ui.sort)){const i=Number(ui.sort[1]);const c=compOf(view,sp.id,spLieu(sp))[i];t+=`<span class="tag crit">${['Beauté','Monde','Ici','Période','Photo'][i]} ${fmtPts(c)} · ${Number.isInteger(c)?COMP_LEVELS[i][c-1]:'calculé'}</span>`}
   if(sp.ic) t+=`<span class="tag ic">★ Iconique ×${fmtPts(view.icoMul)}</span>`;
   for(const p of view.players) if(isObj(view,p,sp.id)) t+=`<span class="tag obj ${p}">Objectif ${esc(nameOf(p))}</span>`;
   if(withGroup) t+=`<span class="tag">${esc(GROUPS[sp.g])}</span>`;
   return t;
 }
 function siteTag(sp){const ls=sitesOf(view,sp);if(!ls.length) return '';if(ls.length===2&&ls.includes('pg')&&ls.includes('mv')) return SITES['PG+MV'];
-  if(ls.includes(ui.lieu)) return lieuName(view,ui.lieu)+(ls.length>1?` +${ls.length-1}`:'');return ls.slice(0,2).map(l=>lieuName(view,l)).join(' · ')+(ls.length>2?` +${ls.length-2}`:'')}
+  const l0=spLieu(sp);return lieuName(view,l0)+(ls.length>1?` +${ls.length-1}`:'')}
 function otherLine(sp){
   const os=others(ui.me);if(!os.length) return '';
   const e=speciesEarned(view,view.tiers,sp.id);
@@ -1574,7 +1575,7 @@ function cardHTML(sp){
   return `<article class="card${mine?' taken':''}" data-id="${sp.id}">
     <button type="button" class="head" aria-label="Détails : ${esc(sp.n)}">${headHTML(sp,'c-'+sp.id)}${photoOf(ui.me,sp.id)&&mine?`<img class="ph" src="${photoOf(ui.me,sp.id)}" alt="">`:''}</button>
     <div class="info"><h3>${esc(sp.n)}</h3><p class="latin">${esc(sp.l)}</p><div class="tags">${tagsHTML(sp)}</div></div>
-    <div class="pts">${fmtPts(basePts(view,sp.id,ui.lieu))}<small>pts</small></div>
+    <div class="pts">${fmtPts(basePts(view,sp.id,spLieu(sp)))}<small>pts</small></div>
     ${tierBtns(sp,ui.me)}
     <div class="other">${otherLine(sp)}</div>
   </article>`;
@@ -1596,10 +1597,10 @@ function updateCard(sid){
   card.classList.toggle('taken',mine>0);
   const headEl=card.querySelector('.head');const oldPh=headEl.querySelector('.ph');if(oldPh) oldPh.remove();if(mine&&photoOf(ui.me,sid)) headEl.insertAdjacentHTML('beforeend',`<img class="ph" src="${photoOf(ui.me,sid)}" alt="">`);
   card.querySelector('.tags').innerHTML=tagsHTML(sp);
-  const lieu=(mine&&view.tierLieu[ui.me][sid])||ui.lieu;
+  const lieu=(mine&&view.tierLieu[ui.me][sid])||spLieu(sp);
   card.querySelectorAll('.tiers button').forEach(b=>{const i=Number(b.dataset.t);b.setAttribute('aria-pressed',String(mine===i));b.querySelector('span').textContent=fmtPts(tierValue(view,sid,i,lieu))+' pts'});
   card.querySelector('.other').innerHTML=otherLine(sp);
-  card.querySelector('.pts').innerHTML=fmtPts(basePts(view,sid,ui.lieu))+'<small>pts</small>';
+  card.querySelector('.pts').innerHTML=fmtPts(basePts(view,sid,spLieu(sp)))+'<small>pts</small>';
 }
 function afterChange(sid){
   if(sid) updateCard(sid); else if(ui.tab==='birds') renderList();
@@ -1610,11 +1611,10 @@ function afterChange(sid){
   if(sheetSid) renderSheet(sheetSid);
 }
 function setTier(p,sid,t){
-  const was=view.tiers[p][sid]||0,next=was===t?0:t;
-  add({k:'tier',p,s:sid,t:next,lieu:ui.lieu});
+  const was=view.tiers[p][sid]||0,next=was===t?0:t;const sp=spOf(sid);const lieu=sp?spLieu(sp):ui.lieu;
+  add({k:'tier',p,s:sid,t:next,lieu});
   afterChange(sid);
-  const sp=spOf(sid);
-  if(next) toast(`${nameOf(p)} · ${sp.n} · ${TIER_NAMES[next]} : +${fmtPts(tierValue(view,sid,next,ui.lieu))} pts · ${lieuName(view,ui.lieu)}`); else toast(`${sp.n} décoché pour ${nameOf(p)}`);
+  if(next) toast(`${nameOf(p)} · ${sp.n} · ${TIER_NAMES[next]} : +${fmtPts(tierValue(view,sid,next,lieu))} pts · ${lieuName(view,lieu)}`); else toast(`${sp.n} décoché pour ${nameOf(p)}`);
 }
 
 /* ---- Feuille de détail ---- */
@@ -1635,7 +1635,7 @@ function openSheet(sid){
       const sid=sheetSid;if(!sid) return;
       if(e.target.dataset.photo){const f=e.target.files&&e.target.files[0];if(f) setPhoto(e.target.dataset.photo,sid,f);return}
       if(e.target.id==='sheet-pts'){const raw=e.target.value.trim();const v=raw===''?null:Number(raw);if(v===null||(Number.isFinite(v)&&v>=0)){add({k:'pts',s:sid,v:v});afterChange(sid);toast(v===null?'Retour à la cote calculée':'Cote fixée à la main : '+fmtPts(v)+' pts')}return}
-      const ci=e.target.dataset.ci;if(ci!=null){const c=compOf(view,sid,ui.lieu).slice();c[Number(ci)]=Number(e.target.value);add({k:'comp',s:sid,v:c});afterChange(sid);toast('Notes fixées à la main pour tous les lieux');return}
+      const ci=e.target.dataset.ci;if(ci!=null){const c=compOf(view,sid,spLieu(spOf(sid))).slice();c[Number(ci)]=Number(e.target.value);add({k:'comp',s:sid,v:c});afterChange(sid);toast('Notes fixées à la main pour tous les lieux');return}
     });
     sh.addEventListener('input',e=>{if(e.target.id==='sheet-note'){const sid=sheetSid;clearTimeout(noteT);noteT=setTimeout(()=>{if(sheetSid===sid) add({k:'note',s:sid,v:e.target.value.slice(0,500)})},800)}});
   }
@@ -1652,14 +1652,14 @@ function closeSheet(){sheetSid=null;const bd=$('#backdrop'),sh=$('#sheet');if(bd
 function renderSheet(sid){
   const sp=spOf(sid);if(!sp){closeSheet();return}
   const cur=view.tiers,earned=speciesEarned(view,cur,sid);
-  const c=compOf(view,sid,ui.lieu),U=rarity(c,view.w),mul=rarityMul(U),f=formulaOf(view,sid,ui.lieu),manual=view.pts[sid],src=compSource(view,sid,ui.lieu);
+  const lieu=spLieu(sp);const c=compOf(view,sid,lieu),U=rarity(c,view.w),mul=rarityMul(U),f=formulaOf(view,sid,lieu),manual=view.pts[sid],src=compSource(view,sid,lieu);
   const rows=view.players.map(p=>{const t=cur[p][sid]||0,ob=isObj(view,p,sid),at=view.tierAt[p][sid],tl=view.tierLieu[p][sid];return `<div class="prow ${p}" data-p="${p}"><div class="pname"><span>${esc(nameOf(p))}</span><span class="earned">${fmtPts(earned[p])} pts</span></div>
     ${tierBtns(sp,p)}
     <div class="when"><span>${t&&at?'Coché '+fmtTime.format(new Date(at))+(tl?' · '+esc(lieuName(view,tl)):''):'Pas encore de photo'}</span><button type="button" class="objbtn${ob?' on':''}" data-obj="${p}" aria-pressed="${ob}">${ob?'★ Objectif':'☆ En faire un objectif'}</button></div>
     ${t?`<div class="photo-row">${photoOf(p,sid)?`<img src="${photoOf(p,sid)}" alt="Photo de ${esc(nameOf(p))}">`:''}<div class="btns"><label class="btn small"><input type="file" accept="image/*" data-photo="${p}">${photoOf(p,sid)?'Remplacer la photo':'+ Ajouter la photo (vignette)'}</label>${photoOf(p,sid)?`<button type="button" class="btn small" data-photo-del="${p}">Retirer</button>`:''}</div></div>`:''}</div>`}).join('');
-  const comps=COMP_LABELS.map((lab,i)=>`<div class="crow"><label for="comp-${i}">${lab}${(i===2||i===3)?` <small>(${esc(lieuName(view,ui.lieu))}${src==='gbif'?', GBIF':src==='manuel'?', à la main':''})</small>`:(i===0&&sp.auto)?` <small>(estimée d\u2019après la famille${sp.fam?' '+esc(sp.fam):''}, à ajuster${src==='manuel'?' ; fixée à la main':''})</small>`:(i===1&&sp.wc)?` <small>(${sp.wc.toLocaleString('fr-FR')} obs. GBIF monde${src==='manuel'?', à la main':''})</small>`:(i===4&&sp.ps!=null)?` <small>(${(sp.ps*100).toFixed(1).replace('.',',')} % des obs. GBIF ont une photo → note ${sp.pd}${sp.auto?'':' ; à la main '+sp.c[4]}${src==='manuel'?' ; fixée à la main':''})</small>`:''}</label><select id="comp-${i}" data-ci="${i}">${(Number.isInteger(c[i])?[1,2,3,4,5]:[1,2,3,4,5,c[i]].sort((a,b)=>a-b)).map(n=>`<option value="${n}"${c[i]===n?' selected':''}>${fmtPts(n)} · ${Number.isInteger(n)?COMP_LEVELS[i][n-1]:'calculé'}</option>`).join('')}</select></div>`).join('');
+  const comps=COMP_LABELS.map((lab,i)=>`<div class="crow"><label for="comp-${i}">${lab}${(i===2||i===3)?` <small>(${esc(lieuName(view,lieu))}${src==='gbif'?', GBIF':src==='manuel'?', à la main':''})</small>`:(i===0&&sp.auto)?` <small>(estimée d\u2019après la famille${sp.fam?' '+esc(sp.fam):''}, à ajuster${src==='manuel'?' ; fixée à la main':''})</small>`:(i===1&&sp.wc)?` <small>(${sp.wc.toLocaleString('fr-FR')} obs. GBIF monde${src==='manuel'?', à la main':''})</small>`:(i===4&&sp.ps!=null)?` <small>(${(sp.ps*100).toFixed(1).replace('.',',')} % des obs. GBIF ont une photo → note ${sp.pd}${sp.auto?'':' ; à la main '+sp.c[4]}${src==='manuel'?' ; fixée à la main':''})</small>`:''}</label><select id="comp-${i}" data-ci="${i}">${(Number.isInteger(c[i])?[1,2,3,4,5]:[1,2,3,4,5,c[i]].sort((a,b)=>a-b)).map(n=>`<option value="${n}"${c[i]===n?' selected':''}>${fmtPts(n)} · ${Number.isInteger(n)?COMP_LEVELS[i][n-1]:'calculé'}</option>`).join('')}</select></div>`).join('');
   const tipAll=TIPS[sid]||{};const tipGen=typeof tipAll==='string'?tipAll:tipAll.g;
-  const gc=lieuCounts(view,ui.lieu,sid),gcL=allLieux()[ui.lieu],gcM=GBIF_COUNTS[ui.lieu]?'oct.–nov.':(view.lieuSpecies[ui.lieu]&&view.lieuSpecies[ui.lieu].m)||'cette période',gcR=gcL?gcL.r:9;
+  const gc=lieuCounts(view,lieu,sid),gcL=allLieux()[lieu],gcM=GBIF_COUNTS[lieu]?'oct.–nov.':(view.lieuSpecies[lieu]&&view.lieuSpecies[lieu].m)||'cette période',gcR=gcL?gcL.r:9;
   const tipLieu=gc?(gc[0]?`${gc[0].toLocaleString('fr-FR')} observation${gc[0]>1?'s':''} en ${gcM} depuis 2010 dans un carré de ±${gcR} km${gc[2]?` (${gc[2]===1?'espèce la plus notée':gc[2]+'e espèce la plus notée'})`:''}, ${gc[1].toLocaleString('fr-FR')} sur l\u2019année.`:`Aucune observation en ${gcM} depuis 2010 dans un carré de ±${gcR} km${gc[1]?` (${gc[1].toLocaleString('fr-FR')} sur l\u2019année)`:''}.`):null;
   const canListen=!(sp.h&&sp.h.k==='m')&&!(sp.h&&sp.h.k==='h'&&sp.h.t!=='frog')&&!(sp.h&&sp.h.k==='i'&&sp.h.t!=='grasshopper');
   const latin=sp.l.split(' /')[0].replace(' sp.','');
@@ -1675,8 +1675,8 @@ function renderSheet(sid){
   const note=view.notes[sid]?view.notes[sid].t:'';
   $('#sheet').innerHTML=`<div class="grab"></div><div class="hd"><div class="head">${headHTML(sp,'s-'+sid)}</div><div><h2>${esc(sp.n)}</h2><p class="latin" style="margin:0;font-style:italic;color:var(--ink-2);font-size:13px">${esc(sp.l)}</p>
     <div class="tags">${tagsHTML(sp,true)}</div></div><button type="button" class="close" aria-label="Fermer">×</button></div>
-    ${tipGen||tipLieu||listen?`<div class="tip">${tipGen?`<p><b>Repères de terrain</b> ${esc(tipGen)} <span class="src">Valeurs indicatives, d\u2019expérience.</span></p>`:''}${tipLieu?`<p><b>GBIF · ${esc(lieuName(view,ui.lieu))}</b> ${esc(tipLieu)}</p>`:''}${listen?`<p>${listen}</p>`:''}</div>`:''}
-    <div class="cote"><div class="cote-h"><span>Cote à ${esc(lieuName(view,ui.lieu))}</span><b>${fmtPts(basePts(view,sid,ui.lieu))} pts</b></div>
+    ${tipGen||tipLieu||listen?`<div class="tip">${tipGen?`<p><b>Repères de terrain</b> ${esc(tipGen)} <span class="src">Valeurs indicatives, d\u2019expérience.</span></p>`:''}${tipLieu?`<p><b>GBIF · ${esc(lieuName(view,lieu))}</b> ${esc(tipLieu)}</p>`:''}${listen?`<p>${listen}</p>`:''}</div>`:''}
+    <div class="cote"><div class="cote-h"><span>Cote à ${esc(lieuName(view,lieu))}</span><b>${fmtPts(basePts(view,sid,lieu))} pts</b></div>
       ${comps}
       <p class="calc">Rareté pondérée ${fmtPts(r1(U))} (ici ${view.w.ici} %, monde ${view.w.monde} %, période ${view.w.periode} %) → ×${fmtPts(r1(mul))}. Cote = 2,5 × ${c[0]} × ${c[4]} × ${fmtPts(r1(mul))} = <b>${fmtPts(f)} pts</b>${manual!=null?` · remplacée à la main par <b>${fmtPts(manual)}</b>`:''}</p>
       <div class="ptsedit"><label for="sheet-pts">Forcer la cote</label><input id="sheet-pts" type="number" min="0" max="2000" step="5" value="${manual!=null?manual:''}" placeholder="${f}"> pts <span class="muted">(vide = calculée)</span></div>
@@ -1810,20 +1810,16 @@ function renderCustomList(){
   $('#xlist').innerHTML=l.length?l.map(sp=>`<li><span><b>${esc(sp.n)}</b> <span class="muted">${esc(GROUPS[sp.g])} · ${fmtPts(basePts(view,sp.id))} pts · ajoutée par ${esc(nameOf(sp.by))}</span></span><button type="button" class="btn small" data-xedit="${sp.id}">Modifier</button><button type="button" class="btn small danger" data-xdel="${sp.id}" aria-label="Retirer ${esc(sp.n)}">×</button></li>`).join(''):'<li class="muted">Aucune pour l\u2019instant. Une rareté imprévue ? Ajoutez-la ici avec ses cinq notes.</li>';
 }
 function allLieux(){return Object.assign({},LIEUX,view.lieux)}
-function renderSiteChips(){
-  const L=allLieux();if(ui.site!=='all'&&!L[ui.site]) ui.site='all';
-  $('#site-chips').innerHTML=`<button type="button" class="chip" data-v="all" aria-pressed="${ui.site==='all'}">Tous les lieux</button>`+Object.entries(L).map(([id,l])=>`<button type="button" class="chip" data-v="${id}" aria-pressed="${ui.site===id}">${esc(id==='mv'?'Vigueirat':l.n)}</button>`).join('');
-}
 function lieuStatus(lid){ /* état du relevé d'un lieu libre */
   if(LIEUX[lid]) return '';const L=view.lieuSpecies[lid];if(building[lid]) return 'Relevé en cours… '+building[lid];
   if(!L) return 'Espèces pas encore relevées : Réglages → Lieux → Recalculer';return '';
 }
-function renderLieuChips(){
-  const L=allLieux();if(!L[ui.lieu]) ui.lieu='pg';renderSiteChips();
-  $('#lieu-chips').innerHTML=Object.entries(L).map(([id,l])=>`<button type="button" class="chip" data-v="${id}" aria-pressed="${ui.lieu===id}">${esc(l.n)}</button>`).join('')+`<button type="button" class="chip" data-v="__add" aria-pressed="false">+ Autre lieu</button>`;
+function renderLieuChips(){ /* une seule rangée : « Tous les lieux » (toutes les espèces chargées, chacune cotée à son lieu) ou un lieu (ses espèces, ses cotes) */
+  const L=allLieux();if(!L[ui.lieu]) ui.lieu='pg';if(ui.site!=='all'&&!L[ui.site]) ui.site='all';
+  $('#lieu-chips').innerHTML=`<button type="button" class="chip" data-v="all" aria-pressed="${ui.site==='all'}">Tous les lieux</button>`+Object.entries(L).map(([id,l])=>`<button type="button" class="chip" data-v="${id}" aria-pressed="${ui.site===id}">${esc(l.n)}</button>`).join('')+`<button type="button" class="chip" data-v="__add" aria-pressed="false">+ Autre lieu</button>`;
   const l=L[ui.lieu],st=l?sunTimes(l.lat,l.lng,new Date()):null;
   const info=LIEU_INFO[ui.lieu]||lieuStatus(ui.lieu);
-  $('#sun-line').innerHTML=st?`Aujourd'hui : lever <b>${fmtHM.format(st.rise)}</b>, coucher <b>${fmtHM.format(st.set)}</b> · lumière rasante jusqu'à ${fmtHM.format(new Date(st.rise.getTime()+75*60000))} et dès ${fmtHM.format(new Date(st.set.getTime()-80*60000))}${info?` · ${esc(info)}`:''}`:'';
+  $('#sun-line').innerHTML=st?`${ui.site==='all'?esc(l.n)+' aujourd\u2019hui':'Aujourd\u2019hui'} : lever <b>${fmtHM.format(st.rise)}</b>, coucher <b>${fmtHM.format(st.set)}</b> · lumière rasante jusqu'à ${fmtHM.format(new Date(st.rise.getTime()+75*60000))} et dès ${fmtHM.format(new Date(st.set.getTime()-80*60000))}${info?` · ${esc(info)}`:''}`:'';
 }
 function renderLieux(){
   const L=allLieux();
@@ -1981,7 +1977,7 @@ $('#scoreboard').addEventListener('click',e=>{const b=e.target.closest('.player'
 $('#who-seg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b) return;setMe(b.dataset.p)});
 $('#dev-seg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b) return;setDevice(b.dataset.p);toast('Ce téléphone est celui de '+nameOf(ui.device))});
 $('#q').addEventListener('input',e=>{ui.q=e.target.value;renderList()});
-for(const [id,key] of [['#site-chips','site'],['#like-chips','like']]) $(id).addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b||b.id==='ico-chip') return;ui[key]=b.dataset.v;$$(id+' .chip:not(#ico-chip)').forEach(c=>c.setAttribute('aria-pressed',String(c===b)));renderList()});
+for(const [id,key] of [['#like-chips','like']]) $(id).addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b||b.id==='ico-chip') return;ui[key]=b.dataset.v;$$(id+' .chip:not(#ico-chip)').forEach(c=>c.setAttribute('aria-pressed',String(c===b)));renderList()});
 $('#ico-chip').addEventListener('click',e=>{ui.ico=!ui.ico;e.currentTarget.setAttribute('aria-pressed',String(ui.ico));renderList()});
 const gs=$('#group-sel');GROUPS.forEach((g,i)=>{const o=document.createElement('option');o.value=String(i);o.textContent=g;gs.appendChild(o)});
 gs.addEventListener('change',e=>{ui.group=e.target.value;renderList()});
@@ -2026,7 +2022,8 @@ $('#xlist').addEventListener('click',e=>{
   const xe=e.target.closest('button[data-xedit]');if(xe){editCustom(xe.dataset.xedit);return}
   const xd=e.target.closest('button[data-xdel]');if(xd){if(xd.dataset.armed){add({k:'xdel',cid:xd.dataset.xdel});afterChange();renderCustomList();toast('Espèce retirée (toujours dans l\u2019historique)')}else{xd.dataset.armed='1';xd.textContent='Confirmer ?';xd.setAttribute('aria-label','Confirmer le retrait')}}
 });
-$('#lieu-chips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b) return;if(b.dataset.v==='__add'){showTab('settings');$('#panel-lieux').scrollIntoView({behavior:'smooth',block:'start'});$('#l-n').focus();return}ui.lieu=b.dataset.v;writeLS(LS_LIEU,ui.lieu);ui.site=LIEUX[ui.lieu]?'all':ui.lieu;renderLieuChips();renderList();toast('Je suis à '+lieuName(view,ui.lieu)+' : cotes mises à jour')});
+$('#lieu-chips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b) return;if(b.dataset.v==='__add'){showTab('settings');$('#panel-lieux').scrollIntoView({behavior:'smooth',block:'start'});$('#l-n').focus();return}if(b.dataset.v==='all'){ui.site='all';writeLS(LS_SITE,'all');renderLieuChips();renderList();toast('Toutes les espèces chargées, chacune cotée à son lieu');return}
+  ui.lieu=b.dataset.v;ui.site=ui.lieu;writeLS(LS_LIEU,ui.lieu);writeLS(LS_SITE,ui.site);renderLieuChips();renderList();toast('Je suis à '+lieuName(view,ui.lieu)+' : cotes mises à jour')});
 $('#l-add').addEventListener('click',async()=>{const q=$('#l-n').value.trim();let lat=Number($('#l-lat').value),lng=Number($('#l-lng').value);const r=Number($('#l-r').value)||9;const btn=$('#l-add');
   const hasXY=$('#l-lat').value.trim()!==''&&$('#l-lng').value.trim()!==''&&Number.isFinite(lat)&&Number.isFinite(lng);
   if(!q&&!hasXY){toast('Donnez un nom de lieu ou des coordonnées');$('#l-n').focus();return}
@@ -2035,10 +2032,10 @@ $('#l-add').addEventListener('click',async()=>{const q=$('#l-n').value.trim();le
     if(!g){toast('Lieu introuvable : précisez (commune, code postal) ou donnez les coordonnées');return}
     lat=g.lat;lng=g.lng;if(g.name) n=g.name;$('#l-lat').value=lat.toFixed(4);$('#l-lng').value=lng.toFixed(4)}
   if(!n) n=`Lieu ${lat.toFixed(2)}, ${lng.toFixed(2)}`;
-  const lid='l-'+Date.now().toString(36)+Math.floor(Math.random()*1e6).toString(36);add({k:'lieuadd',lid,n,lat,lng,r});$('#l-n').value='';$('#l-lat').value='';$('#l-lng').value='';ui.lieu=lid;ui.site=lid;writeLS(LS_LIEU,lid);afterChange();renderLieuChips();toast(`${n} ajouté (${lat.toFixed(3)}, ${lng.toFixed(3)}) : relevé des espèces en cours…`);computeGbif(lid)});
+  const lid='l-'+Date.now().toString(36)+Math.floor(Math.random()*1e6).toString(36);add({k:'lieuadd',lid,n,lat,lng,r});$('#l-n').value='';$('#l-lat').value='';$('#l-lng').value='';ui.lieu=lid;ui.site=lid;writeLS(LS_LIEU,lid);writeLS(LS_SITE,lid);afterChange();renderLieuChips();toast(`${n} ajouté (${lat.toFixed(3)}, ${lng.toFixed(3)}) : relevé des espèces en cours…`);computeGbif(lid)});
 $('#l-geo').addEventListener('click',()=>{if(!navigator.geolocation){toast('Position indisponible ici');return}navigator.geolocation.getCurrentPosition(pos=>{$('#l-lat').value=pos.coords.latitude.toFixed(4);$('#l-lng').value=pos.coords.longitude.toFixed(4);toast('Position remplie')},()=>toast('Position refusée ou indisponible'),{timeout:8000})});
 $('#lieux').addEventListener('click',e=>{const g=e.target.closest('button[data-gbif]');if(g){computeGbif(g.dataset.gbif);return}const d=e.target.closest('button[data-lieudel]');if(d){const lid=d.dataset.lieudel;
-  if(d.dataset.armed){const n=lieuName(view,lid);add({k:'lieudel',lid});if(ui.lieu===lid){ui.lieu='pg';writeLS(LS_LIEU,'pg')}if(ui.site===lid) ui.site='all';afterChange();renderLieuChips();toast(`${n} retiré (ses coches restent dans l\u2019historique)`)}
+  if(d.dataset.armed){const n=lieuName(view,lid);add({k:'lieudel',lid});if(ui.lieu===lid){ui.lieu='pg';writeLS(LS_LIEU,'pg')}if(ui.site===lid){ui.site='all';writeLS(LS_SITE,'all')}afterChange();renderLieuChips();toast(`${n} retiré (ses coches restent dans l\u2019historique)`)}
   else{d.dataset.armed='1';d.textContent='Confirmer ?';setTimeout(()=>{if(d.isConnected){delete d.dataset.armed;d.textContent='Retirer'}},5000)}}});
 $('#add-custom').addEventListener('click',()=>{resetCustomForm();showTab('settings');customForm();$('#panel-custom').scrollIntoView({behavior:'smooth',block:'start'});$('#x-n').focus()});
 $('#objectives').addEventListener('click',e=>{const b=e.target.closest('button[data-obj-del]');if(!b) return;const [p,sid]=b.dataset.objDel.split('|');toggleObjective(p,sid)});
