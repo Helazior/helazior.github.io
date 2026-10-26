@@ -205,6 +205,9 @@ body.cols-2 .card h3,body.cols-3 .card h3{font-size:15px}
 .sheet .hd{display:grid;grid-template-columns:84px minmax(0,1fr) auto;gap:12px;align-items:center}
 .sheet .hd .head{width:84px;height:84px;border-radius:50%;background:var(--surface);overflow:hidden;display:grid;place-items:center}
 .sheet .hd .head svg{width:84px;height:84px;display:block}
+.sheet-photo{margin:10px 0 0;border-radius:var(--radius-card);overflow:hidden;background:var(--surface);display:block}
+.sheet-photo img{display:block;width:100%;max-height:220px;object-fit:cover}
+.sheet-photo span{display:block;font-size:11.5px;color:var(--ink-2);padding:4px 10px}
 .sheet h2{margin:0;font-family:var(--font-display);font-size:20px;font-weight:800;line-height:1.2;letter-spacing:-.3px}
 .sheet .close{border:0;background:var(--surface-2);border-radius:50%;width:36px;height:36px;cursor:pointer;font-size:18px;line-height:1;align-self:start}
 .sheet .ptsedit{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:14px}
@@ -1587,6 +1590,9 @@ function filtered(){
 const LS_WIMG='duel-camargue-wikiimg';const WIKI_IMG=readLS(LS_WIMG)||{};
 function imgFor(sp){if(disp.photos) return sp.img||WIKI_IMG[sp.id]||'';return sp.drawn?'':(sp.img||'')}
 function headHTML(sp,uid){const im=imgFor(sp);return im?`<img class="spimg" src="${esc(imgUrl(im))}" alt="" loading="lazy" decoding="async">`:drawSVG(sp,uid)}
+async function fetchOnePhoto(sp){ /* photo Wikipédia d'une espèce ouverte dans la fiche, à la demande */
+  try{const r=await wikiBatch([canon(sp.l)]);const w=r[canon(sp.l)];WIKI_IMG[sp.id]=(w&&w.img)||'';writeLS(LS_WIMG,WIKI_IMG);if(sheetSid===sp.id) renderSheet(sp.id)}catch(e){}
+}
 let wikiLoading=false;
 async function loadWikiPhotos(){ /* photos Wikipédia des espèces dessinées (liste de base, hors liste, relevées avec dessin), une fois, gardées dans le téléphone */
   if(wikiLoading) return;const todo=allSpecies().filter(sp=>!sp.img&&sp.l&&WIKI_IMG[sp.id]===undefined);if(!todo.length) return;
@@ -1737,16 +1743,21 @@ function renderSheet(sid){
   const latin=sp.l.split(' /')[0].replace(' sp.','');
   const slug=sp.n.replace(/œ/g,'oe').replace(/Œ/g,'oe').replace(/æ/g,'ae').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/['\u2019 ]+/g,'.').replace(/[^a-z0-9.-]/g,'');
   const isBird=!(sp.h&&sp.h.k);
+  const hasDraw=!sp.disc||sp.drawn;const im=sp.img||WIKI_IMG[sid]||'';
+  if(!im&&sp.l&&WIKI_IMG[sid]===undefined) fetchOnePhoto(sp);
   const links=(sp.custom)?'':[
     canListen?`<a class="btn small" href="https://xeno-canto.org/explore?query=${encodeURIComponent(latin)}" target="_blank" rel="noopener">▶ Écouter</a>`:'',
     isBird&&!sp.disc?`<a class="btn small" href="https://www.oiseaux.net/oiseaux/${slug}.html" target="_blank" rel="noopener">Fiche oiseaux.net</a>`:'',
     sp.wk?`<a class="btn small" href="https://fr.wikipedia.org/wiki/${encodeURIComponent(sp.n.replace(/ /g,'_'))}" target="_blank" rel="noopener">Fiche Wikipédia</a>`:(!isBird||sp.disc)?`<a class="btn small" href="https://fr.wikipedia.org/w/index.php?search=${encodeURIComponent(latin)}&go=Go" target="_blank" rel="noopener">Fiche Wikipédia</a>`:'',
     `<a class="btn small" href="https://www.inaturalist.org/taxa/search?q=${encodeURIComponent(latin)}" target="_blank" rel="noopener">Photos iNaturalist</a>`
   ].filter(Boolean).join(' ');
-  const listen=links+(imgFor(sp)?` <span class="muted" style="font-size:12px">Photo : Wikimedia Commons, via Wikipédia.</span>`:'');
+  const listen=links+((!hasDraw&&im)?` <span class="muted" style="font-size:12px">Photo : Wikimedia Commons, via Wikipédia.</span>`:'');
   const note=view.notes[sid]?view.notes[sid].t:'';
-  $('#sheet').innerHTML=`<div class="grab"></div><div class="hd"><div class="head">${headHTML(sp,'s-'+sid)}</div><div><h2>${esc(sp.n)}</h2><p class="latin" style="margin:0;font-style:italic;color:var(--ink-2);font-size:13px">${esc(sp.l)}</p>
+  const wikiHref=sp.wk?`https://fr.wikipedia.org/wiki/${encodeURIComponent(sp.n.replace(/ /g,'_'))}`:'';
+  const photoBanner=im&&hasDraw?`<${wikiHref?'a':'div'} class="sheet-photo"${wikiHref?` href="${wikiHref}" target="_blank" rel="noopener"`:''}><img src="${esc(imgUrl(im))}" alt="Photo de ${esc(sp.n)}" loading="lazy"><span>Photo : Wikimedia Commons, via Wikipédia${wikiHref?' · ouvrir l\u2019article':''}</span></${wikiHref?'a':'div'}>`:'';
+  $('#sheet').innerHTML=`<div class="grab"></div><div class="hd"><div class="head">${hasDraw?drawSVG(sp,'s-'+sid):headHTML(sp,'s-'+sid)}</div><div><h2>${esc(sp.n)}</h2><p class="latin" style="margin:0;font-style:italic;color:var(--ink-2);font-size:13px">${esc(sp.l)}</p>
     <div class="tags">${tagsHTML(sp,true)}</div></div><button type="button" class="close" aria-label="Fermer">×</button></div>
+    ${photoBanner}
     ${tipGen||tipLieu||listen?`<div class="tip">${tipGen?`<p><b>Repères de terrain</b> ${esc(tipGen)} <span class="src">Valeurs indicatives, d\u2019expérience.</span></p>`:''}${tipLieu?`<p><b>GBIF · ${esc(lieuName(view,lieu))}</b> ${esc(tipLieu)}</p>`:''}${listen?`<p>${listen}</p>`:''}</div>`:''}
     <div class="cote"><div class="cote-h"><span>Cote à ${esc(lieuName(view,lieu))}</span><b>${fmtPts(basePts(view,sid,lieu))} pts</b></div>
       ${comps}
