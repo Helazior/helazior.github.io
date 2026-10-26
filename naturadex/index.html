@@ -27,12 +27,12 @@
 <style>
 /* Layout : tableau des scores collant en haut avec trois onglets, une colonne de fiches espèces groupées par famille, feuille de détail en bas, page stats avec une courbe. */
 /* Thèmes : les trois peaux du design system Scheduler (Craie, Pastel, Encre), tokens repris de son tokens.json. Auto = Craie en clair, Encre en sombre. */
-:root{--bg:#ffffff;--surface:#f7f7f7;--raised:#ffffff;--surface-2:#f3f3f3;--ink:#121212;--ink-2:#767676;--ink-inv:#ffffff;--line:#ededed;--line-soft:#e6e6e6;--accent:#f04e30;--accent-ink:#ffffff;--accent-soft:#b9c7e3;--accent-on:#283a5c;--p1:#2f6fe0;--p1-fill:#acc5f3;--p1-on:#183870;--p2:#e89a10;--p2-fill:#f6d79f;--p2-on:#744d08;--t1:#8c8c8c;--t1-fill:#d1d1d1;--t1-on:#464646;--t2:#4f74b8;--t2-fill:#b9c7e3;--t2-on:#283a5c;--t3:#e23a78;--t3-fill:#f3b0c9;--t3-on:#711d3c;--t3-soft:#f3b0c9;--good:#22a45c;--good-fill:#a7dbbe;--good-on:#11522e;--bad:#e23a78;--ico:#e89a10;--ico-fill:#f6d79f;--ico-on:#744d08;--radius-card:12px;--radius-narrow:8px;--radius-chip:15px;--radius-sheet:24px;--card-edge:transparent;--shadow:0 8px 24px rgba(0,0,0,0.14);--shadow-now:0 8px 22px rgba(0,0,0,0.12);--font-display:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;--font-body:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:light;}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]):not([data-skin="craie"]):not([data-skin="pastel"]){--bg:#0f1218;--surface:#1b1f27;--raised:#1c222c;--surface-2:#1a1f28;--ink:#eef1f6;--ink-2:#8a93a2;--ink-inv:#0f1218;--line:#1d222b;--line-soft:#2a313c;--accent:#ff6a5c;--accent-ink:#1a0a08;--accent-soft:#9db4de;--accent-on:#232831;--p1:#74aaff;--p1-fill:#74aaff;--p1-on:#1a2538;--p2:#ffc94d;--p2-fill:#ffc94d;--p2-on:#382c11;--t1:#8b95a5;--t1-fill:#8b95a5;--t1-on:#1f2124;--t2:#9db4de;--t2-fill:#9db4de;--t2-on:#232831;--t3:#f07ba0;--t3-fill:#f07ba0;--t3-on:#351b23;--t3-soft:#f07ba0;--good:#4ed08a;--good-fill:#4ed08a;--good-on:#112e1e;--bad:#f07ba0;--ico:#ffc94d;--ico-fill:#ffc94d;--ico-on:#382c11;--radius-card:7px;--radius-narrow:5px;--radius-chip:15px;--radius-sheet:24px;--card-edge:transparent;--shadow:0 8px 24px rgba(0,0,0,0.45);--shadow-now:0 8px 22px rgba(0,0,0,0.35);--font-display:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;--font-body:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:dark;}}
-:root[data-theme="dark"]:not([data-skin="craie"]):not([data-skin="pastel"]){--bg:#0f1218;--surface:#1b1f27;--raised:#1c222c;--surface-2:#1a1f28;--ink:#eef1f6;--ink-2:#8a93a2;--ink-inv:#0f1218;--line:#1d222b;--line-soft:#2a313c;--accent:#ff6a5c;--accent-ink:#1a0a08;--accent-soft:#9db4de;--accent-on:#232831;--p1:#74aaff;--p1-fill:#74aaff;--p1-on:#1a2538;--p2:#ffc94d;--p2-fill:#ffc94d;--p2-on:#382c11;--t1:#8b95a5;--t1-fill:#8b95a5;--t1-on:#1f2124;--t2:#9db4de;--t2-fill:#9db4de;--t2-on:#232831;--t3:#f07ba0;--t3-fill:#f07ba0;--t3-on:#351b23;--t3-soft:#f07ba0;--good:#4ed08a;--good-fill:#4ed08a;--good-on:#112e1e;--bad:#f07ba0;--ico:#ffc94d;--ico-fill:#ffc94d;--ico-on:#382c11;--radius-card:7px;--radius-narrow:5px;--radius-chip:15px;--radius-sheet:24px;--card-edge:transparent;--shadow:0 8px 24px rgba(0,0,0,0.45);--shadow-now:0 8px 22px rgba(0,0,0,0.35);--font-display:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;--font-body:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:dark;}
-:root[data-skin="encre"]{--bg:#0f1218;--surface:#1b1f27;--raised:#1c222c;--surface-2:#1a1f28;--ink:#eef1f6;--ink-2:#8a93a2;--ink-inv:#0f1218;--line:#1d222b;--line-soft:#2a313c;--accent:#ff6a5c;--accent-ink:#1a0a08;--accent-soft:#9db4de;--accent-on:#232831;--p1:#74aaff;--p1-fill:#74aaff;--p1-on:#1a2538;--p2:#ffc94d;--p2-fill:#ffc94d;--p2-on:#382c11;--t1:#8b95a5;--t1-fill:#8b95a5;--t1-on:#1f2124;--t2:#9db4de;--t2-fill:#9db4de;--t2-on:#232831;--t3:#f07ba0;--t3-fill:#f07ba0;--t3-on:#351b23;--t3-soft:#f07ba0;--good:#4ed08a;--good-fill:#4ed08a;--good-on:#112e1e;--bad:#f07ba0;--ico:#ffc94d;--ico-fill:#ffc94d;--ico-on:#382c11;--radius-card:7px;--radius-narrow:5px;--radius-chip:15px;--radius-sheet:24px;--card-edge:transparent;--shadow:0 8px 24px rgba(0,0,0,0.45);--shadow-now:0 8px 22px rgba(0,0,0,0.35);--font-display:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;--font-body:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:dark;}
-:root[data-skin="pastel"]{--bg:#f7f0e4;--surface:#f2ebde;--raised:#fffdf8;--surface-2:#ede4d3;--ink:#2b2440;--ink-2:#6f6880;--ink-inv:#f7f0e4;--line:#e6dccb;--line-soft:#e3d9c6;--accent:#f0664a;--accent-ink:#ffffff;--accent-soft:#cdd8e7;--accent-on:#3f516b;--p1:#5c8be6;--p1-fill:#c8d8f6;--p1-on:#355185;--p2:#f0b23a;--p2-fill:#fae5bc;--p2-on:#805f20;--t1:#9a968f;--t1-fill:#dddbd9;--t1-on:#595753;--t2:#6c8bb8;--t2-fill:#cdd8e7;--t2-on:#3f516b;--t3:#e36a96;--t3-fill:#f5ccdb;--t3-on:#843d57;--t3-soft:#f5ccdb;--good:#4db57a;--good-fill:#c2e6d2;--good-on:#2d6947;--bad:#e36a96;--ico:#f0b23a;--ico-fill:#fae5bc;--ico-on:#805f20;--radius-card:12px;--radius-narrow:8px;--radius-chip:15px;--radius-sheet:24px;--card-edge:#c4c2be;--shadow:0 8px 24px rgba(42,39,51,0.14);--shadow-now:0 8px 22px rgba(42,39,51,0.12);--font-display:"Nunito","Manrope",system-ui,sans-serif;--font-body:"Nunito","Manrope",system-ui,sans-serif;color-scheme:light;}
-:root[data-skin="craie"]{--bg:#ffffff;--surface:#f7f7f7;--raised:#ffffff;--surface-2:#f3f3f3;--ink:#121212;--ink-2:#767676;--ink-inv:#ffffff;--line:#ededed;--line-soft:#e6e6e6;--accent:#f04e30;--accent-ink:#ffffff;--accent-soft:#b9c7e3;--accent-on:#283a5c;--p1:#2f6fe0;--p1-fill:#acc5f3;--p1-on:#183870;--p2:#e89a10;--p2-fill:#f6d79f;--p2-on:#744d08;--t1:#8c8c8c;--t1-fill:#d1d1d1;--t1-on:#464646;--t2:#4f74b8;--t2-fill:#b9c7e3;--t2-on:#283a5c;--t3:#e23a78;--t3-fill:#f3b0c9;--t3-on:#711d3c;--t3-soft:#f3b0c9;--good:#22a45c;--good-fill:#a7dbbe;--good-on:#11522e;--bad:#e23a78;--ico:#e89a10;--ico-fill:#f6d79f;--ico-on:#744d08;--radius-card:12px;--radius-narrow:8px;--radius-chip:15px;--radius-sheet:24px;--card-edge:transparent;--shadow:0 8px 24px rgba(0,0,0,0.14);--shadow-now:0 8px 22px rgba(0,0,0,0.12);--font-display:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;--font-body:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:light;}
+:root{--pc:var(--ink-2);--pc-fill:var(--surface-2);--pc-on:var(--ink);--bg:#ffffff;--surface:#f7f7f7;--raised:#ffffff;--surface-2:#f3f3f3;--ink:#121212;--ink-2:#767676;--ink-inv:#ffffff;--line:#ededed;--line-soft:#e6e6e6;--accent:#f04e30;--accent-ink:#ffffff;--accent-soft:#b9c7e3;--accent-on:#283a5c;--p1:#2f6fe0;--p1-fill:#acc5f3;--p1-on:#183870;--p2:#e89a10;--p2-fill:#f6d79f;--p2-on:#744d08;--p3:#22a45c;--p3-fill:#a7dbbe;--p3-on:#11522e;--p4:#7a52e0;--p4-fill:#cabaf3;--p4-on:#3d2970;--p5:#e23a78;--p5-fill:#f3b0c9;--p5-on:#711d3c;--p6:#1fa896;--p6-fill:#a5dcd5;--p6-on:#10544b;--p7:#4f74b8;--p7-fill:#b9c7e3;--p7-on:#283a5c;--p8:#8c8c8c;--p8-fill:#d1d1d1;--p8-on:#464646;--t1:#8c8c8c;--t1-fill:#d1d1d1;--t1-on:#464646;--t2:#4f74b8;--t2-fill:#b9c7e3;--t2-on:#283a5c;--t3:#e23a78;--t3-fill:#f3b0c9;--t3-on:#711d3c;--t3-soft:#f3b0c9;--good:#22a45c;--good-fill:#a7dbbe;--good-on:#11522e;--bad:#e23a78;--ico:#e89a10;--ico-fill:#f6d79f;--ico-on:#744d08;--radius-card:12px;--radius-narrow:8px;--radius-chip:15px;--radius-sheet:24px;--card-edge:transparent;--shadow:0 8px 24px rgba(0,0,0,0.14);--shadow-now:0 8px 22px rgba(0,0,0,0.12);--font-display:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;--font-body:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:light;}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]):not([data-skin="craie"]):not([data-skin="pastel"]){--bg:#0f1218;--surface:#1b1f27;--raised:#1c222c;--surface-2:#1a1f28;--ink:#eef1f6;--ink-2:#8a93a2;--ink-inv:#0f1218;--line:#1d222b;--line-soft:#2a313c;--accent:#ff6a5c;--accent-ink:#1a0a08;--accent-soft:#9db4de;--accent-on:#232831;--p1:#74aaff;--p1-fill:#74aaff;--p1-on:#1a2538;--p2:#ffc94d;--p2-fill:#ffc94d;--p2-on:#382c11;--p3:#4ed08a;--p3-fill:#4ed08a;--p3-on:#112e1e;--p4:#b49bff;--p4-fill:#b49bff;--p4-on:#282238;--p5:#f07ba0;--p5-fill:#f07ba0;--p5-on:#351b23;--p6:#5ad7cf;--p6-fill:#5ad7cf;--p6-on:#142f2e;--p7:#9db4de;--p7-fill:#9db4de;--p7-on:#232831;--p8:#8b95a5;--p8-fill:#8b95a5;--p8-on:#1f2124;--t1:#8b95a5;--t1-fill:#8b95a5;--t1-on:#1f2124;--t2:#9db4de;--t2-fill:#9db4de;--t2-on:#232831;--t3:#f07ba0;--t3-fill:#f07ba0;--t3-on:#351b23;--t3-soft:#f07ba0;--good:#4ed08a;--good-fill:#4ed08a;--good-on:#112e1e;--bad:#f07ba0;--ico:#ffc94d;--ico-fill:#ffc94d;--ico-on:#382c11;--radius-card:7px;--radius-narrow:5px;--radius-chip:15px;--radius-sheet:24px;--card-edge:transparent;--shadow:0 8px 24px rgba(0,0,0,0.45);--shadow-now:0 8px 22px rgba(0,0,0,0.35);--font-display:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;--font-body:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:dark;}}
+:root[data-theme="dark"]:not([data-skin="craie"]):not([data-skin="pastel"]){--bg:#0f1218;--surface:#1b1f27;--raised:#1c222c;--surface-2:#1a1f28;--ink:#eef1f6;--ink-2:#8a93a2;--ink-inv:#0f1218;--line:#1d222b;--line-soft:#2a313c;--accent:#ff6a5c;--accent-ink:#1a0a08;--accent-soft:#9db4de;--accent-on:#232831;--p1:#74aaff;--p1-fill:#74aaff;--p1-on:#1a2538;--p2:#ffc94d;--p2-fill:#ffc94d;--p2-on:#382c11;--p3:#4ed08a;--p3-fill:#4ed08a;--p3-on:#112e1e;--p4:#b49bff;--p4-fill:#b49bff;--p4-on:#282238;--p5:#f07ba0;--p5-fill:#f07ba0;--p5-on:#351b23;--p6:#5ad7cf;--p6-fill:#5ad7cf;--p6-on:#142f2e;--p7:#9db4de;--p7-fill:#9db4de;--p7-on:#232831;--p8:#8b95a5;--p8-fill:#8b95a5;--p8-on:#1f2124;--t1:#8b95a5;--t1-fill:#8b95a5;--t1-on:#1f2124;--t2:#9db4de;--t2-fill:#9db4de;--t2-on:#232831;--t3:#f07ba0;--t3-fill:#f07ba0;--t3-on:#351b23;--t3-soft:#f07ba0;--good:#4ed08a;--good-fill:#4ed08a;--good-on:#112e1e;--bad:#f07ba0;--ico:#ffc94d;--ico-fill:#ffc94d;--ico-on:#382c11;--radius-card:7px;--radius-narrow:5px;--radius-chip:15px;--radius-sheet:24px;--card-edge:transparent;--shadow:0 8px 24px rgba(0,0,0,0.45);--shadow-now:0 8px 22px rgba(0,0,0,0.35);--font-display:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;--font-body:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:dark;}
+:root[data-skin="encre"]{--bg:#0f1218;--surface:#1b1f27;--raised:#1c222c;--surface-2:#1a1f28;--ink:#eef1f6;--ink-2:#8a93a2;--ink-inv:#0f1218;--line:#1d222b;--line-soft:#2a313c;--accent:#ff6a5c;--accent-ink:#1a0a08;--accent-soft:#9db4de;--accent-on:#232831;--p1:#74aaff;--p1-fill:#74aaff;--p1-on:#1a2538;--p2:#ffc94d;--p2-fill:#ffc94d;--p2-on:#382c11;--p3:#4ed08a;--p3-fill:#4ed08a;--p3-on:#112e1e;--p4:#b49bff;--p4-fill:#b49bff;--p4-on:#282238;--p5:#f07ba0;--p5-fill:#f07ba0;--p5-on:#351b23;--p6:#5ad7cf;--p6-fill:#5ad7cf;--p6-on:#142f2e;--p7:#9db4de;--p7-fill:#9db4de;--p7-on:#232831;--p8:#8b95a5;--p8-fill:#8b95a5;--p8-on:#1f2124;--t1:#8b95a5;--t1-fill:#8b95a5;--t1-on:#1f2124;--t2:#9db4de;--t2-fill:#9db4de;--t2-on:#232831;--t3:#f07ba0;--t3-fill:#f07ba0;--t3-on:#351b23;--t3-soft:#f07ba0;--good:#4ed08a;--good-fill:#4ed08a;--good-on:#112e1e;--bad:#f07ba0;--ico:#ffc94d;--ico-fill:#ffc94d;--ico-on:#382c11;--radius-card:7px;--radius-narrow:5px;--radius-chip:15px;--radius-sheet:24px;--card-edge:transparent;--shadow:0 8px 24px rgba(0,0,0,0.45);--shadow-now:0 8px 22px rgba(0,0,0,0.35);--font-display:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;--font-body:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:dark;}
+:root[data-skin="pastel"]{--bg:#f7f0e4;--surface:#f2ebde;--raised:#fffdf8;--surface-2:#ede4d3;--ink:#2b2440;--ink-2:#6f6880;--ink-inv:#f7f0e4;--line:#e6dccb;--line-soft:#e3d9c6;--accent:#f0664a;--accent-ink:#ffffff;--accent-soft:#cdd8e7;--accent-on:#3f516b;--p1:#5c8be6;--p1-fill:#c8d8f6;--p1-on:#355185;--p2:#f0b23a;--p2-fill:#fae5bc;--p2-on:#805f20;--p3:#4db57a;--p3-fill:#c2e6d2;--p3-on:#2d6947;--p4:#8e72e0;--p4-fill:#d9cff4;--p4-on:#524282;--p5:#e36a96;--p5-fill:#f5ccdb;--p5-on:#843d57;--p6:#3fb9aa;--p6-fill:#bee7e2;--p6-on:#256b63;--p7:#6c8bb8;--p7-fill:#cdd8e7;--p7-on:#3f516b;--p8:#9a968f;--p8-fill:#dddbd9;--p8-on:#595753;--t1:#9a968f;--t1-fill:#dddbd9;--t1-on:#595753;--t2:#6c8bb8;--t2-fill:#cdd8e7;--t2-on:#3f516b;--t3:#e36a96;--t3-fill:#f5ccdb;--t3-on:#843d57;--t3-soft:#f5ccdb;--good:#4db57a;--good-fill:#c2e6d2;--good-on:#2d6947;--bad:#e36a96;--ico:#f0b23a;--ico-fill:#fae5bc;--ico-on:#805f20;--radius-card:12px;--radius-narrow:8px;--radius-chip:15px;--radius-sheet:24px;--card-edge:#c4c2be;--shadow:0 8px 24px rgba(42,39,51,0.14);--shadow-now:0 8px 22px rgba(42,39,51,0.12);--font-display:"Nunito","Manrope",system-ui,sans-serif;--font-body:"Nunito","Manrope",system-ui,sans-serif;color-scheme:light;}
+:root[data-skin="craie"]{--bg:#ffffff;--surface:#f7f7f7;--raised:#ffffff;--surface-2:#f3f3f3;--ink:#121212;--ink-2:#767676;--ink-inv:#ffffff;--line:#ededed;--line-soft:#e6e6e6;--accent:#f04e30;--accent-ink:#ffffff;--accent-soft:#b9c7e3;--accent-on:#283a5c;--p1:#2f6fe0;--p1-fill:#acc5f3;--p1-on:#183870;--p2:#e89a10;--p2-fill:#f6d79f;--p2-on:#744d08;--p3:#22a45c;--p3-fill:#a7dbbe;--p3-on:#11522e;--p4:#7a52e0;--p4-fill:#cabaf3;--p4-on:#3d2970;--p5:#e23a78;--p5-fill:#f3b0c9;--p5-on:#711d3c;--p6:#1fa896;--p6-fill:#a5dcd5;--p6-on:#10544b;--p7:#4f74b8;--p7-fill:#b9c7e3;--p7-on:#283a5c;--p8:#8c8c8c;--p8-fill:#d1d1d1;--p8-on:#464646;--t1:#8c8c8c;--t1-fill:#d1d1d1;--t1-on:#464646;--t2:#4f74b8;--t2-fill:#b9c7e3;--t2-on:#283a5c;--t3:#e23a78;--t3-fill:#f3b0c9;--t3-on:#711d3c;--t3-soft:#f3b0c9;--good:#22a45c;--good-fill:#a7dbbe;--good-on:#11522e;--bad:#e23a78;--ico:#e89a10;--ico-fill:#f6d79f;--ico-on:#744d08;--radius-card:12px;--radius-narrow:8px;--radius-chip:15px;--radius-sheet:24px;--card-edge:transparent;--shadow:0 8px 24px rgba(0,0,0,0.14);--shadow-now:0 8px 22px rgba(0,0,0,0.12);--font-display:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;--font-body:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:light;}
 *{box-sizing:border-box}
 html,body{min-height:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:14.5px;line-height:1.45;font-weight:600;-webkit-font-smoothing:antialiased;
@@ -54,18 +54,22 @@ h1,h2,h3{text-wrap:balance}
 .sync i{width:8px;height:8px;border-radius:50%;background:var(--t1);display:inline-block}
 .sync.on i{background:var(--good)} .sync.err i{background:var(--bad)}
 .top{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bg);padding-block:6px 0;margin-bottom:8px}
-.scoreboard{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:stretch}
+.p1{--pc:var(--p1);--pc-fill:var(--p1-fill);--pc-on:var(--p1-on)} .p2{--pc:var(--p2);--pc-fill:var(--p2-fill);--pc-on:var(--p2-on)} .p3{--pc:var(--p3);--pc-fill:var(--p3-fill);--pc-on:var(--p3-on)} .p4{--pc:var(--p4);--pc-fill:var(--p4-fill);--pc-on:var(--p4-on)} .p5{--pc:var(--p5);--pc-fill:var(--p5-fill);--pc-on:var(--p5-on)} .p6{--pc:var(--p6);--pc-fill:var(--p6-fill);--pc-on:var(--p6-on)} .p7{--pc:var(--p7);--pc-fill:var(--p7-fill);--pc-on:var(--p7-on)} .p8{--pc:var(--p8);--pc-fill:var(--p8-fill);--pc-on:var(--p8-on)}
+.scoreboard{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:stretch}
+.scoreboard.n3{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px} .scoreboard.n4{grid-template-columns:repeat(2,minmax(0,1fr))} .scoreboard.n5,.scoreboard.n6{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px} .scoreboard.n7,.scoreboard.n8{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.scoreboard.n3 .player,.scoreboard.n5 .player,.scoreboard.n6 .player,.scoreboard.n7 .player,.scoreboard.n8 .player{grid-template-columns:minmax(0,1fr);grid-template-areas:"name" "pts" "meta";padding:6px 8px;row-gap:2px}
+.scoreboard.n3 .player .pts,.scoreboard.n5 .player .pts,.scoreboard.n6 .player .pts{font-size:22px} .scoreboard.n7 .player .pts,.scoreboard.n8 .player .pts{font-size:18px}
+.scoreboard.n3 .player .name,.scoreboard.n5 .player .name,.scoreboard.n6 .player .name,.scoreboard.n7 .player .name,.scoreboard.n8 .player .name{font-size:13px} .scoreboard.n3 .player .meta,.scoreboard.n5 .player .meta,.scoreboard.n6 .player .meta,.scoreboard.n7 .player .meta,.scoreboard.n8 .player .meta{font-size:10.5px}
 .player{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"name pts" "meta pts";column-gap:8px;align-items:center;border:2px solid var(--line);background:var(--raised);border-radius:var(--radius-card);padding:6px 10px;text-align:left;cursor:pointer;min-width:0;border-bottom-width:2.5px}
 .player .name{grid-area:name;font-weight:700;font-size:14px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;line-height:1.2}
 .player .name .lead{font-size:9.5px;font-weight:800;letter-spacing:.3px;text-transform:uppercase;color:var(--good-on);background:var(--good-fill);padding:1px 7px;border-radius:999px}
 .player .pts{grid-area:pts;font-family:var(--font-display);font-size:28px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
 .player .meta{grid-area:meta;font-size:11.5px;color:var(--ink-2);line-height:1.2}
-.player.p1{border-color:var(--p1)} .player.p2{border-color:var(--p2)}
-.player.p1 .pts{color:var(--p1)} .player.p2 .pts{color:var(--p2)}
+.player{border-color:var(--pc)}
+.player .pts{color:var(--pc)}
 .player.me{box-shadow:0 0 0 3px var(--bg),0 0 0 5px currentColor}
-.player.p1.me{color:var(--p1)} .player.p2.me{color:var(--p2)}
+.player.me{color:var(--pc)}
 .player.me .name,.player.me .meta{color:var(--ink)} .player.me .meta{opacity:.75}
-.vs{align-self:center;font-family:var(--font-display);font-weight:700;color:var(--ink-2);font-size:13px}
 .tabs{display:flex;gap:2px;margin:6px 0 8px;background:var(--surface-2);border-radius:11px;padding:3px}
 .tabs button{flex:1;border:0;background:transparent;padding:6px 4px;border-radius:8px;font-weight:700;font-size:13px;color:var(--ink-2);cursor:pointer}
 .tabs button[aria-selected="true"]{color:var(--ink);background:var(--raised);font-weight:800;box-shadow:0 1px 3px rgba(0,0,0,.1)}
@@ -73,10 +77,10 @@ h1,h2,h3{text-wrap:balance}
 /* Barre d'outils */
 .toolbar{display:flex;flex-direction:column;gap:8px}
 .who{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--ink-2)}
-.seg{display:inline-flex;border-radius:11px;padding:3px;background:var(--surface-2);gap:2px}
+.seg{display:inline-flex;flex-wrap:wrap;max-width:100%;border-radius:11px;padding:3px;background:var(--surface-2);gap:2px}
 .seg button{border:0;background:transparent;border-radius:8px;padding:5px 12px;font-weight:700;color:var(--ink-2);cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--raised);color:var(--ink);font-weight:800;box-shadow:0 1px 3px rgba(0,0,0,.1)}
-.seg button.p1[aria-pressed="true"]{background:var(--p1-fill);color:var(--p1-on)} .seg button.p2[aria-pressed="true"]{background:var(--p2-fill);color:var(--p2-on)}
+.seg button.p1[aria-pressed="true"],.seg button.p2[aria-pressed="true"],.seg button.p3[aria-pressed="true"],.seg button.p4[aria-pressed="true"],.seg button.p5[aria-pressed="true"],.seg button.p6[aria-pressed="true"],.seg button.p7[aria-pressed="true"],.seg button.p8[aria-pressed="true"]{background:var(--pc-fill);color:var(--pc-on)}
 .search{width:100%}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chips .chip{border:0;background:var(--surface-2);border-radius:var(--radius-chip);padding:5px 11px;font-size:12.5px;font-weight:700;color:var(--ink-2);cursor:pointer;min-height:28px}
@@ -117,7 +121,7 @@ body.cols-2 .card h3,body.cols-3 .card h3{font-size:15px}
 .tag.l3{background:var(--t3-fill);color:var(--t3-on)} .tag.l2{background:var(--accent-soft);color:var(--accent-on)}
 .tag.ic{background:var(--ico-fill);color:var(--ico-on)}
 .tag.crit{background:var(--ink);color:var(--ink-inv)}
-.tag.obj.p1{background:var(--p1-fill);color:var(--p1-on)} .tag.obj.p2{background:var(--p2-fill);color:var(--p2-on)}
+.tag.obj{background:var(--pc-fill);color:var(--pc-on)}
 .prow .when{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 .cote{margin-top:12px;border:0;border-radius:var(--radius-card);padding:10px 12px;background:var(--surface)}
 .cote-h{display:flex;justify-content:space-between;align-items:baseline;font-weight:700;margin-bottom:6px}
@@ -128,8 +132,7 @@ body.cols-2 .card h3,body.cols-3 .card h3{font-size:15px}
 .calc{font-size:12.5px;color:var(--ink-2);margin:8px 0 0;line-height:1.5}
 .cote .ptsedit{margin-top:8px}
 .feed .t small{color:var(--ink-2);font-size:11px}
-.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
-.dot.p1{background:var(--p1)} .dot.p2{background:var(--p2)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle;background:var(--pc)}
 .qr{display:grid;place-items:center;margin:8px 0;color:var(--ink-2);font-size:13px;text-align:center}
 .qr img,.qr canvas{background:#fff;padding:10px;border-radius:var(--radius-card);max-width:100%;height:auto}
 .objbtn{border:0;background:var(--surface-2);border-radius:999px;padding:5px 10px;font-size:12.5px;font-weight:700;color:var(--ink-2);cursor:pointer}
@@ -145,13 +148,17 @@ body.cols-2 .card h3,body.cols-3 .card h3{font-size:15px}
 .tiers button[data-t="3"][aria-pressed="true"]{background:var(--t3-fill);color:var(--t3-on)}
 .card .other{grid-area:other;font-size:12px;color:var(--ink-2);margin-top:2px;min-height:1em}
 .card .other b{font-weight:700}
+.card .other .oth{white-space:nowrap}
 .empty{color:var(--ink-2);padding:24px 8px;text-align:center}
-.board{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:start}
+.board{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:start}
+.board.n3{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px} .board.n4,.board.n5,.board.n6,.board.n7,.board.n8{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (min-width:700px){.board.n4,.board.n5,.board.n6,.board.n7,.board.n8{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.board.n3 .bitem{grid-template-columns:32px minmax(0,1fr);gap:6px;padding:6px 6px} .board.n3 .bitem .head,.board.n3 .bitem .head svg,.board.n3 .bitem .head img{width:32px;height:32px} .board.n3 .bitem b{font-size:12px} .board.n3 .bcol .bh{padding:8px 8px} .board.n3 .bcol .bh .big{font-size:20px}
 .bcol{min-width:0;border:1.5px solid var(--line);border-radius:var(--radius-card);background:var(--raised);overflow:hidden}
-.bcol.p1{border-color:var(--p1)} .bcol.p2{border-color:var(--p2)}
+.bcol{border-color:var(--pc)}
 .bcol .bh{padding:8px 10px;border-bottom:1px solid var(--line)}
 .bcol .bh .nm{font-weight:700;font-size:14px}
-.bcol.p1 .bh .nm{color:var(--p1)} .bcol.p2 .bh .nm{color:var(--p2)}
+.bcol .bh .nm{color:var(--pc)}
 .bcol .bh .big{font-family:var(--font-display);font-size:24px;font-weight:800;line-height:1.05;font-variant-numeric:tabular-nums}
 .bcol .bh .sub{font-size:11.5px;color:var(--ink-2)}
 .bitem{display:grid;grid-template-columns:40px minmax(0,1fr);gap:8px;align-items:center;padding:7px 10px;border-bottom:1px solid var(--line);background:transparent;border-left:0;border-right:0;border-top:0;width:100%;text-align:left;cursor:pointer}
@@ -163,8 +170,7 @@ body.cols-2 .card h3,body.cols-3 .card h3{font-size:15px}
 .bitem .tq{display:inline-block;width:8px;height:8px;border-radius:50%}
 .bitem .tq.t1{background:var(--t1)} .bitem .tq.t2{background:var(--t2)} .bitem .tq.t3{background:var(--t3)}
 .bitem .bp{font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
-.bitem .also{display:inline-block;width:7px;height:7px;border-radius:50%;border:1.5px solid currentColor}
-.bitem .also.p1{color:var(--p1)} .bitem .also.p2{color:var(--p2)}
+.bitem .also{display:inline-block;width:7px;height:7px;border-radius:50%;border:1.5px solid currentColor;color:var(--pc)}
 .bempty{padding:16px 10px;color:var(--ink-2);font-size:12.5px}
 .bitem.out{opacity:.55}
 .tip{margin-top:10px;font-size:13px;line-height:1.5;background:var(--surface);color:var(--ink);border-radius:var(--radius-card);padding:8px 10px}
@@ -198,17 +204,19 @@ body.cols-2 .card h3,body.cols-3 .card h3{font-size:15px}
 .prow{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
 .prow .pname{display:flex;justify-content:space-between;align-items:center;font-weight:700;margin-bottom:6px}
 .prow .pname .earned{font-family:var(--font-display);font-size:18px;font-weight:800;font-variant-numeric:tabular-nums}
-.prow.p1 .pname{color:var(--p1)} .prow.p2 .pname{color:var(--p2)}
+.prow .pname{color:var(--pc)}
 .prow .when{font-size:12px;color:var(--ink-2);margin-top:4px}
 .sheet textarea{width:100%;min-height:64px;margin-top:6px;resize:vertical}
 .sheet label{font-size:13px;color:var(--ink-2);font-weight:600}
 
 /* Stats */
-.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:4px}
+.tiles.n3,.tiles.n5,.tiles.n6{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px} .tiles.n7,.tiles.n8{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.tiles.n3 .tile,.tiles.n5 .tile,.tiles.n6 .tile,.tiles.n7 .tile,.tiles.n8 .tile{padding:10px 10px} .tiles.n3 .big,.tiles.n5 .big,.tiles.n6 .big{font-size:26px} .tiles.n7 .big,.tiles.n8 .big{font-size:22px}
 .tile{background:var(--raised);border:1px solid var(--line-soft);border-radius:var(--radius-narrow);padding:12px 14px;min-width:0}
-.tile.p1{border-color:var(--p1)} .tile.p2{border-color:var(--p2)}
+.tile.p1,.tile.p2,.tile.p3,.tile.p4,.tile.p5,.tile.p6,.tile.p7,.tile.p8{border-color:var(--pc)}
 .tile .big{font-family:var(--font-display);font-size:34px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
-.tile.p1 .big{color:var(--p1)} .tile.p2 .big{color:var(--p2)}
+.tile.p1 .big,.tile.p2 .big,.tile.p3 .big,.tile.p4 .big,.tile.p5 .big,.tile.p6 .big,.tile.p7 .big,.tile.p8 .big{color:var(--pc)}
 .tile .lbl{font-weight:700;font-size:13px}
 .tile .sub{font-size:12px;color:var(--ink-2);margin-top:6px;line-height:1.5}
 .tile .sub b{color:var(--ink)}
@@ -218,8 +226,7 @@ body.cols-2 .card h3,body.cols-3 .card h3{font-size:15px}
 .chart-wrap{position:relative}
 .chart-wrap svg{width:100%;height:auto;display:block;touch-action:pan-y}
 .chart-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-2);margin:6px 0 2px}
-.chart-legend i{display:inline-block;width:12px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
-.chart-legend .p1 i{background:var(--p1)} .chart-legend .p2 i{background:var(--p2)}
+.chart-legend i{display:inline-block;width:12px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px;background:var(--pc)}
 .tooltip{position:absolute;pointer-events:none;background:var(--ink);color:var(--ink-inv);font-size:12px;padding:6px 8px;border-radius:8px;line-height:1.4;white-space:nowrap;transform:translate(-50%,-100%);display:none;font-variant-numeric:tabular-nums}
 .tooltip.show{display:block}
 .bars{display:grid;gap:6px;margin-top:6px}
@@ -230,14 +237,12 @@ body.cols-2 .card h3,body.cols-3 .card h3{font-size:15px}
 .bar{display:grid;grid-template-columns:84px minmax(0,1fr) 36px;gap:8px;align-items:center;font-size:13px}
 .bar>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .bar .track{height:12px;background:var(--surface-2);border-radius:6px;overflow:hidden;position:relative}
-.bar .fill{height:100%;border-radius:6px;width:0}
-.bar.p1 .fill{background:var(--p1)} .bar.p2 .fill{background:var(--p2)}
+.bar .fill{height:100%;border-radius:6px;width:0;background:var(--pc)}
 .bar .num{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
 .feed{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:6px;font-size:13.5px}
 .feed li{display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:8px;align-items:baseline}
 .feed .t{color:var(--ink-2);font-variant-numeric:tabular-nums;font-size:12.5px}
-.feed .who{font-weight:700}
-.feed .who.p1{color:var(--p1)} .feed .who.p2{color:var(--p2)}
+.feed .who{font-weight:700;color:var(--pc)}
 .feed .v{font-weight:700;font-variant-numeric:tabular-nums}
 table.tbl{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
 table.tbl th,table.tbl td{text-align:left;padding:6px 6px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
@@ -282,11 +287,7 @@ table.tbl th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:
   <div class="sync" id="sync" title="État de la synchronisation"><i></i><span>local</span></div>
 </div>
 <header class="top">
-  <div class="scoreboard">
-    <button class="player p1" id="pl-p1" data-p="p1" type="button" aria-label="Choisir Clément comme profil actif"><span class="name"></span><span class="pts">0</span><span class="meta">0 espèce</span></button>
-    <div class="vs">vs</div>
-    <button class="player p2" id="pl-p2" data-p="p2" type="button" aria-label="Choisir Manu comme profil actif"><span class="name"></span><span class="pts">0</span><span class="meta">0 espèce</span></button>
-  </div>
+  <div class="scoreboard n2" id="scoreboard" role="group" aria-label="Scores"></div>
   <nav class="tabs" role="tablist">
     <button role="tab" id="tab-birds" aria-selected="true" aria-controls="view-birds" type="button">Espèces</button>
     <button role="tab" id="tab-board" aria-selected="false" aria-controls="view-board" type="button">Tableau</button>
@@ -299,7 +300,7 @@ table.tbl th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:
 <section id="view-birds" role="tabpanel">
   <div class="toolbar">
     <div class="who"><span>Je coche pour</span>
-      <span class="seg" id="who-seg"><button type="button" class="p1" data-p="p1" aria-pressed="true">Clément</button><button type="button" class="p2" data-p="p2" aria-pressed="false">Manu</button></span>
+      <span class="seg" id="who-seg"></span>
     </div>
     <div class="who"><span>Je suis à</span><span class="chips" id="lieu-chips" role="group" aria-label="Lieu"></span></div>
     <p class="sun" id="sun-line"></p>
@@ -378,9 +379,9 @@ table.tbl th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:
 <section id="view-settings" role="tabpanel" hidden>
   <div class="panel">
     <h2>Profils</h2>
-    <div class="field"><label>Ce téléphone est celui de</label><div><span class="seg" id="dev-seg"><button type="button" class="p1" data-p="p1" aria-pressed="false">Clément</button><button type="button" class="p2" data-p="p2" aria-pressed="false">Manu</button></span></div><p class="hint" style="margin:4px 0 0">Chaque modification est signée de ce nom dans l'historique.</p></div>
-    <div class="field"><label for="name1">Joueur 1</label><input id="name1" type="text" maxlength="20"></div>
-    <div class="field"><label for="name2">Joueur 2</label><input id="name2" type="text" maxlength="20"></div>
+    <div class="field"><label>Ce téléphone est celui de</label><div><span class="seg" id="dev-seg"></span></div><p class="hint" style="margin:4px 0 0">Chaque modification est signée de ce nom dans l'historique.</p></div>
+    <div id="players"></div>
+    <div class="field"><label for="newp">Ajouter un joueur</label><div class="inl"><input id="newp" type="text" maxlength="20" placeholder="Prénom" style="flex:1;min-width:120px"><button class="btn small primary" type="button" id="addp">+ Ajouter</button></div><p class="hint" style="margin:4px 0 0">Jusqu'à 8 joueurs, partagés avec tout le monde par le journal. Retirer un joueur garde ses coches dans l'historique ; le remettre les retrouve.</p></div>
   </div>
   <div class="panel">
     <h2>Barème</h2>
@@ -433,7 +434,7 @@ table.tbl th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:
     <h2>Bonus et malus manuels</h2>
     <p class="hint">Pour tout ce que le barème ne prévoit pas : photo en vol, comportement rare, objectif tombé dans la vase…</p>
     <div class="field"><div class="inl">
-      <select id="bonus-p" aria-label="Joueur"><option value="p1">Joueur 1</option><option value="p2">Joueur 2</option></select>
+      <select id="bonus-p" aria-label="Joueur"></select>
       <input id="bonus-l" type="text" placeholder="Motif" maxlength="60" style="flex:1;min-width:120px">
       <input id="bonus-v" type="number" step="5" placeholder="± pts" aria-label="Points">
       <button class="btn small primary" type="button" id="bonus-add">Ajouter</button>
@@ -692,7 +693,8 @@ function worldKind(sp){const k=sp.h&&sp.h.k;return k==='m'?'m':k?'hi':'b'}
 function worldNote(count,kind){const t=WORLD_THRESH[kind]||WORLD_THRESH.b;return count>=t[0]?1:count>=t[1]?2:count>=t[2]?3:count>=t[3]?4:5}
 for(const sp of SPECIES){const c=WORLD[sp.id];if(Number.isFinite(c)){sp.wc=c;sp.wm=worldNote(c,worldKind(sp))}const ph=PHOTO[sp.id];if(Number.isFinite(ph)&&Number.isFinite(c)&&c>0){sp.ps=ph/c;sp.pd=photoNote(sp.ps,worldKind(sp))}}
 const SPECIES_BY=Object.fromEntries(SPECIES.map(s=>[s.id,s]));
-const PROFILES=['p1','p2'];
+const PROFILES=['p1','p2','p3','p4','p5','p6','p7','p8']; /* identifiants possibles ; les joueurs actifs sont dans view.players */
+const DEFAULT_PLAYERS=['p1','p2','p3'];
 
 /* ---------- Têtes en SVG ---------- */
 const SH={
@@ -954,14 +956,14 @@ function drawSVG(sp,uid){const k=sp.h&&sp.h.k;let o=k==='m'?mammalSVG(sp,uid):k=
 const TIPS={"flamant-rose":{"g":"Portrait facile à moins de 15 m : viser la scène (toilette, parade, envol groupé, bagarre), bas sur l'eau, lumière rasante. 200–400 mm suffisent ; en vol, 1/2000 s."},"flamant-nain":{"g":"Quelques individus sont signalés parmi les flamants roses, en Camargue surtout. Balayer chaque groupe 2 min à la jumelle : 20 % plus petit, bec sombre carmin, plumage plus rose."},"martin-pecheur":{"g":"Il pêche depuis les mêmes perchoirs : repérer une branche basse (0,5–1,5 m au-dessus d'une eau calme), s'asseoir à 10–15 m dans l'axe de la lumière, ne plus bouger 20–30 min. Au 400 mm, à 10 m, il remplit un tiers du cadre. 1/1000 s mini, ISO en conséquence."},"bihoreau-gris":{"g":"Dortoir diurne dans les tamaris et saules bas, à 2–4 m de hauteur, 1 à 10 oiseaux immobiles : scruter chaque bosquet au bord de l'eau à la jumelle. Actif dès 16 h 30 en novembre."},"panure-moustaches":{"g":"Groupes de 5–20 dans les roseaux secs, repérés au cri « ping » métallique à 30 m. Ils montent en haut des roseaux 1–2 min par matin calme et ensoleillé, puis replongent : viser à l'avance, 400 mm, 1/800 s. Vent > 20 km/h : inutile."},"remiz-penduline":{"g":"Hivernante dans les massettes : chercher les épis déchiquetés (duvet blanc qui vole) et écouter le « tsiiih » fin. 10–12 cm, très mobile : 500 mm et beaucoup de rafales."},"gorgebleue":{"g":"Hivernante discrète : lisière roselière / vase nue, à terre ou sur un perchoir à moins de 1 m du sol. S'asseoir 30 min face à une trouée de 10 m de vase au lever du jour ; elle sort 10–20 s puis rentre. 500 mm, position couchée."},"butor-etoile":{"g":"Scruter la lisière de roselière au premier soleil et au dernier quart d'heure du jour, quand il traverse une trouée ou vole 20–50 m au ras des roseaux. 600 mm, 1/1000 s pour le vol."},"lusciniole":{"g":"Chante toute l'année par temps calme, surtout 8 h – 11 h : phrases de rousserolle avec 2–3 notes montantes de rossignol. Dans les laîches et roseaux sur sol détrempé, à 0–1 m du sol. Attendre qu'elle grimpe pour chanter : 400 mm à 8–12 m."},"taleve-sultane":{"g":"Marche à découvert les 60 premières minutes du jour et la dernière heure ; dès qu'il y a du passage, elle rentre dans les joncs. Chercher le rouge du bec et du front à la jumelle dans les joncs à 20–40 m, puis attendre immobile."},"rale-eau":{"g":"On l'entend partout (grognement de porcelet) et on le voit 2 min par heure : lisière roselière / vase au bord d'un chenal, à l'aube ou avant la pluie. S'asseoir à 8–10 m, 400 mm."},"grue-cendree":{"g":"Vols au crépuscule vers les dortoirs (15–60 min avant la nuit), lignes de 20–200 : photo d'ambiance au 100–300 mm sur ciel coloré. Portrait seulement depuis une voiture-affût sur les pistes agricoles (elles s'envolent à 200–300 m à pied)."},"spatule-blanche":{"g":"Groupes de 5–40 qui fauchent l'eau en marchant : se placer au ras de l'eau, soleil dans le dos, et attendre qu'elles remontent la lagune vers vous (elles avancent 1–2 m/min). 300–500 mm."},"ibis-falcinelle":{"g":"Groupes compacts en prés inondés. Le plumage n'est bronze et vert qu'au soleil rasant sous 20° : viser 16 h 30 – 17 h 30 en novembre, sinon il rend noir."},"balbuzard-pecheur":{"g":"Posé 1–3 h sur un piquet ou arbre mort au-dessus de l'eau, puis 1–2 plongeons par heure. Trouver le perchoir, se poster à 60–100 m, et attendre l'envol : 600 mm, 1/2000 s."},"busard-roseaux":{"g":"Patrouille les mêmes allers-retours au ras des roseaux (3–8 m de haut) toutes les 10–20 min. Se placer face au vent sur sa ligne : il passe à 20–40 m, souvent en stationnaire 2 s. 400 mm, 1/1600 s."},"aigle-criard":{"g":"Hivernant rare et irrégulier en France, surtout en Camargue. Scruter chaque arbre mort et piquet en bordure de marais, puis les thermiques 11 h – 14 h. Vérifier les observations récentes sur Faune-PACA avant d'y consacrer une demi-journée."},"hibou-marais":{"g":"Chasse en vol bas et chaloupé au-dessus des prairies humides les 90 dernières minutes du jour, davantage par temps couvert."},"cheveche":{"g":"Posée bien en vue au soleil le matin sur un muret, un toit de cabane, un piquet. Approche en voiture : 15–25 m sans la faire décoller, 2–3 m de plus et elle part. 400 mm."},"huppe-fasciee":{"g":"En novembre, quelques hivernantes seulement : pelouses rases et abords des mas, au sol. Ne pas la chercher exprès, saisir l'occasion."},"avocette":{"g":"Se coucher au niveau de l'eau pour le reflet ; groupes en toilette entre 10 h et 12 h. 300 mm à 15–25 m. En vol, le noir et blanc demande d'exposer pour les blancs (-0,7 IL)."},"sarcelle-hiver":{"g":"Le plus farouche des canards : 60 m de distance de fuite à pied. Observatoire obligatoire, attendre que le groupe dérive vers vous (30–45 min). Mâle superbe en lumière rasante, 600 mm."},"nette-rousse":{"g":"Étangs à végétation flottante ; le mâle roux est le plus photogénique des canards, mais souvent à 80 m+. Observatoire et patience."},"cistude":{"g":"Elle se chauffe sur les troncs et berges exposées sud dès 12 °C au soleil, même en novembre, de 11 h à 15 h. Approche à pas lents, 400 mm à 10–15 m : au moindre bruit elle plonge, et ne ressort que 20 min plus tard."},"ragondin":{"g":"Partout, 5–10 m sans fuir : travailler la composition (reflet, lumière de dos, nage) plutôt que l'approche."},"renard":{"g":"Aube et dernière heure sur les pistes et les prés, souvent 30–50 m sans s'inquiéter si on reste bas et immobile. Jamais face à lui en marchant : s'asseoir et le laisser venir. 400 mm."},"sanglier":{"g":"Traces et bauges partout ; rencontre au détour d'une piste tôt le matin, 20–40 m. Compagnies de 5–15 en novembre. Rester calme, les laisser passer, photo au 300 mm."},"castor":{"g":"Troncs rongés en biseau, coulées sur les berges : se poster à 20–30 m en aval d'un terrier 30 min avant la nuit, dos à la lumière restante. 400 mm à ISO 6400."},"loutre":{"g":"Épreintes (crottes à odeur de poisson) sur les pierres et berges : signe de présence, pas d'observation. Objectif de rêve, pas un plan."},"sympetrum":{"g":"Par journée douce (> 15 °C) et ensoleillée, posé sur les sentiers et piquets au soleil. Approche par en dessous, lentement : à 30 cm au 100 mm macro, ou à 2–3 m au 400 mm."},"rainette":{"g":"Nuits douces (> 10 °C) et humides : elle chante dans les buissons et roseaux près de l'eau, à 0,5–2 m de haut, repérée à la lampe frontale à 3–5 m. 100 mm macro et flash diffusé."},"aigrette-garzette":{"g":"Partout : le défi est la lumière et le fond. Scènes de pêche en contre-jour le matin, exposer pour les blancs (-1 IL)."},"heron-cendre":{"g":"Partout : cote basse, mais une scène de pêche en lumière rasante avec la proie vaut un portfolio. Il reste immobile 10–20 min puis frappe : attendre."},"grand-cormoran":{"g":"Séchage ailes ouvertes sur les piquets, 10–15 min, le matin : cadrage serré sur l'œil émeraude, 400 mm à 20 m."},"faucon-pelerin":{"g":"Posé sur les pylônes, arbres morts et piquets dominant les marais, 2–3 h d'affilée : vérifier chaque silhouette compacte à la jumelle. 600 mm."},"bruant-roseaux":{"g":"Au sommet des roseaux par temps calme, en groupes de 5–30. Facile à voir, difficile à faire net : attendre la pose 2–3 s sur un épi, 400 mm, 1/1000 s."},"cormoran-pygmee":{"g":"En expansion en France ces dernières années : petit cormoran à longue queue, perché bas (0,5–2 m) sur les branches au bord des canaux. Vérifier taille et queue avant de cocher."},"elanion-blanc":{"g":"Chasse en vol stationnaire à 15–30 m de haut au-dessus des prairies, surtout les 2 dernières heures du jour. Posé en haut d'un arbre isolé entre deux chasses."},"pie-grieche-meridionale":{"g":"Hivernante des zones ouvertes à buissons : posée en haut d'un buisson, d'un piquet ou d'un fil, 30–50 m de distance de fuite à pied, 15–20 m en voiture."},"chevreuil":{"g":"Lisières boisées à l'aube, puis couché dans les prés en fin de matinée (repérer les oreilles à la jumelle). 30–60 m si on reste caché."},"herisson":{"g":"Soirées douces sur les chemins ; photo à sa hauteur, 50 cm au 100 mm, sans le déranger."},"pic-vert":{"g":"Son rire porte à 300 m ; au sol dans les prés et pelouses des mas, 40 m de distance de fuite. Approche en voiture ou depuis un affût."},"oie-cendree":{"g":"Groupes hivernants de 20–200 dans les marais et prés ; 100–150 m de distance de fuite à pied. Observatoire, 600 mm, vols au lever du jour."},"canard-pilet":{"g":"Le plus élégant des canards de surface, souvent à 80 m+ : observatoire, lumière rasante, 600 mm, 1/1000 s."},"tadorne-belon":{"g":"Lagunes salées, couleurs vives : facile à cadrer depuis les digues basses à 20–40 m, 400 mm."},"cigogne-blanche":{"g":"Nids et piquets autour des mas, groupes dans les prés ; 20–30 m sans fuir. Cote basse : chercher le vol ou l'atterrissage."},"roitelet-triple-bandeau":{"g":"9 cm, jamais immobile plus de 1 s : dans les tamaris et pins, à 2–5 m. 400 mm, 1/1600 s, rafales. Commun en hiver dans le sud de la France."},"tarin-aulnes":{"g":"Groupes dans les aulnes et platanes, à 5–10 m de haut, novembre à mars. Contre-jour fréquent : chercher un arbre éclairé de face."},"grive-litorne":{"g":"Hivernante en groupes dans les prés et haies à baies, 40–60 m de distance de fuite. Approche en voiture."},"pipistrelle":{"g":"Vol de chasse au crépuscule le long des canaux et lisières, 2–5 m de haut. Photo seulement au flash avec pré-mise au point sur une zone de passage : beaucoup de déchet."},"anax-empereur":{"g":"Rare en novembre (quelques mâles tardifs par journée > 18 °C). Patrouille 1–2 m au-dessus de l'eau sur 30–50 m, rarement posé : 400 mm, 1/2500 s, mise au point manuelle sur la ligne de vol."},"mante":{"g":"Encore présente jusqu'aux premières gelées : sur les buissons et tiges au soleil, immobile. 100 mm macro à 30–50 cm."},"argiope":{"g":"Toile de 30–50 cm avec zigzag blanc, dans les herbes hautes au soleil ; femelle de 2 cm au centre. 100 mm macro, contre-jour pour la toile."}};
 /* ---------- Journal partagé, état dérivé et calcul ---------- */
 /* Tout ce qui change (coche, points, barème, objectifs, bonus, note, remise à zéro) est une entrée datée et signée du journal. L'état se déduit du journal ; fusionner deux téléphones = réunir leurs journaux. */
-const DEFAULT_PCT=[10,50,100],OBJ_MAX=3,DEFAULT_NAMES=['Clément','Manu'];
+const DEFAULT_PCT=[10,50,100],OBJ_MAX=3,DEFAULT_NAMES={p1:'Clément',p2:'Manu',p3:'Cyriel',p4:'Joueur 4',p5:'Joueur 5',p6:'Joueur 6',p7:'Joueur 7',p8:'Joueur 8'};
 const LIEUX={pg:{n:'Pont de Gau',lat:43.529,lng:4.413,r:9},mv:{n:'Marais du Vigueirat',lat:43.533,lng:4.733,r:9}};
 /* Rareté ici / à cette période par lieu, calculée depuis GBIF (occurrences 2010–2026 dans un carré de ±9 km, fenêtre oct.–nov.) : {espèce:[ici,période]} */
 const RARITY={pg:{"flamant-rose":[1,1],"flamant-nain":[4,3],"heron-cendre":[1,1],"grande-aigrette":[1,1],"aigrette-garzette":[1,1],"heron-garde-boeufs":[2,1],"bihoreau-gris":[2,3],"crabier-chevelu":[2,5],"heron-pourpre":[2,5],"butor-etoile":[3,4],"ibis-falcinelle":[1,4],"spatule-blanche":[2,3],"cigogne-blanche":[1,1],"cigogne-noire":[4,1],"grand-cormoran":[2,1],"cormoran-pygmee":[5,5],"ibis-sacre":[3,1],"canard-colvert":[1,1],"sarcelle-hiver":[2,1],"canard-souchet":[2,1],"canard-siffleur":[3,1],"canard-pilet":[4,1],"canard-chipeau":[2,2],"nette-rousse":[2,4],"fuligule-milouin":[4,1],"fuligule-morillon":[5,1],"fuligule-nyroca":[5,5],"tadorne-belon":[2,2],"oie-cendree":[3,1],"cygne-tubercule":[1,1],"erismature-tete-blanche":[5,5],"grebe-castagneux":[3,1],"grebe-huppe":[2,2],"grebe-cou-noir":[3,1],"busard-roseaux":[1,1],"busard-saint-martin":[3,1],"buse-variable":[2,1],"faucon-crecerelle":[2,1],"epervier-europe":[3,1],"milan-noir":[2,5],"milan-royal":[3,1],"balbuzard-pecheur":[3,1],"faucon-pelerin":[3,1],"faucon-emerillon":[3,1],"elanion-blanc":[5,5],"aigle-botte":[3,1],"circaete":[3,4],"aigle-criard":[4,1],"pygargue-queue-blanche":[5,5],"hibou-marais":[5,5],"cheveche":[5,1],"effraie":[3,1],"hibou-moyen-duc":[5,2],"foulque-macroule":[1,1],"gallinule":[1,1],"rale-eau":[2,1],"taleve-sultane":[2,2],"marouette-ponctuee":[5,5],"grue-cendree":[2,2],"avocette":[2,1],"echasse-blanche":[1,4],"vanneau-huppe":[2,1],"pluvier-dore":[3,1],"pluvier-argente":[2,1],"grand-gravelot":[3,1],"gravelot-collier-interrompu":[2,3],"becasseau-variable":[2,1],"becasseau-minute":[3,1],"combattant-varie":[3,1],"becassine-marais":[2,1],"becassine-sourde":[5,1],"barge-queue-noire":[3,3],"courlis-cendre":[2,1],"chevalier-gambette":[2,1],"chevalier-arlequin":[2,1],"chevalier-aboyeur":[2,1],"chevalier-culblanc":[2,1],"chevalier-guignette":[2,1],"oedicneme":[4,1],"huitrier-pie":[2,4],"tournepierre":[3,1],"mouette-rieuse":[1,1],"mouette-melanocephale":[2,4],"goeland-railleur":[2,2],"goeland-leucophee":[1,1],"goeland-brun":[4,1],"goeland-cendre":[5,1],"sterne-caugek":[2,1],"sterne-caspienne":[3,2],"martin-pecheur":[2,1],"huppe-fasciee":[2,3],"pic-vert":[4,2],"pic-epeiche":[4,1],"pic-epeichette":[4,2],"panure-moustaches":[3,1],"lusciniole":[3,1],"bouscarle-cetti":[1,1],"cisticole-joncs":[2,2],"remiz-penduline":[3,1],"gorgebleue":[4,1],"bruant-roseaux":[2,1],"fauvette-melanocephale":[2,1],"fauvette-tete-noire":[3,1],"pouillot-veloce":[2,1],"roitelet-triple-bandeau":[3,1],"roitelet-huppe":[4,1],"tarier-patre":[3,1],"rougequeue-noir":[3,1],"rougegorge":[2,1],"troglodyte":[3,1],"accenteur-mouchet":[4,1],"merle-noir":[3,1],"grive-musicienne":[3,1],"grive-litorne":[5,1],"grive-mauvis":[5,1],"mesange-charbonniere":[2,1],"mesange-bleue":[2,1],"orite-longue-queue":[3,1],"tarin-aulnes":[4,1],"etourneau":[2,1],"pie-bavarde":[2,1],"geai-chenes":[5,1],"choucas":[2,1],"corneille-noire":[2,1],"pipit-farlouse":[2,1],"pipit-spioncelle":[4,1],"bergeronnette-grise":[3,1],"bergeronnette-ruisseaux":[4,1],"alouette-champs":[3,1],"cochevis-huppe":[2,1],"moineau-domestique":[1,1],"moineau-friquet":[3,1],"pinson-arbres":[3,1],"verdier":[3,2],"chardonneret":[2,1],"linotte":[3,1],"serin-cini":[4,1],"grimpereau-jardins":[4,2],"pie-grieche-meridionale":[5,1],"bruant-proyer":[3,1],"bruant-zizi":[5,1],"hirondelle-rustique":[2,3],"pigeon-ramier":[2,2],"tourterelle-turque":[2,1],"faisan-colchide":[2,1],"perdrix-rouge":[4,1]},mv:{"flamant-rose":[1,1],"flamant-nain":[5,5],"heron-cendre":[1,1],"grande-aigrette":[1,1],"aigrette-garzette":[1,1],"heron-garde-boeufs":[2,2],"bihoreau-gris":[2,4],"crabier-chevelu":[2,5],"heron-pourpre":[2,5],"butor-etoile":[2,3],"ibis-falcinelle":[2,4],"spatule-blanche":[2,4],"cigogne-blanche":[1,2],"cigogne-noire":[3,1],"grand-cormoran":[1,1],"cormoran-pygmee":[5,5],"ibis-sacre":[5,3],"canard-colvert":[1,1],"sarcelle-hiver":[2,1],"canard-souchet":[2,1],"canard-siffleur":[3,1],"canard-pilet":[3,1],"canard-chipeau":[2,1],"nette-rousse":[2,3],"fuligule-milouin":[3,1],"fuligule-morillon":[3,2],"fuligule-nyroca":[5,3],"tadorne-belon":[2,3],"oie-cendree":[2,1],"cygne-tubercule":[2,2],"erismature-tete-blanche":[5,5],"grebe-castagneux":[2,1],"grebe-huppe":[2,1],"grebe-cou-noir":[2,1],"busard-roseaux":[2,1],"busard-saint-martin":[2,1],"buse-variable":[2,1],"faucon-crecerelle":[2,1],"epervier-europe":[2,1],"milan-noir":[2,5],"milan-royal":[3,1],"balbuzard-pecheur":[3,1],"faucon-pelerin":[3,1],"faucon-emerillon":[3,1],"elanion-blanc":[5,2],"aigle-botte":[3,1],"circaete":[2,4],"aigle-criard":[4,1],"pygargue-queue-blanche":[5,5],"hibou-marais":[5,1],"cheveche":[3,3],"effraie":[4,1],"hibou-moyen-duc":[4,1],"foulque-macroule":[2,1],"gallinule":[2,1],"rale-eau":[2,1],"taleve-sultane":[3,2],"marouette-ponctuee":[5,5],"grue-cendree":[3,1],"avocette":[2,2],"echasse-blanche":[2,5],"vanneau-huppe":[2,1],"pluvier-dore":[3,1],"pluvier-argente":[3,1],"grand-gravelot":[3,1],"gravelot-collier-interrompu":[3,4],"becasseau-variable":[3,1],"becasseau-minute":[3,1],"combattant-varie":[3,2],"becassine-marais":[2,1],"becassine-sourde":[4,1],"barge-queue-noire":[3,4],"courlis-cendre":[2,1],"chevalier-gambette":[3,1],"chevalier-arlequin":[2,2],"chevalier-aboyeur":[2,2],"chevalier-culblanc":[2,1],"chevalier-guignette":[2,2],"oedicneme":[2,4],"huitrier-pie":[4,5],"tournepierre":[4,2],"mouette-rieuse":[1,1],"mouette-melanocephale":[3,3],"goeland-railleur":[3,1],"goeland-leucophee":[1,2],"goeland-brun":[4,1],"goeland-cendre":[5,5],"sterne-caugek":[3,1],"sterne-caspienne":[2,2],"martin-pecheur":[2,1],"huppe-fasciee":[2,5],"pic-vert":[3,2],"pic-epeiche":[3,1],"pic-epeichette":[3,1],"panure-moustaches":[3,1],"lusciniole":[3,1],"bouscarle-cetti":[1,1],"cisticole-joncs":[2,3],"remiz-penduline":[2,1],"gorgebleue":[3,1],"bruant-roseaux":[2,1],"fauvette-melanocephale":[2,1],"fauvette-tete-noire":[2,1],"pouillot-veloce":[2,1],"roitelet-triple-bandeau":[3,1],"roitelet-huppe":[4,1],"tarier-patre":[3,1],"rougequeue-noir":[3,1],"rougegorge":[2,1],"troglodyte":[3,1],"accenteur-mouchet":[3,1],"merle-noir":[3,1],"grive-musicienne":[3,1],"grive-litorne":[4,1],"grive-mauvis":[4,1],"mesange-charbonniere":[2,1],"mesange-bleue":[2,1],"orite-longue-queue":[3,1],"tarin-aulnes":[3,1],"etourneau":[2,1],"pie-bavarde":[2,2],"geai-chenes":[4,1],"choucas":[2,2],"corneille-noire":[2,2],"pipit-farlouse":[2,1],"pipit-spioncelle":[3,1],"bergeronnette-grise":[3,1],"bergeronnette-ruisseaux":[3,1],"alouette-champs":[2,1],"cochevis-huppe":[2,1],"moineau-domestique":[2,1],"moineau-friquet":[3,1],"pinson-arbres":[2,1],"verdier":[2,1],"chardonneret":[2,1],"linotte":[3,1],"serin-cini":[3,1],"grimpereau-jardins":[4,1],"pie-grieche-meridionale":[3,2],"bruant-proyer":[2,2],"bruant-zizi":[4,1],"hirondelle-rustique":[2,3],"pigeon-ramier":[2,1],"tourterelle-turque":[2,2],"faisan-colchide":[2,2],"perdrix-rouge":[3,3]}};
 const MONTHS_FR=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
 const GBIF_COUNTS={"pg":{"flamant-rose":[1448,12366,2],"flamant-nain":[12,244,123],"heron-cendre":[981,7749,9],"grande-aigrette":[1001,6697,8],"aigrette-garzette":[1852,13413,1],"heron-garde-boeufs":[439,4255,30],"bihoreau-gris":[113,3081,81],"crabier-chevelu":[15,2232,121],"heron-pourpre":[8,2521,131],"butor-etoile":[23,795,118],"ibis-falcinelle":[165,7981,68],"spatule-blanche":[100,2882,86],"cigogne-blanche":[657,5899,20],"cigogne-noire":[38,217,113],"grand-cormoran":[639,4381,22],"cormoran-pygmee":[0,0,0],"ibis-sacre":[56,431,103],"canard-colvert":[1272,10075,4],"sarcelle-hiver":[807,3323,14],"canard-souchet":[380,2251,35],"canard-siffleur":[99,561,87],"canard-pilet":[34,299,114],"canard-chipeau":[129,1487,78],"nette-rousse":[53,2325,105],"fuligule-milouin":[45,342,109],"fuligule-morillon":[12,41,124],"fuligule-nyroca":[0,0,0],"tadorne-belon":[253,4155,47],"oie-cendree":[82,436,94],"cygne-tubercule":[896,6906,12],"erismature-tete-blanche":[0,0,0],"grebe-castagneux":[157,1384,71],"grebe-huppe":[236,2681,53],"grebe-cou-noir":[168,873,66],"busard-roseaux":[1287,7048,3],"busard-saint-martin":[252,1298,48],"buse-variable":[638,3643,23],"faucon-crecerelle":[393,2395,32],"epervier-europe":[155,797,72],"milan-noir":[6,2593,132],"milan-royal":[111,376,82],"balbuzard-pecheur":[65,472,100],"faucon-pelerin":[81,369,95],"faucon-emerillon":[87,402,93],"elanion-blanc":[2,0,140],"aigle-botte":[181,729,63],"circaete":[11,1001,126],"aigle-criard":[55,303,104],"pygargue-queue-blanche":[2,0,141],"hibou-marais":[0,27,0],"cheveche":[3,27,138],"effraie":[110,492,83],"hibou-moyen-duc":[3,37,139],"foulque-macroule":[767,6885,16],"gallinule":[1059,6908,5],"rale-eau":[544,2318,26],"taleve-sultane":[233,2573,55],"marouette-ponctuee":[0,0,0],"grue-cendree":[188,2411,61],"avocette":[496,4585,27],"echasse-blanche":[160,7115,69],"vanneau-huppe":[370,2284,36],"pluvier-dore":[61,456,101],"pluvier-argente":[354,2366,38],"grand-gravelot":[195,1408,60],"gravelot-collier-interrompu":[73,1872,98],"becasseau-variable":[225,1807,57],"becasseau-minute":[93,951,91],"combattant-varie":[175,1218,64],"becassine-marais":[561,2257,25],"becassine-sourde":[6,30,133],"barge-queue-noire":[49,1143,108],"courlis-cendre":[370,2121,37],"chevalier-gambette":[277,2335,45],"chevalier-arlequin":[234,2317,54],"chevalier-aboyeur":[182,1588,62],"chevalier-culblanc":[306,1775,44],"chevalier-guignette":[226,1817,56],"oedicneme":[9,88,129],"huitrier-pie":[14,1491,122],"tournepierre":[168,1242,67],"mouette-rieuse":[1039,9529,7],"mouette-melanocephale":[43,1824,111],"goeland-railleur":[105,1534,85],"goeland-leucophee":[951,7950,11],"goeland-brun":[24,175,117],"goeland-cendre":[4,22,136],"sterne-caugek":[258,1700,46],"sterne-caspienne":[96,1170,89],"martin-pecheur":[1058,4399,6],"huppe-fasciee":[51,1440,107],"pic-vert":[11,122,127],"pic-epeiche":[30,192,115],"pic-epeichette":[16,182,120],"panure-moustaches":[159,939,70],"lusciniole":[99,792,88],"bouscarle-cetti":[970,6671,10],"cisticole-joncs":[238,4024,52],"remiz-penduline":[152,571,73],"gorgebleue":[109,232,84],"bruant-roseaux":[461,2113,29],"fauvette-melanocephale":[640,4537,21],"fauvette-tete-noire":[202,1143,58],"pouillot-veloce":[684,2518,18],"roitelet-triple-bandeau":[137,401,77],"roitelet-huppe":[80,233,96],"tarier-patre":[314,1092,43],"rougequeue-noir":[250,1022,49],"rougegorge":[702,1936,17],"troglodyte":[151,578,74],"accenteur-mouchet":[28,127,116],"merle-noir":[172,972,65],"grive-musicienne":[95,399,90],"grive-litorne":[4,27,137],"grive-mauvis":[12,38,125],"mesange-charbonniere":[334,2341,40],"mesange-bleue":[417,1444,31],"orite-longue-queue":[70,438,99],"tarin-aulnes":[52,99,106],"etourneau":[807,5103,15],"pie-bavarde":[658,4351,19],"geai-chenes":[6,51,134],"choucas":[492,2698,28],"corneille-noire":[382,2338,33],"pipit-farlouse":[382,1638,34],"pipit-spioncelle":[42,242,112],"bergeronnette-grise":[331,1252,41],"bergeronnette-ruisseaux":[79,220,97],"alouette-champs":[145,1202,75],"cochevis-huppe":[335,2715,39],"moineau-domestique":[862,6465,13],"moineau-friquet":[144,1154,76],"pinson-arbres":[322,1402,42],"verdier":[59,938,102],"chardonneret":[242,2288,51],"linotte":[89,574,92],"serin-cini":[22,219,119],"grimpereau-jardins":[11,142,128],"pie-grieche-meridionale":[5,37,135],"bruant-proyer":[121,1154,80],"bruant-zizi":[9,58,130],"hirondelle-rustique":[196,3845,59],"pigeon-ramier":[123,1706,79],"tourterelle-turque":[567,4477,24],"faisan-colchide":[250,1621,50],"perdrix-rouge":[45,334,110]},"mv":{"flamant-rose":[964,7200,14],"flamant-nain":[0,0,0],"heron-cendre":[1006,7023,12],"grande-aigrette":[1050,6973,8],"aigrette-garzette":[1038,8259,10],"heron-garde-boeufs":[491,4316,38],"bihoreau-gris":[54,1712,115],"crabier-chevelu":[16,1770,129],"heron-pourpre":[12,2627,134],"butor-etoile":[91,2079,108],"ibis-falcinelle":[114,4513,103],"spatule-blanche":[84,2314,109],"cigogne-blanche":[492,6285,37],"cigogne-noire":[148,781,94],"grand-cormoran":[953,5961,15],"cormoran-pygmee":[0,0,0],"ibis-sacre":[3,51,139],"canard-colvert":[1044,8172,9],"sarcelle-hiver":[684,3564,24],"canard-souchet":[538,3140,33],"canard-siffleur":[136,769,97],"canard-pilet":[115,596,102],"canard-chipeau":[314,2514,57],"nette-rousse":[96,2479,106],"fuligule-milouin":[126,916,99],"fuligule-morillon":[37,442,119],"fuligule-nyroca":[3,64,140],"tadorne-belon":[199,3286,80],"oie-cendree":[408,2227,45],"cygne-tubercule":[552,4686,32],"erismature-tete-blanche":[0,0,0],"grebe-castagneux":[243,1796,72],"grebe-huppe":[518,3979,34],"grebe-cou-noir":[391,1873,51],"busard-roseaux":[715,4839,21],"busard-saint-martin":[278,1618,65],"buse-variable":[653,4088,25],"faucon-crecerelle":[450,2763,43],"epervier-europe":[399,1904,49],"milan-noir":[14,4957,133],"milan-royal":[277,717,66],"balbuzard-pecheur":[156,1001,92],"faucon-pelerin":[169,950,84],"faucon-emerillon":[265,915,68],"elanion-blanc":[5,57,137],"aigle-botte":[215,756,77],"circaete":[47,2742,116],"aigle-criard":[21,100,127],"pygargue-queue-blanche":[0,0,0],"hibou-marais":[10,73,135],"cheveche":[27,433,124],"effraie":[62,284,113],"hibou-moyen-duc":[15,102,130],"foulque-macroule":[696,5591,23],"gallinule":[394,2589,50],"rale-eau":[620,2503,28],"taleve-sultane":[36,403,120],"marouette-ponctuee":[0,46,0],"grue-cendree":[302,1221,58],"avocette":[157,1736,90],"echasse-blanche":[19,4260,128],"vanneau-huppe":[512,2803,36],"pluvier-dore":[143,674,95],"pluvier-argente":[322,1312,56],"grand-gravelot":[128,639,98],"gravelot-collier-interrompu":[24,709,126],"becasseau-variable":[187,878,83],"becasseau-minute":[56,416,114],"combattant-varie":[122,1169,101],"becassine-marais":[578,2399,30],"becassine-sourde":[31,97,122],"barge-queue-noire":[15,664,131],"courlis-cendre":[595,3342,29],"chevalier-gambette":[206,1396,78],"chevalier-arlequin":[153,1582,93],"chevalier-aboyeur":[250,2226,71],"chevalier-culblanc":[481,3469,40],"chevalier-guignette":[233,2089,73],"oedicneme":[92,2695,107],"huitrier-pie":[4,361,138],"tournepierre":[9,91,136],"mouette-rieuse":[881,6088,16],"mouette-melanocephale":[63,1168,111],"goeland-railleur":[137,817,96],"goeland-leucophee":[801,6789,17],"goeland-brun":[15,87,132],"goeland-cendre":[0,39,0],"sterne-caugek":[157,623,91],"sterne-caspienne":[160,1976,89],"martin-pecheur":[1001,4268,13],"huppe-fasciee":[25,2281,125],"pic-vert":[124,1345,100],"pic-epeiche":[109,685,104],"pic-epeichette":[161,792,88],"panure-moustaches":[289,858,62],"lusciniole":[360,1247,53],"bouscarle-cetti":[1784,8434,2],"cisticole-joncs":[258,4526,70],"remiz-penduline":[1011,1575,11],"gorgebleue":[488,1135,39],"bruant-roseaux":[1737,3104,4],"fauvette-melanocephale":[1322,5118,7],"fauvette-tete-noire":[1745,4418,3],"pouillot-veloce":[2017,3691,1],"roitelet-triple-bandeau":[652,1051,26],"roitelet-huppe":[206,347,79],"tarier-patre":[404,1417,46],"rougequeue-noir":[403,1108,47],"rougegorge":[1623,3194,5],"troglodyte":[471,963,41],"accenteur-mouchet":[275,471,67],"merle-noir":[518,1473,35],"grive-musicienne":[402,774,48],"grive-litorne":[35,224,121],"grive-mauvis":[44,99,117],"mesange-charbonniere":[702,2989,22],"mesange-bleue":[1500,3011,6],"orite-longue-queue":[193,967,82],"tarin-aulnes":[228,395,75],"etourneau":[562,4305,31],"pie-bavarde":[323,3291,55],"geai-chenes":[63,295,112],"choucas":[283,2844,63],"corneille-noire":[365,3508,52],"pipit-farlouse":[735,2036,20],"pipit-spioncelle":[230,492,74],"bergeronnette-grise":[293,929,61],"bergeronnette-ruisseaux":[196,415,81],"alouette-champs":[409,3138,44],"cochevis-huppe":[457,2646,42],"moineau-domestique":[621,3832,27],"moineau-friquet":[163,811,87],"pinson-arbres":[771,2134,18],"verdier":[297,1678,60],"chardonneret":[757,3489,19],"linotte":[165,625,86],"serin-cini":[169,399,85],"grimpereau-jardins":[41,321,118],"pie-grieche-meridionale":[103,1194,105],"bruant-proyer":[340,3178,54],"bruant-zizi":[31,145,123],"hirondelle-rustique":[281,4135,64],"pigeon-ramier":[302,2359,59],"tourterelle-turque":[222,2006,76],"faisan-colchide":[262,2379,69],"perdrix-rouge":[70,981,110]}}; /* {lieu:{espèce:[obs. oct.–nov., obs. année, rang oct.–nov.]}} carré ±9 km, 2010–2026 */
 const LIEU_INFO={pg:'Parc : 10 h – 17 h d\u2019octobre à mars, sortie ouverte jusqu\u2019au coucher du soleil ; 7 km de sentiers sur 60 ha ; entrée 8 € (à vérifier sur parcornithologique.com)',mv:'Sentier de la Palunette : 2,5 km, 2 observatoires et une plateforme ; 15 km de pistes ; parking au bout d\u2019une piste de 2 km depuis Mas-Thibert (horaires sur marais-vigueirat.reserves-naturelles.org)'};
-const KINDS=new Set(['tier','pts','comp','w','pct','mode','name','ico','objpct','obj','bonus','bonusdel','note','reset','unreset','add','xdel','lieuadd','profile','topn','end','resume']);
+const KINDS=new Set(['tier','pts','comp','w','pct','mode','name','ico','objpct','obj','bonus','bonusdel','note','reset','unreset','add','xdel','lieuadd','profile','topn','end','resume','player']);
 const isLieuId=l=>!!LIEUX[l]||/^l-[a-z0-9]{3,40}$/.test(String(l||''));
 /* Espèces hors liste : ajoutées par les joueurs (entrée « add »), identifiant x-…, dessin générique par famille. */
 const CUSTOM={};
@@ -1002,6 +1004,7 @@ function cleanEntry(e){
     case 'pct': if(!Array.isArray(e.v)||e.v.length!==3||!e.v.every(Number.isFinite)) return null; o.v=e.v.map(x=>Math.max(0,Math.min(100,x)));break;
     case 'mode': o.v=e.v==='duel'?'duel':'each';break;
     case 'name': if(!PROFILES.includes(e.p)) return null; o.p=e.p;o.v=String(e.v||'').slice(0,20);break;
+    case 'player': if(!PROFILES.includes(e.p)) return null; o.p=e.p;o.on=e.on!==false;if(e.n) o.n=String(e.n).slice(0,20);break;
     case 'ico': if(!Number.isFinite(e.v)) return null; o.v=Math.max(1,Math.min(5,e.v));break;
     case 'objpct': if(!Number.isFinite(e.v)) return null; o.v=Math.max(0,Math.min(500,e.v));break;
     case 'obj': if(!PROFILES.includes(e.p)||!Array.isArray(e.v)) return null; o.p=e.p;o.v=e.v.filter(knownSpecies).slice(0,OBJ_MAX);break;
@@ -1021,10 +1024,10 @@ function migrateV1(st){
   for(const [s,v] of Object.entries(st.pts||{})) out.push({k:'pts',by:'p1',s,v,at:at0,id:'v1p-'+s});
   if(Array.isArray(st.pct)) out.push({k:'pct',by:'p1',v:st.pct,at:at0,id:'v1pct'});
   if(st.mode) out.push({k:'mode',by:'p1',v:st.mode,at:at0,id:'v1mode'});
-  if(Array.isArray(st.names)) st.names.forEach((n,i)=>out.push({k:'name',by:'p1',p:PROFILES[i],v:n,at:at0,id:'v1n'+i}));
+  if(Array.isArray(st.names)) st.names.forEach((n,i)=>out.push({k:'name',by:'p1',p:'p'+(i+1),v:n,at:at0,id:'v1n'+i}));
   if(Number.isFinite(st.icoMul)) out.push({k:'ico',by:'p1',v:st.icoMul,at:at0,id:'v1ico'});
   if(Number.isFinite(st.objPct)) out.push({k:'objpct',by:'p1',v:st.objPct,at:at0,id:'v1objpct'});
-  for(const p of PROFILES) if(st.obj&&st.obj[p]&&st.obj[p].length) out.push({k:'obj',by:p,p,v:st.obj[p],at:(st.objAt&&st.objAt[p])||at0,id:'v1obj'+p});
+  for(const p of ['p1','p2']) if(st.obj&&st.obj[p]&&st.obj[p].length) out.push({k:'obj',by:p,p,v:st.obj[p],at:(st.objAt&&st.objAt[p])||at0,id:'v1obj'+p});
   for(const [s,n] of Object.entries(st.notes||{})) if(n&&typeof n.t==='string') out.push({k:'note',by:'p1',s,v:n.t,at:n.at||at0,id:'v1note-'+s});
   if(st.resetAt) out.push({k:'reset',by:'p1',at:st.resetAt,id:'v1reset'});
   return out;
@@ -1036,10 +1039,12 @@ function normalizeLog(raw){
   for(const e of entries){const c=cleanEntry(e);if(!c||seen.has(c.id)) continue;seen.add(c.id);out.push(c)}
   return out;
 }
-function emptyView(){return {custom:{},lieux:{},profiles:{},topN:0,ended:0,tiers:{p1:{},p2:{}},tierAt:{p1:{},p2:{}},tierLieu:{p1:{},p2:{}},pts:{},comp:{},w:Object.assign({},DEFAULT_W),pct:DEFAULT_PCT.slice(),mode:'each',names:DEFAULT_NAMES.slice(),icoMul:2,objPct:100,obj:{p1:[],p2:[]},bonus:[],bonusMap:new Map(),deleted:new Set(),notes:{},resetAt:0,events:[]}}
+const perPlayer=f=>Object.fromEntries(PROFILES.map(p=>[p,f()]));
+function emptyView(){return {custom:{},lieux:{},profiles:{},topN:0,ended:0,players:DEFAULT_PLAYERS.slice(),tiers:perPlayer(()=>({})),tierAt:perPlayer(()=>({})),tierLieu:perPlayer(()=>({})),pts:{},comp:{},w:Object.assign({},DEFAULT_W),pct:DEFAULT_PCT.slice(),mode:'each',names:Object.assign({},DEFAULT_NAMES),icoMul:2,objPct:100,obj:perPlayer(()=>[]),bonus:[],bonusMap:new Map(),deleted:new Set(),notes:{},resetAt:0,events:[]}}
 function applyEntry(v,e){
   switch(e.k){
-    case 'reset': if(v.cancelled&&v.cancelled.has(e.id)) break; v.resetAt=e.at;v.tiers={p1:{},p2:{}};v.tierAt={p1:{},p2:{}};v.tierLieu={p1:{},p2:{}};v.bonusMap.clear();v.notes={};v.events=[];v.ended=0;break;
+    case 'reset': if(v.cancelled&&v.cancelled.has(e.id)) break; v.resetAt=e.at;v.tiers=perPlayer(()=>({}));v.tierAt=perPlayer(()=>({}));v.tierLieu=perPlayer(()=>({}));v.bonusMap.clear();v.notes={};v.events=[];v.ended=0;break;
+    case 'player': {const i=v.players.indexOf(e.p);if(e.on&&i<0) v.players.push(e.p);if(!e.on&&i>=0) v.players.splice(i,1);if(e.n) v.names[e.p]=e.n;v.players.sort((a,b)=>PROFILES.indexOf(a)-PROFILES.indexOf(b));break}
     case 'unreset': break;
     case 'tier': v.tiers[e.p][e.s]=e.t;v.tierAt[e.p][e.s]=e.at;v.tierLieu[e.p][e.s]=e.lieu||null;v.events.push(e);break;
     case 'lieuadd': v.lieux[e.lid]={id:e.lid,n:e.n,lat:e.lat,lng:e.lng,r:e.r,by:e.by,at:e.at};break;
@@ -1052,7 +1057,7 @@ function applyEntry(v,e){
     case 'w': v.w=Object.assign({},e.v);break;
     case 'pct': v.pct=e.v.slice();break;
     case 'mode': v.mode=e.v;break;
-    case 'name': v.names[e.p==='p1'?0:1]=e.v||DEFAULT_NAMES[e.p==='p1'?0:1];break;
+    case 'name': v.names[e.p]=e.v||DEFAULT_NAMES[e.p];break;
     case 'ico': v.icoMul=e.v;break;
     case 'objpct': v.objPct=e.v;break;
     case 'obj': v.obj[e.p]=e.v.slice();break;
@@ -1098,40 +1103,47 @@ function basePts(v,sid,lieu){const x=v.pts[sid];return (typeof x==='number'&&x>=
 function spName(sid){const sp=spOf(sid);return sp?sp.n:'espèce retirée'}
 function tierValue(v,sid,t,lieu){if(!t) return 0;const sp=spOf(sid);const mul=(t===3&&sp&&sp.ic)?v.icoMul:1;return r1(basePts(v,sid,lieu)*v.pct[t-1]/100*mul)}
 function isObj(v,p,sid){return v.obj[p].includes(sid)}
-function speciesEarned(v,cur,sid,lieus){ /* lieus : {p1:lieu de la coche, p2:…} */
-  lieus=lieus||v.tierLieu;const l1=lieus.p1[sid],l2=lieus.p2[sid];
-  const t1=cur.p1[sid]||0,t2=cur.p2[sid]||0;let v1=tierValue(v,sid,t1,l1),v2=tierValue(v,sid,t2,l2);
-  if(v.mode==='duel'){if(t1>t2) v2=0; else if(t2>t1) v1=0;}
-  if(v1>0&&t1===3&&isObj(v,'p1',sid)) v1=r1(v1*(1+v.objPct/100));
-  if(v2>0&&t2===3&&isObj(v,'p2',sid)) v2=r1(v2*(1+v.objPct/100));
-  return {p1:v1,p2:v2};
+function speciesEarned(v,cur,sid,lieus){ /* points marqués par chaque joueur sur cette espèce ; lieus : {p:{sid:lieu}} */
+  lieus=lieus||v.tierLieu;const out={};let best=0;
+  for(const p of v.players){const t=(cur[p]&&cur[p][sid])||0;if(t>best) best=t}
+  for(const p of v.players){
+    const t=(cur[p]&&cur[p][sid])||0;let val=tierValue(v,sid,t,lieus[p]&&lieus[p][sid]);
+    if(v.mode==='duel'&&t<best) val=0; /* le meilleur rafle tout ; à égalité, tous marquent */
+    if(val>0&&t===3&&isObj(v,p,sid)) val=r1(val*(1+v.objPct/100));
+    out[p]=val;
+  }
+  return out;
 }
 function computeScores(v,cur,withBonus,lieus){
-  const res={p1:{pts:0,n:0,tiers:[0,0,0],obj:0,kept:null},p2:{pts:0,n:0,tiers:[0,0,0],obj:0,kept:null}};
-  const earned={p1:[],p2:[]};
+  const res={},earned={};
+  for(const p of v.players){res[p]={pts:0,n:0,tiers:[0,0,0],obj:0,kept:null};earned[p]=[]}
   for(const sp of allSpecies()){
-    const t1=cur.p1[sp.id]||0,t2=cur.p2[sp.id]||0;
-    if(t1){res.p1.n++;res.p1.tiers[t1-1]++} if(t2){res.p2.n++;res.p2.tiers[t2-1]++}
     const e=speciesEarned(v,cur,sp.id,lieus);
-    if(e.p1>0) earned.p1.push({s:sp.id,v:e.p1}); if(e.p2>0) earned.p2.push({s:sp.id,v:e.p2});
-    if(e.p1>0&&t1===3&&isObj(v,'p1',sp.id)) res.p1.obj++; if(e.p2>0&&t2===3&&isObj(v,'p2',sp.id)) res.p2.obj++;
+    for(const p of v.players){
+      const t=(cur[p]&&cur[p][sp.id])||0;
+      if(t){res[p].n++;res[p].tiers[t-1]++}
+      if(e[p]>0) earned[p].push({s:sp.id,v:e[p]});
+      if(e[p]>0&&t===3&&isObj(v,p,sp.id)) res[p].obj++;
+    }
   }
-  for(const p of PROFILES){
+  for(const p of v.players){
     let list=earned[p].sort((a,b)=>b.v-a.v);
     if(v.topN>0&&list.length>v.topN){res[p].kept=new Set(list.slice(0,v.topN).map(x=>x.s));list=list.slice(0,v.topN)}
     res[p].pts=list.reduce((a,x)=>a+x.v,0);
   }
-  if(withBonus) for(const b of v.bonus) res[b.p].pts+=b.v;
-  res.p1.pts=r1(res.p1.pts);res.p2.pts=r1(res.p2.pts);return res;
+  if(withBonus) for(const b of v.bonus) if(res[b.p]) res[b.p].pts+=b.v;
+  for(const p of v.players) res[p].pts=r1(res[p].pts);
+  return res;
 }
 function curve(v){ /* recalculée avec le barème actuel, dans l'ordre des coches et bonus */
   const items=[...v.events.map(e=>({at:e.at,ev:e})),...v.bonus.map(b=>({at:b.at,bo:b}))].sort((a,b)=>a.at-b.at);
-  const cur={p1:{},p2:{}},lieus={p1:{},p2:{}},bonus={p1:0,p2:0},out=[];
+  const cur=perPlayer(()=>({})),lieus=perPlayer(()=>({})),bonus=perPlayer(()=>0),out=[];
   for(const it of items){
     let label;
     if(it.ev){if(!spOf(it.ev.s)) continue;cur[it.ev.p][it.ev.s]=it.ev.t;lieus[it.ev.p][it.ev.s]=it.ev.lieu||null;label={p:it.ev.p,s:it.ev.s,t:it.ev.t}} else {bonus[it.bo.p]+=it.bo.v;label={p:it.bo.p,b:it.bo}}
     const sc=computeScores(v,cur,false,lieus);
-    out.push({at:it.at,p1:r1(sc.p1.pts+bonus.p1),p2:r1(sc.p2.pts+bonus.p2),label});
+    const pt={at:it.at,label};for(const p of v.players) pt[p]=r1(sc[p].pts+bonus[p]);
+    out.push(pt);
   }
   return out;
 }
@@ -1167,7 +1179,7 @@ async function gbifProfile(lat,lng,rkm,months){
 const TIER_NAMES=['','Flou','Banale','Portfolio'];
 function fmtPts(x){return Number.isInteger(x)?String(x):x.toLocaleString('fr-FR',{maximumFractionDigits:1})}
 function describeEntry(e,before){ /* before : état juste avant l'entrée */
-  const n=p=>before.names[p==='p1'?0:1],who=n(e.by),sp=e.s?spName(e.s):'';
+  const n=p=>before.names[p]||DEFAULT_NAMES[p]||p,who=n(e.by),sp=e.s?spName(e.s):'';
   switch(e.k){
     case 'tier': {const pour=e.p!==e.by?' pour '+n(e.p):'';return e.t?`${who} coche${pour} ${sp} : ${TIER_NAMES[e.t]}${e.lieu?' · '+lieuName(before,e.lieu):''}`:`${who} décoche${pour} ${sp}`}
     case 'unreset': return `${who} annule une remise à zéro`;
@@ -1184,6 +1196,7 @@ function describeEntry(e,before){ /* before : état juste avant l'entrée */
     case 'pct': return `${who} change le barème : ${before.pct.join('/')} → ${e.v.join('/')} %`;
     case 'mode': return `${who} passe en mode « ${e.v==='duel'?'le meilleur rafle tout':'chacun ses points'} »`;
     case 'name': return `${who} renomme ${n(e.p)} en ${e.v||'(vide)'}`;
+    case 'player': return e.on?`${who} ajoute ${e.n||n(e.p)} à la partie`:`${who} retire ${n(e.p)} de la partie`;
     case 'ico': return `${who} met le bonus iconique à ×${fmtPts(e.v)}`;
     case 'objpct': return `${who} met le bonus objectif à +${fmtPts(e.v)} %`;
     case 'obj': return `${who} définit les objectifs de ${n(e.p)} : ${e.v.length?e.v.map(spName).join(', '):'aucun'}`;
@@ -1228,10 +1241,13 @@ function writeLS(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 let log=normalizeLog(readLS(LS_LOG)||readLS(LS_V1)||[]);
 let view=fold(log);
 const ui={tab:'birds',q:'',site:'all',like:'all',group:'all',sort:'group',dir:-1,taken:'all',ico:false,boardSort:'pts',device:readLS(LS_DEV)||'',me:readLS(LS_ME)||'',lieu:readLS(LS_LIEU)||'pg'};
-if(!PROFILES.includes(ui.device)) ui.device='';
-if(!PROFILES.includes(ui.me)) ui.me=ui.device||'p1';
-const other=p=>p==='p1'?'p2':'p1';
-const nameOf=p=>view.names[p==='p1'?0:1];
+const others=p=>view.players.filter(x=>x!==p);
+const nameOf=p=>view.names[p]||DEFAULT_NAMES[p]||p;
+function checkPlayers(){ /* le téléphone et le profil actif doivent être des joueurs de la partie */
+  if(ui.device&&!view.players.includes(ui.device)){ui.device='';writeLS(LS_DEV,'')}
+  if(!view.players.includes(ui.me)){ui.me=ui.device||view.players[0];writeLS(LS_ME,ui.me)}
+}
+checkPlayers();
 const who=()=>ui.device||ui.me;
 const fmtTime=new Intl.DateTimeFormat('fr-FR',{weekday:'short',hour:'2-digit',minute:'2-digit'});
 const fmtDay=new Intl.DateTimeFormat('fr-FR',{weekday:'short',day:'numeric',month:'short'});
@@ -1239,25 +1255,24 @@ const fmtHM=new Intl.DateTimeFormat('fr-FR',{hour:'2-digit',minute:'2-digit'});
 const fold0=s=>String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
 let toastT;function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2400)}
 function persist(){writeLS(LS_LOG,{v:2,log})}
-function refresh(){view=fold(log)}
+function refresh(){view=fold(log);checkPlayers()}
 function add(entry){
   const e=cleanEntry(Object.assign({},entry,{at:Date.now(),by:who(),id:undefined}));
   if(!e) return null; log.push(e);refresh();persist();scheduleDbWrite();return e;
 }
 
 /* ---- En-tête ---- */
+function leaders(sc){ /* joueurs en tête (plusieurs à égalité) ; vide si tout le monde est à égalité */
+  const ps=view.players;if(!ps.length) return [];
+  const mx=Math.max(...ps.map(p=>sc[p].pts));
+  if(ps.every(p=>sc[p].pts===mx)) return [];
+  return ps.filter(p=>sc[p].pts===mx);
+}
 function renderHeader(){
-  const sc=computeScores(view,view.tiers,true);
-  for(const p of PROFILES){
-    const el=$('#pl-'+p),s=sc[p];
-    const lead=sc.p1.pts!==sc.p2.pts&&s.pts===Math.max(sc.p1.pts,sc.p2.pts);
-    el.querySelector('.name').innerHTML=esc(nameOf(p))+(lead?'<span class="lead">en tête</span>':'');
-    el.querySelector('.pts').textContent=fmtPts(s.pts);
-    el.querySelector('.meta').textContent=s.n+(s.n>1?' espèces':' espèce')+' · '+s.tiers[2]+' portfolio'+(s.obj?' · '+s.obj+(s.obj>1?' objectifs':' objectif'):'');
-    el.classList.toggle('me',ui.me===p);
-    el.setAttribute('aria-label','Cocher pour '+nameOf(p));
-  }
-  $$('#who-seg button').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.p===ui.me));b.textContent=nameOf(b.dataset.p)});
+  const sc=computeScores(view,view.tiers,true),ps=view.players,lead=leaders(sc);
+  const sb=$('#scoreboard');sb.className='scoreboard n'+ps.length;
+  sb.innerHTML=ps.map(p=>{const s=sc[p];return `<button class="player ${p}${ui.me===p?' me':''}" data-p="${p}" type="button" aria-label="Cocher pour ${esc(nameOf(p))}"><span class="name">${esc(nameOf(p))}${lead.includes(p)?`<span class="lead">${lead.length>1?'ex æquo':'en tête'}</span>`:''}</span><span class="pts">${fmtPts(s.pts)}</span><span class="meta">${s.n}${s.n>1?' espèces':' espèce'} · ${s.tiers[2]} portfolio${s.obj?' · '+s.obj+(s.obj>1?' objectifs':' objectif'):''}</span></button>`}).join('');
+  $('#who-seg').innerHTML=ps.map(p=>`<button type="button" class="${p}" data-p="${p}" aria-pressed="${p===ui.me}">${esc(nameOf(p))}</button>`).join('');
   $('#lg1').textContent=view.pct[0]+' %';$('#lg2').textContent=view.pct[1]+' %';$('#lg3').textContent=view.pct[2]+' %';
   $('#lgmode').textContent=view.mode==='duel'?'le meilleur rafle tout':'chacun ses points';
   $('#lgico').textContent=fmtPts(view.icoMul);
@@ -1294,15 +1309,14 @@ function tagsHTML(sp,withGroup){
   let t=`<span class="tag">${SITES[sp.site]}</span><span class="tag l${lk}">${LIKE[lk]}</span>`;
   if(!withGroup&&/^c[0-4]$/.test(ui.sort)){const i=Number(ui.sort[1]);const c=compOf(view,sp.id,ui.lieu)[i];t+=`<span class="tag crit">${['Beauté','Monde','Ici','Période','Photo'][i]} ${fmtPts(c)} · ${Number.isInteger(c)?COMP_LEVELS[i][c-1]:'calculé'}</span>`}
   if(sp.ic) t+=`<span class="tag ic">★ Iconique ×${fmtPts(view.icoMul)}</span>`;
-  for(const p of PROFILES) if(isObj(view,p,sp.id)) t+=`<span class="tag obj ${p}">Objectif ${esc(nameOf(p))}</span>`;
+  for(const p of view.players) if(isObj(view,p,sp.id)) t+=`<span class="tag obj ${p}">Objectif ${esc(nameOf(p))}</span>`;
   if(withGroup) t+=`<span class="tag">${esc(GROUPS[sp.g])}</span>`;
   return t;
 }
 function otherLine(sp){
-  const o=other(ui.me),t=view.tiers[o][sp.id]||0;
-  if(!t) return `${esc(nameOf(o))} : pas encore`;
+  const os=others(ui.me);if(!os.length) return '';
   const e=speciesEarned(view,view.tiers,sp.id);
-  return `${esc(nameOf(o))} : <b>${TIER_NAMES[t]}</b> (${fmtPts(e[o])} pts)`;
+  return os.map(o=>{const t=view.tiers[o][sp.id]||0;return `<span class="oth ${o}"><i class="dot ${o}"></i>${esc(nameOf(o))} : ${t?`<b>${TIER_NAMES[t]}</b> (${fmtPts(e[o])} pts)`:'pas encore'}</span>`}).join(' ');
 }
 function cardHTML(sp){
   const mine=view.tiers[ui.me][sp.id]||0;
@@ -1388,7 +1402,7 @@ function renderSheet(sid){
   const sp=spOf(sid);if(!sp){closeSheet();return}
   const cur=view.tiers,earned=speciesEarned(view,cur,sid);
   const c=compOf(view,sid,ui.lieu),U=rarity(c,view.w),mul=rarityMul(U),f=formulaOf(view,sid,ui.lieu),manual=view.pts[sid],src=compSource(view,sid,ui.lieu);
-  const rows=PROFILES.map(p=>{const t=cur[p][sid]||0,ob=isObj(view,p,sid),at=view.tierAt[p][sid],tl=view.tierLieu[p][sid];return `<div class="prow ${p}" data-p="${p}"><div class="pname"><span>${esc(nameOf(p))}</span><span class="earned">${fmtPts(earned[p])} pts</span></div>
+  const rows=view.players.map(p=>{const t=cur[p][sid]||0,ob=isObj(view,p,sid),at=view.tierAt[p][sid],tl=view.tierLieu[p][sid];return `<div class="prow ${p}" data-p="${p}"><div class="pname"><span>${esc(nameOf(p))}</span><span class="earned">${fmtPts(earned[p])} pts</span></div>
     ${tierBtns(sp,p)}
     <div class="when"><span>${t&&at?'Coché '+fmtTime.format(new Date(at))+(tl?' · '+esc(lieuName(view,tl)):''):'Pas encore de photo'}</span><button type="button" class="objbtn${ob?' on':''}" data-obj="${p}" aria-pressed="${ob}">${ob?'★ Objectif':'☆ En faire un objectif'}</button></div>
     ${t?`<div class="photo-row">${photoOf(p,sid)?`<img src="${photoOf(p,sid)}" alt="Photo de ${esc(nameOf(p))}">`:''}<div class="btns"><label class="btn small"><input type="file" accept="image/*" data-photo="${p}">${photoOf(p,sid)?'Remplacer la photo':'+ Ajouter la photo (vignette)'}</label>${photoOf(p,sid)?`<button type="button" class="btn small" data-photo-del="${p}">Retirer</button>`:''}</div></div>`:''}</div>`}).join('');
@@ -1427,15 +1441,15 @@ function renderBilan(){
   const box=$('#bilan');const cur=view.tiers,sc=computeScores(view,cur,true);
   $('#end-row').hidden=!!view.ended;
   if(!view.ended){box.hidden=true;return}
-  const lead=sc.p1.pts===sc.p2.pts?null:(sc.p1.pts>sc.p2.pts?'p1':'p2');
+  const ps=view.players,rank=ps.slice().sort((a,b)=>sc[b].pts-sc[a].pts||ps.indexOf(a)-ps.indexOf(b)),lead=leaders(sc),winner=lead.length===1?lead[0]:null;
   const first=view.events.length?Math.min(...view.events.map(e=>e.at)):view.ended,dur=Math.max(0,view.ended-first);
   const h=Math.floor(dur/3600e3),d=Math.floor(h/24);
   const best=p=>allSpecies().filter(sp=>(cur[p][sp.id]||0)>0).map(sp=>({sp,v:speciesEarned(view,cur,sp.id)[p],t:cur[p][sp.id]})).sort((a,b)=>b.v-a.v).slice(0,5);
-  const lines=[`Duel photo Camargue · ${fmtDay.format(new Date(first))} → ${fmtDay.format(new Date(view.ended))}`,lead?`${nameOf(lead)} l'emporte : ${fmtPts(sc[lead].pts)} à ${fmtPts(sc[other(lead)].pts)}`:`Égalité parfaite : ${fmtPts(sc.p1.pts)} partout`,...PROFILES.map(p=>`${nameOf(p)} : ${fmtPts(sc[p].pts)} pts, ${sc[p].n} espèces, ${sc[p].tiers[2]} portfolio. Meilleures prises : ${best(p).map(x=>`${x.sp.n} (${fmtPts(x.v)})`).join(', ')||'aucune'}`)];
+  const lines=[`Duel photo Camargue · ${fmtDay.format(new Date(first))} → ${fmtDay.format(new Date(view.ended))}`,winner?`${nameOf(winner)} l'emporte : ${rank.map(p=>`${nameOf(p)} ${fmtPts(sc[p].pts)}`).join(' · ')}`:lead.length?`Égalité en tête entre ${lead.map(p=>nameOf(p)).join(' et ')} : ${fmtPts(sc[lead[0]].pts)} pts`:`Égalité parfaite : ${fmtPts(sc[ps[0]].pts)} partout`,...rank.map(p=>`${nameOf(p)} : ${fmtPts(sc[p].pts)} pts, ${sc[p].n} espèce${sc[p].n>1?'s':''}, ${sc[p].tiers[2]} portfolio. Meilleures prises : ${best(p).map(x=>`${x.sp.n} (${fmtPts(x.v)})`).join(', ')||'aucune'}`)];
   box.hidden=false;
-  box.innerHTML=`<h2>${lead?esc(nameOf(lead))+' remporte le duel':'Égalité'}</h2><p class="hint">${esc(fmtDay.format(new Date(first)))} → ${esc(fmtDay.format(new Date(view.ended)))}${d?` · ${d} j ${h%24} h`:h?` · ${h} h`:''}</p>
-    <div class="tiles">${PROFILES.map(p=>`<div class="tile ${p}"><div class="lbl">${esc(nameOf(p))}</div><div class="big">${fmtPts(sc[p].pts)}</div><div class="sub"><b>${sc[p].n}</b> espèces · <b>${sc[p].tiers[2]}</b> portfolio${view.topN?` · top ${view.topN}`:''}</div></div>`).join('')}</div>
-    ${PROFILES.map(p=>`<div class="field"><label>Meilleures prises de ${esc(nameOf(p))}</label><ul class="feed">${best(p).map(x=>`<li><span class="t"></span><span>${esc(x.sp.n)} · ${TIER_NAMES[x.t]}</span><span class="v">${fmtPts(x.v)}</span></li>`).join('')||'<li class="muted">Aucune prise.</li>'}</ul></div>`).join('')}
+  box.innerHTML=`<h2>${winner?esc(nameOf(winner))+' remporte le duel':lead.length?'Égalité entre '+esc(lead.map(p=>nameOf(p)).join(' et ')):'Égalité'}</h2><p class="hint">${esc(fmtDay.format(new Date(first)))} → ${esc(fmtDay.format(new Date(view.ended)))}${d?` · ${d} j ${h%24} h`:h?` · ${h} h`:''}</p>
+    <div class="tiles n${ps.length}">${rank.map(p=>`<div class="tile ${p}"><div class="lbl">${esc(nameOf(p))}</div><div class="big">${fmtPts(sc[p].pts)}</div><div class="sub"><b>${sc[p].n}</b> espèce${sc[p].n>1?'s':''} · <b>${sc[p].tiers[2]}</b> portfolio${view.topN?` · top ${view.topN}`:''}</div></div>`).join('')}</div>
+    ${rank.map(p=>`<div class="field"><label>Meilleures prises de ${esc(nameOf(p))}</label><ul class="feed">${best(p).map(x=>`<li><span class="t"></span><span>${esc(x.sp.n)} · ${TIER_NAMES[x.t]}</span><span class="v">${fmtPts(x.v)}</span></li>`).join('')||'<li class="muted">Aucune prise.</li>'}</ul></div>`).join('')}
     <div class="row" style="margin-top:10px"><button type="button" class="btn primary" id="bilan-copy">Copier le bilan</button><button type="button" class="btn" id="bilan-resume">Reprendre</button><button type="button" class="btn danger" id="bilan-new">Nouveau duel (tout à zéro)</button></div>`;
   $('#bilan-copy').addEventListener('click',()=>copyText(lines.join('\n'),'Bilan copié'));
   $('#bilan-resume').addEventListener('click',()=>{add({k:'resume'});afterChange();toast('Le duel reprend')});
@@ -1444,11 +1458,11 @@ function renderBilan(){
 function renderStats(){
   const cur=view.tiers,sc=computeScores(view,cur,true);
   renderBilan();
-  $('#tiles').innerHTML=PROFILES.map(p=>{const s=sc[p];const bonus=view.bonus.filter(b=>b.p===p).reduce((a,b)=>a+b.v,0);
+  const tiles=$('#tiles');tiles.className='tiles n'+view.players.length;tiles.innerHTML=view.players.map(p=>{const s=sc[p];const bonus=view.bonus.filter(b=>b.p===p).reduce((a,b)=>a+b.v,0);
     return `<div class="tile ${p}"><div class="lbl">${esc(nameOf(p))}</div><div class="big">${fmtPts(s.pts)}</div><div class="sub"><b>${s.n}</b> espèce${s.n>1?'s':''} · <b>${s.tiers[2]}</b> portfolio · <b>${s.tiers[1]}</b> banale${s.tiers[1]>1?'s':''} · <b>${s.tiers[0]}</b> flou${s.tiers[0]>1?'s':''}${s.obj?` · <b>${s.obj}</b> objectif${s.obj>1?'s':''}`:''}${bonus?` · bonus <b>${bonus>0?'+':''}${fmtPts(bonus)}</b>`:''}</div></div>`}).join('');
   renderChart();
-  const mx=Math.max(1,...PROFILES.flatMap(p=>sc[p].tiers));
-  $('#bars').innerHTML=[3,2,1].map(t=>`<div class="bar-h t${t}">${TIER_NAMES[t]} <span>${view.pct[t-1]} % des points</span></div>`+PROFILES.map(p=>`<div class="bar ${p}"><span>${esc(nameOf(p))}</span><div class="track"><div class="fill" style="width:${Math.round(sc[p].tiers[t-1]/mx*100)}%"></div></div><span class="num">${sc[p].tiers[t-1]}</span></div>`).join('')).join('');
+  const mx=Math.max(1,...view.players.flatMap(p=>sc[p].tiers));
+  $('#bars').innerHTML=[3,2,1].map(t=>`<div class="bar-h t${t}">${TIER_NAMES[t]} <span>${view.pct[t-1]} % des points</span></div>`+view.players.map(p=>`<div class="bar ${p}"><span>${esc(nameOf(p))}</span><div class="track"><div class="fill" style="width:${Math.round(sc[p].tiers[t-1]/mx*100)}%"></div></div><span class="num">${sc[p].tiers[t-1]}</span></div>`).join('')).join('');
   renderHistory();renderTable();
 }
 function renderHistory(){
@@ -1470,7 +1484,7 @@ function renderChart(){
   const now=Date.now();
   let t0=pts[0].at,t1=Math.max(pts[pts.length-1].at,now);
   if(t1-t0<3600e3){t0-=1800e3;t1+=1800e3}
-  const ymax=Math.max(10,...pts.map(p=>Math.max(p.p1,p.p2)));
+  const ps=view.players;const ymax=Math.max(10,...pts.flatMap(pt=>ps.map(p=>pt[p]||0)));
   const ystep=niceStep(ymax,4),ytop=Math.ceil(ymax/ystep)*ystep;
   const X=t=>ml+(t-t0)/(t1-t0)*iw,Y=v=>mt+ih-v/ytop*ih;
   let g='';
@@ -1482,22 +1496,22 @@ function renderChart(){
     g+=`<line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${mt+ih}" y2="${mt+ih+4}" stroke="var(--ink-2)"/><text x="${x.toFixed(1)}" y="${mt+ih+16}" text-anchor="${anchor}" font-size="10.5" fill="var(--ink-2)">${esc(lbl)}</text>`}
   g+=`<line x1="${ml}" x2="${ml+iw}" y1="${mt+ih}" y2="${mt+ih}" stroke="var(--ink-2)" stroke-width="1"/>`;
   const series=p=>{let d=`M${X(t0).toFixed(1)},${Y(0).toFixed(1)}`;let prev=0;for(const pt of pts){d+=` H${X(pt.at).toFixed(1)} V${Y(pt[p]).toFixed(1)}`;prev=pt[p]}d+=` H${X(t1).toFixed(1)}`;return {d,last:prev}};
-  const sl={p1:series('p1'),p2:series('p2')};
-  for(const p of PROFILES) g+=`<path d="${sl[p].d}" fill="none" stroke="var(--${p})" stroke-width="2" stroke-linejoin="round"/>`;
-  for(const p of PROFILES) for(const pt of pts){ if(pt.label.p!==p) continue; g+=`<circle cx="${X(pt.at).toFixed(1)}" cy="${Y(pt[p]).toFixed(1)}" r="4" fill="var(--${p})" stroke="var(--raised)" stroke-width="2"/>`; }
-  const lab=PROFILES.map(p=>({p,y:Y(sl[p].last)-6,v:sl[p].last})).sort((a,b)=>a.y-b.y);
-  if(lab.length===2&&lab[1].y-lab[0].y<14){const mid=(lab[0].y+lab[1].y)/2;lab[0].y=mid-7;lab[1].y=mid+7}
+  const sl={};for(const p of ps) sl[p]=series(p);
+  for(const p of ps) g+=`<path d="${sl[p].d}" fill="none" stroke="var(--${p})" stroke-width="2" stroke-linejoin="round"/>`;
+  for(const p of ps) for(const pt of pts){ if(pt.label.p!==p) continue; g+=`<circle cx="${X(pt.at).toFixed(1)}" cy="${Y(pt[p]||0).toFixed(1)}" r="4" fill="var(--${p})" stroke="var(--raised)" stroke-width="2"/>`; }
+  const lab=ps.map(p=>({p,y:Y(sl[p].last)-6,v:sl[p].last})).sort((a,b)=>a.y-b.y);
+  for(let i=1;i<lab.length;i++) if(lab[i].y-lab[i-1].y<14) lab[i].y=lab[i-1].y+14; /* étiquettes écartées */
+  const over=lab.length?lab[lab.length-1].y-(mt+ih-2):0;if(over>0) for(const l of lab) l.y-=over;
   for(const l of lab){const y=Math.min(mt+ih-2,Math.max(mt+9,l.y));const txt=`${nameOf(l.p)} ${fmtPts(l.v)}`;const tw=txt.length*6.4+8;
     g+=`<rect x="${(ml+iw-2-tw).toFixed(1)}" y="${(y-6).toFixed(1)}" width="${tw.toFixed(1)}" height="14" rx="4" fill="var(--raised)" opacity=".95"/><text x="${ml+iw-6}" y="${(y+4).toFixed(1)}" text-anchor="end" font-size="11" font-weight="700" fill="var(--ink)">${esc(txt)}</text>`}
   g+=`<line id="xhair" x1="0" x2="0" y1="${mt}" y2="${mt+ih}" stroke="var(--ink-2)" stroke-dasharray="3 3" style="display:none"/>`;
   const svg=document.createElementNS(svgNS,'svg');svg.setAttribute('viewBox',`0 0 ${W} ${H}`);svg.setAttribute('role','img');svg.setAttribute('aria-label','Évolution des points dans le temps');svg.innerHTML=g;wrap.appendChild(svg);
-  $('#chart-legend').innerHTML=PROFILES.map(p=>`<span class="${p}"><i></i>${esc(nameOf(p))}</span>`).join('');
+  $('#chart-legend').innerHTML=ps.map(p=>`<span class="${p}"><i></i>${esc(nameOf(p))}</span>`).join('');
   const tip=$('#tip'),xh=svg.querySelector('#xhair');
   const onMove=ev=>{const r=svg.getBoundingClientRect();const x=(ev.clientX-r.left)/r.width*W;if(x<ml||x>ml+iw){tip.classList.remove('show');xh.style.display='none';return}
     const t=t0+(x-ml)/iw*(t1-t0);let cur=null;for(const pt of pts){if(pt.at<=t) cur=pt; else break}
-    const v1=cur?cur.p1:0,v2=cur?cur.p2:0;
     xh.setAttribute('x1',x.toFixed(1));xh.setAttribute('x2',x.toFixed(1));xh.style.display='';
-    tip.innerHTML=`${esc(fmtTime.format(new Date(t)))}<br>${esc(nameOf('p1'))} ${fmtPts(v1)} · ${esc(nameOf('p2'))} ${fmtPts(v2)}`;
+    tip.innerHTML=`${esc(fmtTime.format(new Date(t)))}<br>${ps.map(p=>`${esc(nameOf(p))} ${fmtPts(cur?cur[p]||0:0)}`).join(' · ')}`;
     const px=x/W*r.width;tip.style.left=Math.max(70,Math.min(r.width-70,px))+'px';tip.style.top='26px';tip.classList.add('show');};
   svg.addEventListener('pointermove',onMove);svg.addEventListener('pointerdown',onMove);
   svg.addEventListener('pointerleave',()=>{tip.classList.remove('show');xh.style.display='none'});
@@ -1510,15 +1524,20 @@ function renderTable(){
 
 /* ---- Réglages ---- */
 function renderSettings(){
-  $$('#dev-seg button').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.p===ui.device));b.textContent=nameOf(b.dataset.p)});
-  $('#name1').value=view.names[0];$('#name2').value=view.names[1];
+  $('#dev-seg').innerHTML=view.players.map(p=>`<button type="button" class="${p}" data-p="${p}" aria-pressed="${p===ui.device}">${esc(nameOf(p))}</button>`).join('');
+  renderPlayers();
   $('#pct1').value=view.pct[0];$('#pct2').value=view.pct[1];$('#pct3').value=view.pct[2];
   $('#mode-each').checked=view.mode!=='duel';$('#mode-duel').checked=view.mode==='duel';
   $('#icomul').value=view.icoMul;$('#objbonus').value=view.objPct;$('#topn').value=view.topN||'';
   renderLieux();
   $('#w-ici').value=view.w.ici;$('#w-monde').value=view.w.monde;$('#w-periode').value=view.w.periode;$('#w-photo').value=view.w.photo!=null?view.w.photo:DEFAULT_DW;
-  $('#bonus-p').innerHTML=PROFILES.map(p=>`<option value="${p}">${esc(nameOf(p))}</option>`).join('');
+  $('#bonus-p').innerHTML=view.players.map(p=>`<option value="${p}">${esc(nameOf(p))}</option>`).join('');
   customForm();renderCustomList();renderObjectives();renderBonusList();renderPtsList();
+}
+function renderPlayers(){
+  const ps=view.players;
+  $('#players').innerHTML=ps.map((p,i)=>`<div class="field"><label for="name-${p}"><i class="dot ${p}"></i>Joueur ${i+1}</label><div class="inl"><input id="name-${p}" type="text" maxlength="20" data-name="${p}" value="${esc(nameOf(p))}" style="flex:1;min-width:120px">${ps.length>2?`<button class="btn small danger" type="button" data-pdel="${p}" aria-label="Retirer ${esc(nameOf(p))} de la partie">Retirer</button>`:''}</div></div>`).join('');
+  const full=ps.length>=PROFILES.length;$('#newp').disabled=full;$('#addp').disabled=full;$('#addp').textContent=full?'8 joueurs maximum':'+ Ajouter';
 }
 let editingCid=null;
 function customForm(){
@@ -1559,7 +1578,7 @@ async function computeGbif(lid){
   finally{if(btn){btn.disabled=false;btn.textContent='Recalculer GBIF'}}
 }
 function renderObjectives(){
-  $('#objectives').innerHTML=PROFILES.map(p=>{const l=view.obj[p];return `<div class="field"><label>Objectifs de ${esc(nameOf(p))} (${l.length}/${OBJ_MAX})</label>
+  $('#objectives').innerHTML=view.players.map(p=>{const l=view.obj[p];return `<div class="field"><label>Objectifs de ${esc(nameOf(p))} (${l.length}/${OBJ_MAX})</label>
     <ul class="bonuslist">${l.length?l.map(sid=>{const sp=spOf(sid);if(!sp) return '';const done=(view.tiers[p][sid]||0)===3;return `<li><span><b style="color:var(--${p})">${esc(sp.n)}</b>${done?' <span class="ok">atteint</span>':''}</span><span class="muted">+${fmtPts(view.objPct)} %</span><button type="button" class="btn small" data-obj-del="${p}|${sid}" aria-label="Retirer cet objectif">×</button></li>`}).join(''):'<li class="muted">Aucun objectif : ouvrez une espèce et touchez « En faire un objectif ».</li>'}</ul></div>`}).join('');
 }
 function renderBonusList(){
@@ -1646,7 +1665,7 @@ async function setPhoto(p,sid,file){
 }
 async function delPhoto(p,sid){delete PHOTOS[p+'|'+sid];await idbDel(p+'|'+sid);afterChange(sid);toast('Photo retirée')}
 function albumExport(){const out={v:1,photos:{}};for(const [k,v] of Object.entries(PHOTOS)) out.photos[k]=v;return JSON.stringify(out)}
-async function albumImport(txt){const j=JSON.parse(txt);if(!j||!j.photos) throw new Error('album');let n=0;for(const [k,v] of Object.entries(j.photos)){if(!/^p[12]\|[a-z0-9-]+$/.test(k)||!v||typeof v.d!=='string'||!v.d.startsWith('data:image/')||v.d.length>200000) continue;const mine=PHOTOS[k];if(!mine||(v.at||0)>(mine.at||0)){PHOTOS[k]=v;await idbPut(k,v);n++}}renderAll();return n}
+async function albumImport(txt){const j=JSON.parse(txt);if(!j||!j.photos) throw new Error('album');let n=0;for(const [k,v] of Object.entries(j.photos)){if(!/^p[1-8]\|[a-z0-9-]+$/.test(k)||!v||typeof v.d!=='string'||!v.d.startsWith('data:image/')||v.d.length>200000) continue;const mine=PHOTOS[k];if(!mine||(v.at||0)>(mine.at||0)){PHOTOS[k]=v;await idbPut(k,v);n++}}renderAll();return n}
 async function shareFile(name,text,mime){
   const blob=new Blob([text],{type:mime});
   if(navigator.share&&navigator.canShare){try{const f=new File([blob],name,{type:mime});if(navigator.canShare({files:[f]})){await navigator.share({files:[f],title:name});return true}}catch(e){if(e&&e.name==='AbortError') return true}}
@@ -1657,10 +1676,10 @@ function renderDevicePicker(){
   let el=$('#devpick');
   if(!ui.device){
     if(!el){el=document.createElement('div');el.id='devpick';el.className='sheet';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');document.body.appendChild(el);
-      el.innerHTML=`<div class="grab"></div><h2 style="font-family:var(--font-display);font-size:20px;margin:4px 0 6px">Ce téléphone, c’est qui ?</h2><p class="muted" style="margin:0 0 12px">Chaque modification sera signée de ce nom dans l’historique. Ça se change dans Réglages.</p><div class="tiers">${PROFILES.map(p=>`<button type="button" data-dev="${p}" style="min-height:52px;font-size:16px">${esc(nameOf(p))}</button>`).join('')}</div>`;
       el.addEventListener('click',e=>{const b=e.target.closest('button[data-dev]');if(!b) return;setDevice(b.dataset.dev);el.hidden=true;$('#devbd').hidden=true;toast('Bienvenue '+nameOf(ui.device))});
       const bd=document.createElement('div');bd.id='devbd';bd.className='backdrop';document.body.appendChild(bd);
     }
+    el.innerHTML=`<div class="grab"></div><h2 style="font-family:var(--font-display);font-size:20px;margin:4px 0 6px">Ce téléphone, c’est qui ?</h2><p class="muted" style="margin:0 0 12px">Chaque modification sera signée de ce nom dans l’historique. Ça se change dans Réglages.</p><div class="tiers">${view.players.map(p=>`<button type="button" data-dev="${p}" style="min-height:52px;font-size:16px">${esc(nameOf(p))}</button>`).join('')}</div>`;
     el.hidden=false;$('#devbd').hidden=false;
   }
 }
@@ -1669,20 +1688,20 @@ function setDevice(p){ui.device=p;writeLS(LS_DEV,p);setMe(p);if(ui.tab==='settin
 /* ---- Rendu global et événements ---- */
 function renderBoard(){
   const cur=view.tiers,sc=computeScores(view,cur,true);
-  const left=ui.me,right=other(ui.me);
-  $('#board').innerHTML=[left,right].map(p=>{
+  const cols=[ui.me,...others(ui.me)],bo=$('#board');bo.className='board n'+cols.length;
+  bo.innerHTML=cols.map(p=>{
     let items=allSpecies().filter(sp=>(cur[p][sp.id]||0)>0).map(sp=>({sp,t:cur[p][sp.id],at:view.tierAt[p][sp.id]||0,v:speciesEarned(view,cur,sp.id)[p]}));
     if(ui.boardSort==='time') items.sort((a,b)=>b.at-a.at); else if(ui.boardSort==='name') items.sort((a,b)=>a.sp.n.localeCompare(b.sp.n,'fr')); else items.sort((a,b)=>b.v-a.v||a.sp.n.localeCompare(b.sp.n,'fr'));
-    const o=other(p),s=sc[p],kept=s.kept;
+    const os=others(p),s=sc[p],kept=s.kept;
     return `<div class="bcol ${p}"><div class="bh"><div class="nm">${esc(nameOf(p))}${p===ui.me?' <span class="muted">(moi)</span>':''}</div><div class="big">${fmtPts(s.pts)}</div><div class="sub">${s.n} espèce${s.n>1?'s':''} · ${s.tiers[2]} portfolio${view.topN?` · top ${view.topN} compté`:''}</div></div>
-      ${items.length?items.map(it=>`<button type="button" class="bitem${kept&&!kept.has(it.sp.id)?' out':''}" data-id="${it.sp.id}"><div class="head">${photoOf(p,it.sp.id)?`<img src="${photoOf(p,it.sp.id)}" alt="">`:drawSVG(it.sp,'b'+p+'-'+it.sp.id)}</div><div><b>${esc(it.sp.n)}</b><div class="meta"><span class="tq t${it.t}"></span>${TIER_NAMES[it.t]}<span class="bp">${fmtPts(it.v)} pts</span>${(cur[o][it.sp.id]||0)>0?`<span class="also ${o}" title="aussi chez ${esc(nameOf(o))}"></span>`:''}${kept&&!kept.has(it.sp.id)?'<span class="muted">hors top</span>':''}</div></div></button>`).join(''):`<div class="bempty">Rien de coché pour ${esc(nameOf(p))}.</div>`}
+      ${items.length?items.map(it=>`<button type="button" class="bitem${kept&&!kept.has(it.sp.id)?' out':''}" data-id="${it.sp.id}"><div class="head">${photoOf(p,it.sp.id)?`<img src="${photoOf(p,it.sp.id)}" alt="">`:drawSVG(it.sp,'b'+p+'-'+it.sp.id)}</div><div><b>${esc(it.sp.n)}</b><div class="meta"><span class="tq t${it.t}"></span>${TIER_NAMES[it.t]}<span class="bp">${fmtPts(it.v)} pts</span>${os.filter(o=>(cur[o][it.sp.id]||0)>0).map(o=>`<span class="also ${o}" title="aussi chez ${esc(nameOf(o))}"></span>`).join('')}${kept&&!kept.has(it.sp.id)?'<span class="muted">hors top</span>':''}</div></div></button>`).join(''):`<div class="bempty">Rien de coché pour ${esc(nameOf(p))}.</div>`}
     </div>`}).join('');
 }
 function renderAll(){renderHeader();renderLieuChips();if(ui.tab==='birds') renderList(); else if(ui.tab==='board') renderBoard(); else if(ui.tab==='stats') renderStats(); else renderSettings(); if(sheetSid) renderSheet(sheetSid)}
 function showTab(t){ui.tab=t;for(const k of ['birds','board','stats','settings']){$('#tab-'+k).setAttribute('aria-selected',String(k===t));$('#view-'+k).hidden=k!==t}renderAll();window.scrollTo({top:0})}
 $$('.tabs button').forEach(b=>b.addEventListener('click',()=>showTab(b.id.replace('tab-',''))));
-function setMe(p){ui.me=p;writeLS(LS_ME,ui.me);renderHeader();if(ui.tab==='birds') renderList();if(ui.tab==='board') renderBoard()}
-$$('.player').forEach(b=>b.addEventListener('click',()=>{setMe(b.dataset.p);toast('Je coche pour '+nameOf(ui.me))}));
+function setMe(p){if(!view.players.includes(p)) return;ui.me=p;writeLS(LS_ME,ui.me);renderHeader();if(ui.tab==='birds') renderList();if(ui.tab==='board') renderBoard()}
+$('#scoreboard').addEventListener('click',e=>{const b=e.target.closest('.player');if(!b) return;setMe(b.dataset.p);toast('Je coche pour '+nameOf(ui.me))});
 $('#who-seg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b) return;setMe(b.dataset.p)});
 $('#dev-seg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b) return;setDevice(b.dataset.p);toast('Ce téléphone est celui de '+nameOf(ui.device))});
 $('#q').addEventListener('input',e=>{ui.q=e.target.value;renderList()});
@@ -1703,8 +1722,14 @@ $('#list').addEventListener('click',e=>{
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheetSid) closeSheet()});
 
-$('#name1').addEventListener('change',e=>{add({k:'name',p:'p1',v:(e.target.value.trim()||'Joueur 1').slice(0,20)});afterChange()});
-$('#name2').addEventListener('change',e=>{add({k:'name',p:'p2',v:(e.target.value.trim()||'Joueur 2').slice(0,20)});afterChange()});
+$('#players').addEventListener('change',e=>{const inp=e.target.closest('input[data-name]');if(!inp) return;const p=inp.dataset.name;add({k:'name',p,v:(inp.value.trim()||DEFAULT_NAMES[p]).slice(0,20)});afterChange();toast('Nom enregistré : '+nameOf(p))});
+$('#players').addEventListener('click',e=>{const b=e.target.closest('button[data-pdel]');if(!b) return;const p=b.dataset.pdel;
+  if(view.players.length<=2){toast('Il faut au moins deux joueurs');return}
+  if(b.dataset.armed){const n=nameOf(p);add({k:'player',p,on:false});afterChange();renderDevicePicker();toast(`${n} ne joue plus (ses coches restent dans l\u2019historique)`);return}
+  b.dataset.armed='1';b.textContent='Confirmer ?';setTimeout(()=>{if(b.isConnected){delete b.dataset.armed;b.textContent='Retirer'}},5000)});
+$('#addp').addEventListener('click',()=>{const n=$('#newp').value.trim();const p=PROFILES.find(x=>!view.players.includes(x));if(!p){toast('8 joueurs maximum');return}
+  add(n?{k:'player',p,on:true,n}:{k:'player',p,on:true});$('#newp').value='';afterChange();toast(`${nameOf(p)} rejoint la partie`)});
+$('#newp').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('#addp').click()}});
 [['#pct1',0],['#pct2',1],['#pct3',2]].forEach(([id,i])=>$(id).addEventListener('change',e=>{const v=Number(e.target.value);if(Number.isFinite(v)){const pct=view.pct.slice();pct[i]=Math.max(0,Math.min(100,v));add({k:'pct',v:pct});afterChange()}}));
 $('#mode-each').addEventListener('change',()=>{add({k:'mode',v:'each'});afterChange()});
 $('#mode-duel').addEventListener('change',()=>{add({k:'mode',v:'duel'});afterChange()});
