@@ -1474,7 +1474,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
 <script id="ui">
 (function(){
 const $=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s));
-const LS_LOG='duel-camargue-log-v2',LS_V1='duel-camargue-v1',LS_ME='duel-camargue-me',LS_DEV='duel-camargue-device',LS_CODEAT='duel-camargue-codeat',LS_LIEU='duel-camargue-lieu',LS_SITE='duel-camargue-site',LS_DISP='duel-camargue-display';
+const LS_LOG='duel-camargue-log-v2',LS_V1='duel-camargue-v1',LS_ME='duel-camargue-me',LS_DEV='duel-camargue-device',LS_CODEAT='duel-camargue-codeat',LS_LIEU='duel-camargue-lieu',LS_SITE='duel-camargue-site',LS_FILT='duel-camargue-filters',LS_DISP='duel-camargue-display';
 const disp=Object.assign({cols:'auto',zoom:100,skin:'auto',photos:false},readLS(LS_DISP)||{});
 function applyDisplay(){document.body.classList.remove('cols-1','cols-2','cols-3');if(disp.cols!=='auto') document.body.classList.add('cols-'+disp.cols);
   if(disp.skin&&disp.skin!=='auto') document.documentElement.setAttribute('data-skin',disp.skin); else document.documentElement.removeAttribute('data-skin');
@@ -1596,7 +1596,21 @@ function cardHTML(sp){
     <div class="other">${otherLine(sp)}</div>
   </article>`;
 }
+const FILTER_KEYS=['q','like','group','sort','dir','taken','ico','fav','boardSort'];
+function saveFilters(){const o={};for(const k of FILTER_KEYS) o[k]=ui[k];writeLS(LS_FILT,o)}
+function restoreFilters(){ /* au chargement : filtres mémorisés, et contrôles alignés dessus (le navigateur peut rétablir seul les champs, mais pas l'état interne) */
+  const f=readLS(LS_FILT)||{};for(const k of FILTER_KEYS) if(f[k]!==undefined&&f[k]!==null) ui[k]=f[k];
+  if(!['group','pts','name','c0','c1','c2','c3','c4'].includes(ui.sort)) ui.sort='group';ui.dir=ui.dir>0?1:-1;
+  if(!['all','mine','rest'].includes(ui.taken)) ui.taken='all';if(!['all','1','2','3'].includes(String(ui.like))) ui.like='all';
+  if(ui.group!=='all'&&!GROUPS[Number(ui.group)]) ui.group='all';if(!['pts','time','name'].includes(ui.boardSort)) ui.boardSort='pts';
+  $('#q').value=ui.q||'';$('#sort-sel').value=ui.sort;$('#group-sel').value=String(ui.group);$('#board-sort').value=ui.boardSort;
+  $$('#like-chips .chip:not(#ico-chip):not(#fav-chip)').forEach(c=>c.setAttribute('aria-pressed',String(c.dataset.v===String(ui.like))));
+  $$('#taken-chips .chip').forEach(c=>c.setAttribute('aria-pressed',String(c.dataset.v===ui.taken)));
+  $('#ico-chip').setAttribute('aria-pressed',String(!!ui.ico));$('#fav-chip').setAttribute('aria-pressed',String(!!ui.fav));
+  sortDirLabel();
+}
 function renderList(){
+  saveFilters();
   const list=filtered(),box=$('#list');
   if(!list.length){box.innerHTML='<p class="empty">Aucune espèce ne correspond. Élargissez les filtres.</p>';return}
   let html='';
@@ -2103,6 +2117,7 @@ $('#zoom-minus').addEventListener('click',()=>{disp.zoom=Math.max(70,disp.zoom-1
 $('#zoom-plus').addEventListener('click',()=>{disp.zoom=Math.min(160,disp.zoom+10);applyDisplay()});
 $('#zoom-reset').addEventListener('click',()=>{disp.zoom=100;applyDisplay()});
 applyDisplay();
+restoreFilters();
 renderAll();
 renderDevicePicker();
 initPhotos();
