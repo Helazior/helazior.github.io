@@ -153,9 +153,22 @@ body.cols-2 .card h3,body.cols-3 .card h3{font-size:15px}
 .tiers button[data-t="1"][aria-pressed="true"]{background:var(--t1-fill);color:var(--t1-on)}
 .tiers button[data-t="2"][aria-pressed="true"]{background:var(--t2-fill);color:var(--t2-on)}
 .tiers button[data-t="3"][aria-pressed="true"]{background:var(--t3-fill);color:var(--t3-on)}
-.card .other{grid-area:other;font-size:12px;color:var(--ink-2);margin-top:2px;min-height:1em}
+.card .other{grid-area:other;font-size:12px;color:var(--ink-2);margin-top:2px;min-height:0}
 .card .other b{font-weight:700}
-.card .other .oth{white-space:nowrap}
+.card .other{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.ob{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;border:1.5px solid var(--pc);color:var(--pc);font-size:10.5px;font-weight:800;line-height:1;opacity:.55;vertical-align:middle;font-style:normal}
+.ob.on{background:var(--pc-fill);color:var(--pc-on);border-color:var(--pc);opacity:1}
+.oth{display:inline-flex;align-items:center;gap:3px}
+.oth .tq{display:inline-block;width:7px;height:7px;border-radius:50%}
+.tq.t1{background:var(--t1)} .tq.t2{background:var(--t2)} .tq.t3{background:var(--t3)}
+.pill{display:inline-flex;align-items:center;gap:3px;border-radius:999px;padding:1px 7px;font-size:10.5px;font-weight:700}
+.pill.com{background:var(--good-fill);color:var(--good-on)}
+.pill.uniq{background:var(--pc-fill);color:var(--pc-on)}
+.pill .ob{width:15px;height:15px;font-size:9px;border-width:1px;opacity:1}
+.pill{max-width:100%;flex-wrap:wrap}
+.board.n3 .pill.com .txt,.board.n4 .pill.com .txt,.board.n5 .pill.com .txt,.board.n6 .pill.com .txt,.board.n7 .pill.com .txt,.board.n8 .pill.com .txt{display:none}
+.bitem.shared{background:var(--surface-2)}
+.bitem.solo{box-shadow:inset 3px 0 0 var(--pc)}
 .empty{color:var(--ink-2);padding:24px 8px;text-align:center}
 .board{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:start}
 .board.n3{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px} .board.n4,.board.n5,.board.n6,.board.n7,.board.n8{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -356,7 +369,8 @@ table.tbl th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:
 </section>
 
 <section id="view-board" role="tabpanel" hidden>
-  <div class="row" style="margin-bottom:8px"><select id="board-sort" aria-label="Tri du tableau"><option value="pts">Par points</option><option value="time">Par heure (récent en premier)</option><option value="name">Par nom</option></select></div>
+  <div class="row" style="margin-bottom:8px;align-items:center;gap:8px;flex-wrap:wrap"><select id="board-sort" aria-label="Tri du tableau"><option value="pts">Par points</option><option value="time">Par heure (récent en premier)</option><option value="name">Par nom</option></select>
+    <div class="chips" id="board-share" role="group" aria-label="Prises en commun"><button type="button" class="chip" data-v="all" aria-pressed="true">Toutes</button><button type="button" class="chip" data-v="shared" aria-pressed="false">En commun</button><button type="button" class="chip" data-v="solo" aria-pressed="false">Pas en commun</button></div></div>
   <div class="board" id="board"></div>
 </section>
 <section id="view-stats" role="tabpanel" hidden>
@@ -1443,7 +1457,8 @@ async function surveyLieu(L,months,prog){
   const ranked=[...Object.entries(b).map(([sid,v])=>({sid,cy:v[1]})),...list.map(d=>({sid:d.id,cy:d.cy}))].sort((a,b)=>b.cy-a.cy);
   ranked.forEach((r,i)=>{if(b[r.sid]) b[r.sid][2]=i+1;else{const d=list.find(x=>x.id===r.sid);if(d) d.rk=i+1}});
   const sp=list.map(d=>{const o={id:d.id,n:d.n,l:d.l,g:d.g,bp:d.bp,cy:d.cy,cp:d.cp,rk:d.rk};if(d.fam) o.fam=d.fam;if(Number.isFinite(d.wc)) o.wc=d.wc;if(Number.isFinite(d.ps)) o.ps=d.ps;if(d.img) o.img=d.img;if(d.wk) o.wk=1;return o});
-  return {p,b,tot,sp};
+  const report={};for(const [kind,o] of Object.entries(sv)) report[kind]={obs:o.ty,names:Object.keys(o.year).length,cand:cand.filter(c=>c.kind===kind).length,disc:list.filter(d=>d.kind===kind).length};
+  return {p,b,tot,sp,report};
 }
 /* Géocodage d'un nom ou d'une adresse : Nominatim (OpenStreetMap), puis Photon en secours */
 async function geocode(q){
@@ -1531,7 +1546,7 @@ function readLS(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):nu
 function writeLS(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 let log=normalizeLog(readLS(LS_LOG)||readLS(LS_V1)||[]);
 let view=fold(log);
-const ui={tab:'birds',q:'',site:readLS(LS_SITE)||'all',like:'all',group:'all',sort:'group',dir:-1,taken:'all',ico:false,fav:false,boardSort:'pts',device:readLS(LS_DEV)||'',me:readLS(LS_ME)||'',lieu:readLS(LS_LIEU)||'pg'};
+const ui={tab:'birds',q:'',site:readLS(LS_SITE)||'all',like:'all',group:'all',sort:'group',dir:-1,taken:'all',ico:false,fav:false,boardShare:'all',boardSort:'pts',device:readLS(LS_DEV)||'',me:readLS(LS_ME)||'',lieu:readLS(LS_LIEU)||'pg'};
 const others=p=>view.players.filter(x=>x!==p);
 const nameOf=p=>view.names[p]||DEFAULT_NAMES[p]||p;
 function checkPlayers(){ /* le téléphone et le profil actif doivent être des joueurs de la partie */
@@ -1629,10 +1644,11 @@ function tagsHTML(sp,withGroup){
 }
 function siteTag(sp){const ls=sitesOf(view,sp);if(!ls.length) return '';if(ls.length===2&&ls.includes('pg')&&ls.includes('mv')) return SITES['PG+MV'];
   const l0=spLieu(sp);return lieuName(view,l0)+(ls.length>1?` +${ls.length-1}`:'')}
-function otherLine(sp){
-  const os=others(ui.me);if(!os.length) return '';
+const initialOf=p=>{const n=nameOf(p).trim();return esc((n[0]||'?').toUpperCase())};
+function otherLine(sp){ /* un badge par autre joueur qui a l'espèce : initiale dans sa couleur + point de qualité ; rien pour ceux qui ne l'ont pas */
+  const os=others(ui.me).filter(o=>(view.tiers[o][sp.id]||0)>0);if(!os.length) return '';
   const e=speciesEarned(view,view.tiers,sp.id);
-  return os.map(o=>{const t=view.tiers[o][sp.id]||0;return `<span class="oth ${o}"><i class="dot ${o}"></i>${esc(nameOf(o))} : ${t?`<b>${TIER_NAMES[t]}</b> (${fmtPts(e[o])} pts)`:'pas encore'}</span>`}).join(' ');
+  return os.map(o=>{const t=view.tiers[o][sp.id];return `<span class="oth ${o}" title="${esc(nameOf(o))} : ${TIER_NAMES[t]} (${fmtPts(e[o])} pts)" aria-label="${esc(nameOf(o))} : ${TIER_NAMES[t]}"><i class="ob ${o} on">${initialOf(o)}</i><i class="tq t${t}"></i></span>`}).join('');
 }
 function cardHTML(sp){
   const mine=view.tiers[ui.me][sp.id]||0;
@@ -1644,13 +1660,14 @@ function cardHTML(sp){
     <div class="other">${otherLine(sp)}</div>
   </article>`;
 }
-const FILTER_KEYS=['q','like','group','sort','dir','taken','ico','fav','boardSort'];
+const FILTER_KEYS=['q','like','group','sort','dir','taken','ico','fav','boardSort','boardShare'];
 function saveFilters(){const o={};for(const k of FILTER_KEYS) o[k]=ui[k];writeLS(LS_FILT,o)}
 function restoreFilters(){ /* au chargement : filtres mémorisés, et contrôles alignés dessus (le navigateur peut rétablir seul les champs, mais pas l'état interne) */
   const f=readLS(LS_FILT)||{};for(const k of FILTER_KEYS) if(f[k]!==undefined&&f[k]!==null) ui[k]=f[k];
   if(!['group','pts','name','c0','c1','c2','c3','c4'].includes(ui.sort)) ui.sort='group';ui.dir=ui.dir>0?1:-1;
   if(!['all','mine','rest'].includes(ui.taken)) ui.taken='all';if(!['all','1','2','3'].includes(String(ui.like))) ui.like='all';
-  if(ui.group!=='all'&&!GROUPS[Number(ui.group)]) ui.group='all';if(!['pts','time','name'].includes(ui.boardSort)) ui.boardSort='pts';
+  if(ui.group!=='all'&&!GROUPS[Number(ui.group)]) ui.group='all';if(!['pts','time','name'].includes(ui.boardSort)) ui.boardSort='pts';if(!['all','shared','solo'].includes(ui.boardShare)) ui.boardShare='all';
+  $$('#board-share .chip').forEach(c=>c.setAttribute('aria-pressed',String(c.dataset.v===ui.boardShare)));
   $('#q').value=ui.q||'';$('#sort-sel').value=ui.sort;$('#group-sel').value=String(ui.group);$('#board-sort').value=ui.boardSort;
   $$('#like-chips .chip:not(#ico-chip):not(#fav-chip)').forEach(c=>c.setAttribute('aria-pressed',String(c.dataset.v===String(ui.like))));
   $$('#taken-chips .chip').forEach(c=>c.setAttribute('aria-pressed',String(c.dataset.v===ui.taken)));
@@ -1916,7 +1933,7 @@ function renderLieux(){
   const L=allLieux();
   $('#lieux').innerHTML=Object.entries(L).map(([id,l])=>{const pr=view.profiles[id],ls=view.lieuSpecies[id];const builtin=!!RARITY[id]&&!pr;
     const info=building[id]?`relevé en cours… ${esc(building[id])}`:ls?`GBIF ${esc(ls.m)} : ${ls.sp.length} espèces découvertes (${kindsOf(ls.sp)}) + ${Object.keys(ls.b).length} de la liste, par ${esc(nameOf(ls.by))}`:pr?`GBIF ${esc(pr.m)} (${Object.keys(pr.p).length} esp., par ${esc(nameOf(pr.by))})`:builtin?'GBIF oct.–nov. (intégré)':'espèces pas encore relevées';
-    return `<li><span><b>${esc(l.n)}</b> <span class="muted">${l.lat.toFixed(3)}, ${l.lng.toFixed(3)} · ±${l.r} km · ${info}</span></span><button type="button" class="btn small" data-gbif="${id}"${building[id]?' disabled':''}>${LIEUX[id]?'Recalculer GBIF':ls?'Recalculer':'Relever les espèces'}</button>${LIEUX[id]?'':`<button type="button" class="btn small danger" data-lieudel="${id}" aria-label="Retirer ce lieu">Retirer</button>`}</li>`}).join('');
+    return `<li><span><b>${esc(l.n)}</b> <span class="muted">${l.lat.toFixed(3)}, ${l.lng.toFixed(3)} · ±${l.r} km · ${info}</span>${LIEUX[id]?'':reportLine(id)}</span><button type="button" class="btn small" data-gbif="${id}"${building[id]?' disabled':''}>${LIEUX[id]?'Recalculer GBIF':ls?'Recalculer':'Relever les espèces'}</button>${LIEUX[id]?'':`<button type="button" class="btn small danger" data-lieudel="${id}" aria-label="Retirer ce lieu">Retirer</button>`}</li>`}).join('');
   $('#gbif-note').textContent=(window.claude&&typeof window.claude.use==='function')?'Le relevé en direct ne fonctionne pas dans la version « lien Claude » (bac à sable sans accès réseau) : il marche dans la version installée depuis helazior.com. Les deux sites de Camargue sont déjà calculés.':'Le relevé interroge api.gbif.org (eBird, iNaturalist, Faune-France…) sur un carré autour du lieu, pour l\u2019année entière et pour la période en cours, puis fr.wikipedia.org pour les noms et les photos. Une minute environ.';
 }
 const building={}; /* lid -> texte d'avancement du relevé en cours */
@@ -1931,13 +1948,20 @@ async function computeGbif(lid){
     } else {
       const res=await surveyLieu(L,months,t=>setBuilding(lid,t));if(!res.sp.length&&!Object.keys(res.b).length) throw new Error('aucune observation GBIF dans ce secteur');
       add({k:'lieusp',lid,m:months.label,sp:res.sp,b:res.b});add({k:'profile',lid,p:res.p,m:months.label,tot:res.tot});
+      saveReport(lid,{at:Date.now(),ok:true,report:res.report});
       if(ui.lieu===lid) ui.site=lid;afterChange();renderLieuChips();
       toast(`${L.n} : ${res.sp.length} espèces découvertes (${kindsOf(res.sp)}) + ${Object.keys(res.b).length} de la liste`);
     }
   }
-  catch(e){toast('Relevé impossible : '+(e.message||'réseau bloqué'))}
+  catch(e){saveReport(lid,{at:Date.now(),ok:false,msg:e.message||'réseau bloqué'});toast('Relevé impossible : '+(e.message||'réseau bloqué'))}
   finally{setBuilding(lid,'')}
 }
+const LS_SURVEY='duel-camargue-survey';
+function saveReport(lid,r){const all=readLS(LS_SURVEY)||{};all[lid]=r;writeLS(LS_SURVEY,all);if(ui.tab==='settings') renderLieux()}
+function reportLine(lid){const r=(readLS(LS_SURVEY)||{})[lid];if(!r) return '';const when=fmtTime.format(new Date(r.at));
+  if(!r.ok) return `<br><span class="muted">Dernier relevé ${esc(when)} : <b style="color:var(--bad)">échec</b> — ${esc(r.msg)}</span>`;
+  const K={b:'oiseaux',m:'mammifères',h:'reptiles-amphibiens',i:'insectes'};
+  return `<br><span class="muted">Dernier relevé ${esc(when)} : ${Object.entries(r.report).map(([k,v])=>`${K[k]} ${v.obs.toLocaleString('fr-FR')} obs., ${v.names} noms, ${v.disc} découvert${v.disc>1?'s':''}`).join(' · ')}</span>`}
 function renderObjectives(){
   $('#objectives').innerHTML=view.players.map(p=>{const l=view.obj[p];return `<div class="field"><label>Objectifs de ${esc(nameOf(p))} (${l.length}/${OBJ_MAX})</label>
     <ul class="bonuslist">${l.length?l.map(sid=>{const sp=spOf(sid);if(!sp) return '';const done=(view.tiers[p][sid]||0)===3;return `<li><span><b style="color:var(--${p})">${esc(sp.n)}</b>${done?' <span class="ok">atteint</span>':''}</span><span class="muted">+${fmtPts(view.objPct)} %</span><button type="button" class="btn small" data-obj-del="${p}|${sid}" aria-label="Retirer cet objectif">×</button></li>`}).join(''):'<li class="muted">Aucun objectif : ouvrez une espèce et touchez « En faire un objectif ».</li>'}</ul></div>`}).join('');
@@ -2058,11 +2082,13 @@ function renderBoard(){
   const cur=view.tiers,sc=computeScores(view,cur,true);
   const cols=[ui.me,...others(ui.me)],bo=$('#board');bo.className='board n'+cols.length;
   bo.innerHTML=cols.map(p=>{
-    let items=allSpecies().filter(sp=>(cur[p][sp.id]||0)>0).map(sp=>({sp,t:cur[p][sp.id],at:view.tierAt[p][sp.id]||0,v:speciesEarned(view,cur,sp.id)[p]}));
+    const os=others(p);
+    let items=allSpecies().filter(sp=>(cur[p][sp.id]||0)>0).map(sp=>({sp,t:cur[p][sp.id],at:view.tierAt[p][sp.id]||0,v:speciesEarned(view,cur,sp.id)[p],shared:os.filter(o=>(cur[o][sp.id]||0)>0)}));
+    if(ui.boardShare==='shared') items=items.filter(it=>it.shared.length); else if(ui.boardShare==='solo') items=items.filter(it=>!it.shared.length);
     if(ui.boardSort==='time') items.sort((a,b)=>b.at-a.at); else if(ui.boardSort==='name') items.sort((a,b)=>a.sp.n.localeCompare(b.sp.n,'fr')); else items.sort((a,b)=>b.v-a.v||a.sp.n.localeCompare(b.sp.n,'fr'));
-    const os=others(p),s=sc[p],kept=s.kept;
+    const s=sc[p],kept=s.kept;
     return `<div class="bcol ${p}"><div class="bh"><div class="nm">${esc(nameOf(p))}${p===ui.me?' <span class="muted">(moi)</span>':''}</div><div class="big">${fmtPts(s.pts)}</div><div class="sub">${s.n} espèce${s.n>1?'s':''} · ${s.tiers[2]} portfolio${view.topN?` · top ${view.topN} compté`:''}</div></div>
-      ${items.length?items.map(it=>`<button type="button" class="bitem${kept&&!kept.has(it.sp.id)?' out':''}" data-id="${it.sp.id}"><div class="head">${photoOf(p,it.sp.id)?`<img src="${photoOf(p,it.sp.id)}" alt="">`:headHTML(it.sp,'b'+p+'-'+it.sp.id)}</div><div><b>${esc(it.sp.n)}</b><div class="meta"><span class="tq t${it.t}"></span>${TIER_NAMES[it.t]}<span class="bp">${fmtPts(it.v)} pts</span>${os.filter(o=>(cur[o][it.sp.id]||0)>0).map(o=>`<span class="also ${o}" title="aussi chez ${esc(nameOf(o))}"></span>`).join('')}${kept&&!kept.has(it.sp.id)?'<span class="muted">hors top</span>':''}</div></div></button>`).join(''):`<div class="bempty">Rien de coché pour ${esc(nameOf(p))}.</div>`}
+      ${items.length?items.map(it=>`<button type="button" class="bitem${kept&&!kept.has(it.sp.id)?' out':''}${it.shared.length?' shared':(os.length?' solo':'')}" data-id="${it.sp.id}"><div class="head">${photoOf(p,it.sp.id)?`<img src="${photoOf(p,it.sp.id)}" alt="">`:headHTML(it.sp,'b'+p+'-'+it.sp.id)}</div><div><b>${esc(it.sp.n)}</b><div class="meta"><span class="tq t${it.t}"></span>${TIER_NAMES[it.t]}<span class="bp">${fmtPts(it.v)} pts</span>${it.shared.length?`<span class="pill com" title="aussi chez ${it.shared.map(o=>esc(nameOf(o))).join(', ')}"><span class="txt">commun</span>${it.shared.map(o=>`<i class="ob ${o} on">${initialOf(o)}</i>`).join('')}</span>`:(os.length?`<span class="pill uniq">unique</span>`:'')}${kept&&!kept.has(it.sp.id)?'<span class="muted">hors top</span>':''}</div></div></button>`).join(''):`<div class="bempty">${ui.boardShare==='shared'?'Rien en commun':ui.boardShare==='solo'?'Rien d\u2019unique':'Rien de coché'} pour ${esc(nameOf(p))}.</div>`}
     </div>`}).join('');
 }
 function renderAll(){renderHeader();renderLieuChips();if(ui.tab==='birds') renderList(); else if(ui.tab==='board') renderBoard(); else if(ui.tab==='stats') renderStats(); else renderSettings(); if(sheetSid) renderSheet(sheetSid)}
@@ -2082,7 +2108,8 @@ function sortDirLabel(){const asc=ui.dir>0;const s=ui.sort;const lbl=s==='name'?
 $('#sort-sel').addEventListener('change',e=>{ui.sort=e.target.value;ui.dir=ui.sort==='name'?1:-1;sortDirLabel();renderList()});
 $('#sort-dir').addEventListener('click',()=>{ui.dir=-ui.dir;sortDirLabel();renderList()});
 $('#taken-chips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b) return;ui.taken=b.dataset.v;$$('#taken-chips .chip').forEach(c=>c.setAttribute('aria-pressed',String(c===b)));renderList()});
-$('#board-sort').addEventListener('change',e=>{ui.boardSort=e.target.value;renderBoard()});
+$('#board-sort').addEventListener('change',e=>{ui.boardSort=e.target.value;saveFilters();renderBoard()});
+$('#board-share').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b) return;ui.boardShare=b.dataset.v;$$('#board-share .chip').forEach(c=>c.setAttribute('aria-pressed',String(c===b)));saveFilters();renderBoard()});
 $('#board').addEventListener('click',e=>{const it=e.target.closest('.bitem');if(it) openSheet(it.dataset.id)});
 $('#list').addEventListener('click',e=>{
   const card=e.target.closest('.card');if(!card) return;const sid=card.dataset.id;
