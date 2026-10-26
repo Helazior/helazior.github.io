@@ -1144,9 +1144,9 @@ const EXTRA_HEADS={
   'Euscorpius niciensis':{k:'i',t:'scorpion',c:'#3a3a34',tail:'#6a6a50'}
 };
 function discoveredSpecies(s,lid){const g=Math.max(0,Math.min(GROUPS.length-1,s.g|0));const x=EXTRA_HEADS[s.l];const h=x||GEN_HEAD[g];const kind=(h.k==='m')?'m':h.k?'hi':'b';
-  const dom=DOMESTIC.has(s.l);const sp={id:s.id,n:s.n,l:s.l,g,c:[dom?1:(s.bp||3),3,3,3,3],like:2,site:'',h,ic:false,alt:'',disc:true,auto:true,drawn:!!x,dom,fam:s.fam||'',lieux:[lid],wk:!!s.wk};
-  if(Number.isFinite(s.wc)){sp.wc=s.wc;sp.wm=worldNote(s.wc,kind);sp.c[1]=sp.wm}
-  if(Number.isFinite(s.ps)&&Number.isFinite(s.wc)&&s.wc>0){sp.ps=s.ps;sp.pd=photoNote(s.ps,kind);sp.c[4]=sp.pd}
+  const dom=DOMESTIC.has(s.l);const sp={id:s.id,n:s.n,l:s.l,g,c:dom?[Math.max(3,s.bp||3),1,1,1,1]:[s.bp||3,3,3,3,3],like:dom?1:2,site:'',h,ic:false,alt:'',disc:true,auto:true,drawn:!!x,dom,fam:s.fam||'',lieux:[lid],wk:!!s.wk};
+  if(!dom&&Number.isFinite(s.wc)){sp.wc=s.wc;sp.wm=worldNote(s.wc,kind);sp.c[1]=sp.wm}
+  if(!dom&&Number.isFinite(s.ps)&&Number.isFinite(s.wc)&&s.wc>0){sp.ps=s.ps;sp.pd=photoNote(s.ps,kind);sp.c[4]=sp.pd}
   if(s.img) sp.img=s.img;
   return sp}
 /* Lieux où une espèce est connue : liste de base (codes PG / MV, ou présence relevée par GBIF), hors liste (site choisi), découvertes (lieux du relevé). */
@@ -1297,7 +1297,7 @@ function mergeLog(local,incoming){
   return {added,extra};
 }
 function r1(x){return Math.round(x*10)/10}
-function compOf(v,sid,lieu){const sp=spOf(sid);if(v.comp[sid]) return v.comp[sid];const base=sp?sp.c.slice():[3,3,3,3,3];if(sp&&sp.wm) base[1]=sp.wm;if(sp&&sp.pd){const dw=(v.w.photo!=null?v.w.photo:DEFAULT_DW)/100;base[4]=Math.round((base[4]*(1-dw)+sp.pd*dw)*2)/2}const pr=lieuProfile(v,lieu);if(pr&&pr[sid]){base[2]=pr[sid][0];base[3]=pr[sid][1]}return base}
+function compOf(v,sid,lieu){const sp=spOf(sid);if(v.comp[sid]) return v.comp[sid];const base=sp?sp.c.slice():[3,3,3,3,3];if(sp&&sp.wm) base[1]=sp.wm;if(sp&&sp.pd){const dw=(v.w.photo!=null?v.w.photo:DEFAULT_DW)/100;base[4]=Math.round((base[4]*(1-dw)+sp.pd*dw)*2)/2}const pr=lieuProfile(v,lieu);if(pr&&pr[sid]){base[2]=pr[sid][0];base[3]=pr[sid][1]}if(sp&&sp.dom){base[1]=1;base[2]=1;base[3]=1;base[4]=1}return base}
 function compSource(v,sid,lieu){if(v.comp[sid]) return 'manuel';const pr=lieuProfile(v,lieu);return (pr&&pr[sid])?'gbif':'defaut'}
 function formulaOf(v,sid,lieu){const f=formulaPts(compOf(v,sid,lieu),v.w);const sp=spOf(sid);return (sp&&sp.dom)?Math.min(f,DOMESTIC_CAP):f}
 function basePts(v,sid,lieu){const x=v.pts[sid];return (typeof x==='number'&&x>=0)?x:formulaOf(v,sid,lieu)}
@@ -1407,7 +1407,7 @@ function groupOf(kind,order,family){if(kind==='m') return 10;if(kind==='h') retu
 async function gbifMatch(name){const r=await fetchJson(`https://api.gbif.org/v1/species/match?kingdom=Animalia&name=${encodeURIComponent(name)}`);
   if(!r||!['EXACT','FUZZY'].includes(r.matchType)||!['SPECIES','SUBSPECIES'].includes(r.rank)||r.kingdom!=='Animalia') return null;
   const cn=canon(r.canonicalName||name);
-  if(DOMESTIC.has(cn)) return {key:r.usageKey,l:cn,order:r.order||'',family:r.family||'',cls:r['class']||''}; /* le chien reste un chien : GBIF en fait un synonyme du loup (Canis lupus) */
+  if(DOMESTIC.has(cn)) return {key:r.usageKey,ck:r.acceptedUsageKey||r.usageKey,l:cn,order:r.order||'',family:r.family||'',cls:r['class']||''}; /* le chien reste un chien : GBIF en fait un synonyme du loup (Canis lupus) ; les comptages se font sur la forme acceptée (Canis lupus familiaris) */
   const key=r.speciesKey||r.acceptedUsageKey||r.usageKey;if(!key) return null;
   return {key,l:canon(r.species||r.canonicalName||name),order:r.order||'',family:r.family||'',cls:r['class']||''}}
 async function wikiBatch(names){ /* titres français et vignettes ≤ 300 px, 50 noms par appel */
@@ -1445,17 +1445,17 @@ async function surveyLieu(L,months,prog){
     if(bi){ /* synonyme d'une espèce déjà connue : on complète ses comptes */
       const cur=b[bi.id]||[0,0,0];b[bi.id]=[cur[0]+c.cp,cur[1]+c.cy,0];p[bi.id]=rarityNotes(b[bi.id][1],b[bi.id][0],o.ty,o.tp);return}
     const d=byKey.get(m.key);if(d){d.cy+=c.cy;d.cp+=c.cp;return}
-    byKey.set(m.key,{id:'g-'+m.key,key:m.key,kind:c.kind,l:m.l,order:m.order,fam:m.family,cls:m.cls,cy:c.cy,cp:c.cp})});
+    byKey.set(m.key,{id:'g-'+m.key,key:m.key,ck:m.ck||m.key,kind:c.kind,l:m.l,order:m.order,fam:m.family,cls:m.cls,cy:c.cy,cp:c.cp})});
   const list=Array.from(byKey.values());
-  for(const d of list){const o=sv[d.kind];p[d.id]=rarityNotes(d.cy,d.cp,o.ty,o.tp);d.g=groupOf(d.kind,d.order,d.fam);d.bp=DOMESTIC.has(d.l)?1:beautyPrior(d.l,d.fam,d.cls)}
+  for(const d of list){const o=sv[d.kind];p[d.id]=rarityNotes(d.cy,d.cp,o.ty,o.tp);d.g=groupOf(d.kind,d.order,d.fam);d.bp=DOMESTIC.has(d.l)?3:beautyPrior(d.l,d.fam,d.cls)}
   const chunks=[];for(let i=0;i<list.length;i+=50) chunks.push(list.slice(i,i+50));
   done=0;const wk=await pool(chunks,3,ch=>withRetry(()=>wikiBatch(ch.map(d=>d.l))),()=>{done++;if(prog) prog(`Noms et photos Wikipédia ${done}/${chunks.length}`)});
   chunks.forEach((ch,i)=>{const r=wk[i]||{};for(const d of ch){const w=r[d.l];if(!w) continue;if(w.img) d.img=w.img;if(w.fr){d.n=w.title;d.wk=1}}});
   const noName=list.filter(d=>!d.n);done=0;const vn=await pool(noName,6,d=>gbifVernacular(d.key),()=>{done++;if(prog&&done%10===0) prog(`Noms français GBIF ${done}/${noName.length}`)});
   noName.forEach((d,i)=>{d.n=vn[i]||d.l});
   const kchunks=[];for(let i=0;i<list.length;i+=40) kchunks.push(list.slice(i,i+40));
-  done=0;const cnt=await pool(kchunks,2,ch=>withRetry(()=>gbifCounts(ch.map(d=>d.key))),()=>{done++;if(prog) prog(`Comptages mondiaux ${done}/${kchunks.length}`)});
-  kchunks.forEach((ch,i)=>{const r=cnt[i]||{};for(const d of ch){const c=r[d.key];if(c){d.wc=c.wc;if(c.wc>0) d.ps=Math.round(c.ph/c.wc*1e4)/1e4}}});
+  done=0;const cnt=await pool(kchunks,2,ch=>withRetry(()=>gbifCounts(ch.map(d=>d.ck))),()=>{done++;if(prog) prog(`Comptages mondiaux ${done}/${kchunks.length}`)});
+  kchunks.forEach((ch,i)=>{const r=cnt[i]||{};for(const d of ch){const c=r[d.ck];if(c){d.wc=c.wc;if(c.wc>0) d.ps=Math.round(c.ph/c.wc*1e4)/1e4}}});
   const ranked=[...Object.entries(b).map(([sid,v])=>({sid,cy:v[1]})),...list.map(d=>({sid:d.id,cy:d.cy}))].sort((a,b)=>b.cy-a.cy);
   ranked.forEach((r,i)=>{if(b[r.sid]) b[r.sid][2]=i+1;else{const d=list.find(x=>x.id===r.sid);if(d) d.rk=i+1}});
   const sp=list.map(d=>{const o={id:d.id,n:d.n,l:d.l,g:d.g,bp:d.bp,cy:d.cy,cp:d.cp,rk:d.rk};if(d.fam) o.fam=d.fam;if(Number.isFinite(d.wc)) o.wc=d.wc;if(Number.isFinite(d.ps)) o.ps=d.ps;if(d.img) o.img=d.img;if(d.wk) o.wk=1;return o});
@@ -1789,7 +1789,7 @@ function renderSheet(sid){
       <div class="ptsedit"><label for="sheet-pts">Forcer la cote</label><input id="sheet-pts" type="number" min="0" max="2000" step="5" value="${manual!=null?manual:''}" placeholder="${f}"> pts <span class="muted">(vide = calculée)</span></div>
     </div>
     ${sp.ic?`<p class="muted" style="margin:8px 0 0">★ Iconique : la photo portfolio vaut ×${fmtPts(view.icoMul)}. En objectif personnel, elle rapporte encore +${fmtPts(view.objPct)} %.</p>`:`<p class="muted" style="margin:8px 0 0">En objectif personnel (${OBJ_MAX} par joueur), un portfolio rapporte +${fmtPts(view.objPct)} %.</p>`}
-    ${sp.dom?`<p class="muted" style="margin:4px 0 0">Espèce domestique ou férale : cote plafonnée à ${DOMESTIC_CAP} pts (les comptages GBIF la rendraient « rare », ce qui n\u2019aurait pas de sens).</p>`:''}
+    ${sp.dom?`<p class="muted" style="margin:4px 0 0">Espèce domestique ou férale : raretés et difficulté photo fixées à 1 (on en voit partout, et ça pose), cote plafonnée à ${DOMESTIC_CAP} pts ; la beauté reste réglable.</p>`:''}
     <p class="muted" style="margin:4px 0 0">♥ Favori : sans effet sur les points, en nombre illimité ; les autres voient vos favoris sur les cartes pour vous prévenir quand ils repèrent l\u2019espèce.</p>
     ${sp.custom?`<p class="muted" style="margin:6px 0 0">Espèce hors liste ajoutée par ${esc(nameOf(sp.by))}. <button type="button" class="btn small" data-xedit="${sp.id}">Modifier</button> <button type="button" class="btn small danger" data-xdel="${sp.id}">Retirer</button></p>`:''}
     ${rows}
