@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-3Gi1l0nX+HcoMecGN/xbjnIsiKBP1xkJRmA2/ghJ7ZM=' 'sha256-rWrLJb8Lx2c7Huu3yQLLSREoC3T8QdrCGk4nCrXi/xE=' 'sha256-nz0UQi7XMlPcIxC+4SqEpyPKY3cgL1fqMOy1pBFH8oY=' 'sha256-ZRxaQHsO6XNLinREsxixfb5jDPo8W0GlkI7cUR87Dg8=' 'sha256-S18pspuvVFoUWB+b5SPn6mwrCLSbkDQFw6mtGARB3N4='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://upload.wikimedia.org; connect-src 'self' https: wss: http://127.0.0.1:* ws://127.0.0.1:* http://localhost:* ws://localhost:*; font-src 'self' data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; media-src 'none'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0e5c6b">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -52,7 +53,14 @@ h1,h2,h3{text-wrap:balance}
 .brand .sub{margin:2px 0 0;color:var(--ink-2);font-size:12.5px}
 .sync{font-size:11px;color:var(--ink-2);display:flex;align-items:center;gap:5px;white-space:nowrap;padding-top:4px}
 .sync i{width:8px;height:8px;border-radius:50%;background:var(--t1);display:inline-block}
-.sync.on i{background:var(--good)} .sync.err i{background:var(--bad)}
+.sync.on i{background:var(--good)} .sync.err i{background:var(--bad)} .sync.wait i{background:var(--ico)}
+.sync.live i{background:var(--good);animation:livepulse 2.4s ease-out infinite}
+@keyframes livepulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--good) 55%,transparent)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.player .onl{display:none;width:7px;height:7px;border-radius:50%;background:var(--good);box-shadow:0 0 0 2px var(--raised);flex:none}
+.player.online .onl{display:inline-block}
+.player.bump{animation:bump .55s ease-out}
+@keyframes bump{0%{transform:scale(1)}35%{transform:scale(1.045)}100%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.sync.live i,.player.bump{animation:none}}
 .top{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bg);padding-block:6px 0;margin-bottom:8px}
 .p1{--pc:var(--p1);--pc-fill:var(--p1-fill);--pc-on:var(--p1-on)} .p2{--pc:var(--p2);--pc-fill:var(--p2-fill);--pc-on:var(--p2-on)} .p3{--pc:var(--p3);--pc-fill:var(--p3-fill);--pc-on:var(--p3-on)} .p4{--pc:var(--p4);--pc-fill:var(--p4-fill);--pc-on:var(--p4-on)} .p5{--pc:var(--p5);--pc-fill:var(--p5-fill);--pc-on:var(--p5-on)} .p6{--pc:var(--p6);--pc-fill:var(--p6-fill);--pc-on:var(--p6-on)} .p7{--pc:var(--p7);--pc-fill:var(--p7-fill);--pc-on:var(--p7-on)} .p8{--pc:var(--p8);--pc-fill:var(--p8-fill);--pc-on:var(--p8-on)}
 .scoreboard{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:stretch}
@@ -780,7 +788,7 @@ const BILL={
   pigeon:{d:'M0,-3 Q7,-4 9,1 Q6,3 0,3 Z',len:9},
   grebe:{d:'M0,-3 L18,1 L0,4 Z',len:18,m:1}
 };
-function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
 function hashStr(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
 function headSVG(sp,uid){
   const p=sp.h,S=SH[p.s||'round'];
@@ -1058,6 +1066,8 @@ const knownSpecies=sid=>!!SPECIES_BY[sid]||isCustomId(sid)||isDiscId(sid);
 function allSpecies(){return SPECIES.concat(Object.values(CUSTOM),Object.values(DISC))}
 const WIKI_THUMB='https://upload.wikimedia.org/wikipedia/commons/thumb/';
 function imgUrl(img){return /^https?:\/\//.test(img)?img:WIKI_THUMB+img}
+/* Seules les images de Wikimedia Commons sont acceptées (chemin relatif au dépôt de vignettes, ou adresse complète sur upload.wikimedia.org) : une entrée forgée ne peut pas faire charger une image d'ailleurs. */
+const isWikiImg=v=>typeof v==='string'&&v.length<=300&&!/[\s<>"'\\]/.test(v)&&(/^[0-9a-f]\/[0-9a-f]{2}\/[^?#]+$/.test(v)||/^https:\/\/upload\.wikimedia\.org\/[^?#]+$/.test(v));
 /* Têtes dessinées pour les espèces emblématiques de France absentes de la liste de Camargue (clé : nom latin GBIF). Une espèce relevée qui a son dessin l'affiche ; sinon la photo Wikipédia. */
 const EXTRA_HEADS={
   'Strix aluco':{s:'owl',c:'#8a6a4a',dk:'#c9b193',sp:'#5a4030',bl:{t:'owl',c:'#d8d0b0'},ey:{i:K}},
@@ -1192,7 +1202,7 @@ function formulaPts(c,w){const raw=2.5*c[0]*c[4]*rarityMul(rarity(c,w));return M
 function cleanDisc(s){if(!s||typeof s!=='object'||!isDiscId(s.id)) return null;const n=String(s.n||'').trim().slice(0,60),l=String(s.l||'').trim().slice(0,60);if(!n||!l) return null;
   const o={id:s.id,n,l,g:Math.max(0,Math.min(GROUPS.length-1,s.g|0)),bp:Math.max(1,Math.min(5,Math.round(Number(s.bp)||3)))};
   if(Number.isFinite(s.wc)&&s.wc>=0) o.wc=Math.round(s.wc);if(Number.isFinite(s.ps)&&s.ps>=0) o.ps=Math.min(1,Math.round(s.ps*1e4)/1e4);
-  if(typeof s.img==='string'&&s.img.length<=300&&(/^https:\/\//.test(s.img)||/^[0-9a-f]\/[0-9a-f]{2}\//.test(s.img))) o.img=s.img;
+  if(isWikiImg(s.img)) o.img=s.img;
   if(s.wk) o.wk=1;if(s.fam) o.fam=String(s.fam).slice(0,40);for(const k of ['cy','cp','rk']) if(Number.isFinite(s[k])) o[k]=Math.max(0,s[k]|0);return o}
 function cleanComp(v){if(!Array.isArray(v)||v.length!==5||!v.every(Number.isFinite)) return null;return v.map(x=>Math.max(1,Math.min(5,Math.round(x*2)/2)))}
 function cleanW(v){if(!v||typeof v!=='object') return null;const o={};for(const k of ['ici','monde','periode']){if(!Number.isFinite(v[k])) return null;o[k]=Math.max(0,Math.min(100,Math.round(v[k])))}if(Number.isFinite(v.photo)) o.photo=Math.max(0,Math.min(100,Math.round(v.photo)));return (o.ici+o.monde+o.periode)>0?o:null}
@@ -1629,11 +1639,12 @@ function renderHeader(){
   const sc=computeScores(view,view.tiers,true),ps=view.players,lead=leaders(sc);
   const sb=$('#scoreboard');sb.className='scoreboard n'+ps.length;
   const outside=ui.device&&!ps.includes(ui.device);
-  sb.innerHTML=(outside?`<button class="player ${cls(ui.device)}" type="button" data-join="${esc(ui.device)}" style="grid-column:1/-1"><span class="name">${esc(nameOf(ui.device))}</span><span class="meta">Touchez pour rejoindre la partie</span></button>`:'')+(ps.length||outside?'':`<button class="player p1" type="button" data-p="" style="grid-column:1/-1"><span class="name">Aucun joueur</span><span class="meta">Touchez pour choisir qui vous êtes</span></button>`)+ps.map(p=>{const s=sc[p];return `<button class="player ${cls(p)}${ui.me===p?' me':''}" data-p="${p}" type="button" aria-label="Cocher pour ${esc(nameOf(p))}"><span class="name">${esc(nameOf(p))}${lead.includes(p)?`<span class="lead">${lead.length>1?'ex æquo':'en tête'}</span>`:''}</span><span class="pts">${fmtPts(s.pts)}</span><span class="meta">${s.n}${s.n>1?' espèces':' espèce'} · ${s.tiers[2]} portfolio${s.obj?' · '+s.obj+(s.obj>1?' objectifs':' objectif'):''}</span></button>`}).join('');
+  sb.innerHTML=(outside?`<button class="player ${cls(ui.device)}" type="button" data-join="${esc(ui.device)}" style="grid-column:1/-1"><span class="name">${esc(nameOf(ui.device))}</span><span class="meta">Touchez pour rejoindre la partie</span></button>`:'')+(ps.length||outside?'':`<button class="player p1" type="button" data-p="" style="grid-column:1/-1"><span class="name">Aucun joueur</span><span class="meta">Touchez pour choisir qui vous êtes</span></button>`)+ps.map(p=>{const s=sc[p];return `<button class="player ${cls(p)}${ui.me===p?' me':''}" data-p="${p}" type="button" aria-label="Cocher pour ${esc(nameOf(p))}"><span class="name">${esc(nameOf(p))}<i class="onl" title="En ligne"></i>${lead.includes(p)?`<span class="lead">${lead.length>1?'ex æquo':'en tête'}</span>`:''}</span><span class="pts">${fmtPts(s.pts)}</span><span class="meta">${s.n}${s.n>1?' espèces':' espèce'} · ${s.tiers[2]} portfolio${s.obj?' · '+s.obj+(s.obj>1?' objectifs':' objectif'):''}</span></button>`}).join('');
   $('#who-seg').innerHTML=ps.map(p=>`<button type="button" class="${cls(p)}" data-p="${p}" aria-pressed="${p===ui.me}">${esc(nameOf(p))}</button>`).join('');
   $('#lg1').textContent=view.pct[0]+' %';$('#lg2').textContent=view.pct[1]+' %';$('#lg3').textContent=view.pct[2]+' %';
   $('#lgmode').textContent=view.mode==='duel'?'le meilleur rafle tout':'chacun ses points';
   $('#lgico').textContent=fmtPts(view.icoMul);
+  if(typeof renderPresence==='function'&&typeof live!=='undefined') renderPresence();
 }
 
 /* ---- Liste ---- */
@@ -2043,33 +2054,119 @@ async function relayFetch(path,opt){ /* JSON, 20 s, sans en-tête particulier (p
   try{const init=Object.assign({},ctl?{signal:ctl.signal}:{});if(opt&&opt.body){init.method='POST';init.headers={'Content-Type':'application/json'};init.body=JSON.stringify(opt.body)}
     const r=await fetch(relayUrl.replace(/\/+$/,'')+path,init);const j=await r.json().catch(()=>({}));if(!r.ok) throw new Error(j.error||('HTTP '+r.status));return j}
   catch(e){throw new Error(e&&e.name==='AbortError'?'délai dépassé':(e&&e.message)||'réseau')}finally{if(tm) clearTimeout(tm)}}
-const sync={seq:0,acked:new Set(),busy:false,timer:null,poll:null,last:0,err:''};
+/* ---- Synchronisation en direct ----
+   Le journal local est appliqué tout de suite (chaque coche est visible sans attendre), puis envoyé au relais, qui le
+   numérote (seq) et le diffuse à tous les téléphones de la partie par une connexion WebSocket maintenue ouverte.
+   Chaque téléphone garde un curseur (dernier seq reçu) et la liste des entrées acquittées : au retour du réseau, il relit
+   après le curseur et renvoie ce qui n'a pas été acquitté. Rien ne se perd, rien n'arrive deux fois (fusion par identifiant).
+   État du canal : off (pas de relais) · connecting · live · reconnecting (attente avant nouvel essai, relecture HTTP toutes les 20 s). */
+const sync={seq:0,acked:new Set(),last:0,err:'',busy:false,again:false,pushing:false,flushT:null,catchT:null};
+const live={ws:null,url:'',state:'off',online:[],n:0,tries:0,retryT:null,pingT:null,pongT:null,ackT:null,poll:null,inflight:new Map(),rid:0};
 function loadSyncState(){const s=readLS(LS_SYNC+gameId)||{};sync.seq=s.seq||0;sync.acked=new Set(s.acked||[]);sync.err='';sync.last=s.last||0}
 function saveSyncState(){writeLS(LS_SYNC+gameId,{seq:sync.seq,acked:[...sync.acked],last:sync.last})}
 function pendingEntries(){return log.filter(e=>!sync.acked.has(e.id))}
-function scheduleSync(){if(!relayOk()) return;clearTimeout(sync.timer);sync.timer=setTimeout(()=>syncNow(),1500)}
-function syncStatusText(){const n=pendingEntries().length;if(!relayOk()) return 'Pas de relais : codes et fichiers seulement.';
-  if(sync.err) return `Relais injoignable (${sync.err})${n?` · ${n} entrée${n>1?'s':''} en attente`:''}.`;
-  return `${sync.last?'Synchronisé '+fmtHM.format(new Date(sync.last)):'Pas encore synchronisé'}${n?` · ${n} en attente`:' · à jour'}.`}
-async function syncNow(){
-  if(!relayOk()||sync.busy) return;if(typeof navigator!=='undefined'&&navigator.onLine===false){setSync('err','hors ligne');return}
-  sync.busy=true;let gotNew=0;
-  try{
-    let more=true,guard=0;
-    while(more&&guard++<50){const r=await relayFetch(`/games/${encodeURIComponent(gameId)}/entries?after=${sync.seq}`);
-      const inc=Array.isArray(r.entries)?r.entries:[];const {added}=mergeLog(log,{v:3,log:inc});for(const e of inc) if(e&&e.id) sync.acked.add(e.id);
-      sync.seq=Number(r.seq)||sync.seq;more=!!r.more;gotNew+=added}
-    const pend=pendingEntries();
-    for(let i=0;i<pend.length;i+=400){const chunk=pend.slice(i,i+400);const r=await relayFetch(`/games/${encodeURIComponent(gameId)}/entries`,{body:{entries:chunk}});for(const e of chunk) sync.acked.add(e.id);if(Number(r.seq)>sync.seq&&!more){/* nos propres entrées : le prochain tour les relira sans effet */}}
-    sync.err='';sync.last=Date.now();saveSyncState();
-    if(gotNew){refresh();persist();renderAll();toast(gotNew+(gotNew>1?' nouveautés reçues':' nouveauté reçue'))}
-    setSync('on','en ligne');
-  }catch(e){sync.err=e.message||'erreur';saveSyncState();setSync('err','relais injoignable')}
-  finally{sync.busy=false;const el=$('#sync-status');if(el) el.textContent=syncStatusText()}
+const isOffline=()=>typeof navigator!=='undefined'&&navigator.onLine===false;
+function applyRange(prev,last){ /* un dépôt couvre (prev,last] sans trou : si on avait tout jusqu'à prev, on a tout jusqu'à last ; sinon on relit */
+  prev=Number(prev)||0;last=Number(last)||0;
+  if(prev<=sync.seq){if(last>sync.seq) sync.seq=last;return true}
+  catchUpSoon();return false}
+function absorb(entries){ /* fusionne des entrées venues du relais ; renvoie celles qui étaient nouvelles ici */
+  const inc=Array.isArray(entries)?entries:[];if(!inc.length) return [];
+  const had=new Set(log.map(e=>e.id));mergeLog(log,{v:3,log:inc});for(const e of inc) if(e&&e.id) sync.acked.add(e.id);
+  return log.filter(e=>!had.has(e.id))}
+function announce(fresh){ /* nouveautés des autres : écran à jour, un mot sur la première, et la carte de son auteur qui pulse */
+  if(!fresh.length) return;refresh();persist();renderAll();
+  const first=fresh.find(e=>e.by!==ui.device)||fresh[0];let t=describeEntry(first,view)||'Nouveauté reçue';if(fresh.length>1) t+=` (+${fresh.length-1})`;toast(t);
+  const b=$(`#scoreboard .player[data-p="${first.by}"]`);if(b){b.classList.remove('bump');void b.offsetWidth;b.classList.add('bump')}}
+/* Envoi : 100 ms après la dernière action, pour qu'une rafale de coches parte en un seul dépôt */
+function scheduleSync(){if(!relayOk()) return;clearTimeout(sync.flushT);sync.flushT=setTimeout(flush,100)}
+async function flush(){
+  if(!relayOk()||isOffline()) return;
+  const sent=new Set();for(const f of live.inflight.values()) for(const id of f.ids) sent.add(id);
+  const pend=pendingEntries().filter(e=>!sent.has(e.id));if(!pend.length) return;
+  if(live.state==='live'){ /* par le canal : accusé {t:'ack'} attendu sous 8 s, sinon la connexion est refaite et le dépôt repart */
+    for(let i=0;i<pend.length;i+=400){const chunk=pend.slice(i,i+400);const rid=++live.rid;live.inflight.set(rid,{ids:new Set(chunk.map(e=>e.id)),at:Date.now()});
+      if(!liveSend({t:'push',rid,entries:chunk})){live.inflight.delete(rid);break}}
+    clearTimeout(live.ackT);live.ackT=setTimeout(()=>{if([...live.inflight.values()].some(f=>Date.now()-f.at>8000)) liveReconnect('envoi sans accusé')},8500);return}
+  if(sync.pushing) return;sync.pushing=true; /* sans canal : HTTP, même dépôt côté relais */
+  try{for(let i=0;i<pend.length;i+=400){const chunk=pend.slice(i,i+400);const r=await relayFetch(`/games/${encodeURIComponent(gameId)}/entries`,{body:{entries:chunk}});for(const e of chunk) sync.acked.add(e.id);applyRange(r.prev,r.last)}
+    sync.err='';sync.last=Date.now();saveSyncState()}
+  catch(e){sync.err=e.message||'erreur'}
+  finally{sync.pushing=false;renderSyncState()}
 }
-function startSyncLoop(){clearInterval(sync.poll);if(!relayOk()){setSync('','local');return}sync.poll=setInterval(()=>{if(document.visibilityState==='visible') syncNow()},20000);syncNow()}
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible') syncNow()});
-window.addEventListener('online',()=>syncNow());
+/* Relecture après le curseur (HTTP), puis envoi de ce qui reste : au lancement, au retour au premier plan, à la reconnexion */
+function catchUpSoon(){clearTimeout(sync.catchT);sync.catchT=setTimeout(syncNow,30)}
+async function syncNow(){
+  if(!relayOk()) return false;if(sync.busy){sync.again=true;return false}if(isOffline()){renderSyncState();return false}
+  sync.busy=true;
+  try{let more=true,guard=0,fresh=[];
+    while(more&&guard++<50){const r=await relayFetch(`/games/${encodeURIComponent(gameId)}/entries?after=${sync.seq}`);fresh=fresh.concat(absorb(r.entries));sync.seq=Math.max(sync.seq,Number(r.seq)||0);more=!!r.more}
+    sync.err='';sync.last=Date.now();saveSyncState();announce(fresh)}
+  catch(e){sync.err=e.message||'erreur'}
+  finally{sync.busy=false;renderSyncState();if(sync.again){sync.again=false;setTimeout(syncNow,0)}else flush()}
+  return !sync.err;
+}
+/* Canal WebSocket : connexion par partie, battement de cœur, reconnexion avec attente croissante (0,5 s → 30 s) */
+function liveUrl(){return relayUrl.replace(/\/+$/,'').replace(/^http/i,'ws')+'/games/'+encodeURIComponent(gameId)+'/ws?me='+encodeURIComponent(ui.device||'')}
+function liveSend(m){if(!live.ws||live.ws.readyState!==1) return false;try{live.ws.send(typeof m==='string'?m:JSON.stringify(m));return true}catch(e){return false}}
+function liveConnect(){
+  if(!relayOk()||typeof WebSocket==='undefined'){liveClose();live.state='off';renderSyncState();return}
+  const url=liveUrl();if(live.ws&&live.url===url&&live.ws.readyState<=1) return; /* déjà ouvert (ou en cours) sur la bonne partie et la bonne identité */
+  liveClose();clearTimeout(live.retryT);let w;live.url=url;live.state='connecting';renderSyncState();
+  try{w=new WebSocket(url)}catch(e){liveRetry();return}
+  live.ws=w;
+  w.onopen=()=>{if(live.ws!==w) return;live.state='live';live.tries=0;clearInterval(live.poll);live.poll=null;
+    clearInterval(live.pingT);live.pingT=setInterval(()=>{if(document.visibilityState==='visible') liveProbe()},25000);renderSyncState();syncNow()};
+  w.onmessage=ev=>{if(live.ws!==w) return;if(ev.data==='pong'){clearTimeout(live.pongT);live.pongT=null;return}
+    let m;try{m=JSON.parse(ev.data)}catch(e){return}if(!m) return;
+    if(m.t==='entries') liveOnEntries(m);else if(m.t==='ack') liveOnAck(m);else if(m.t==='presence') liveOnPresence(m)};
+  w.onclose=()=>{if(live.ws!==w) return;live.ws=null;liveDrop();liveRetry()};
+  w.onerror=()=>{}; /* onclose suit toujours */
+}
+function liveClose(){const w=live.ws;live.ws=null;live.url='';if(w){w.onopen=w.onclose=w.onerror=w.onmessage=null;try{w.close(1000,'fin')}catch(e){}}liveDrop()}
+function liveDrop(){clearInterval(live.pingT);clearTimeout(live.pongT);clearTimeout(live.ackT);live.pingT=live.pongT=live.ackT=null;live.inflight.clear();live.online=[];live.n=0;
+  if(live.state==='live'||live.state==='connecting') live.state='reconnecting';renderPresence();renderSyncState()}
+function liveRetry(){clearTimeout(live.retryT);if(!relayOk()){live.state='off';renderSyncState();return}
+  const d=Math.min(30000,500*Math.pow(2,Math.min(6,live.tries++)))*(0.8+Math.random()*0.4);
+  live.retryT=setTimeout(()=>{if(document.visibilityState==='visible') liveConnect();else liveRetry()},d);
+  if(!live.poll) live.poll=setInterval(()=>{if(document.visibilityState==='visible') syncNow()},20000); /* sans canal : relecture HTTP toutes les 20 s */
+  if(live.tries===1) catchUpSoon()}
+function liveProbe(){ /* ping : sans pong sous 8 s, la connexion est tenue pour morte (réseau changé, veille) et refaite */
+  if(!live.ws||live.ws.readyState!==1||live.pongT) return;if(!liveSend('ping')) return;
+  live.pongT=setTimeout(()=>{live.pongT=null;liveReconnect('pas de réponse')},8000)}
+function liveReconnect(){liveClose();live.tries=0;liveConnect()}
+function liveOnEntries(m){const fresh=absorb(m.entries);if(applyRange(m.prev,m.last)){sync.err='';sync.last=Date.now()}saveSyncState();announce(fresh);renderSyncState()}
+function liveOnAck(m){const f=live.inflight.get(m.rid);live.inflight.delete(m.rid);if(!live.inflight.size){clearTimeout(live.ackT);live.ackT=null}
+  if(m.error){sync.err=m.error;renderSyncState();clearTimeout(sync.flushT);sync.flushT=setTimeout(flush,5000);return} /* refus (cadence, taille) : on réessaie dans 5 s */
+  if(f) for(const id of f.ids) sync.acked.add(id);applyRange(m.prev,m.last);sync.err='';sync.last=Date.now();saveSyncState();renderSyncState()}
+function liveOnPresence(m){live.online=Array.isArray(m.online)?m.online.filter(isPlayerId):[];live.n=Number(m.n)||0;renderPresence();renderSyncState()}
+function renderPresence(){for(const b of document.querySelectorAll('#scoreboard .player[data-p]')) b.classList.toggle('online',live.state==='live'&&live.online.includes(b.dataset.p))}
+/* Pastille d'en-tête et ligne des réglages */
+function renderSyncState(){
+  const n=pendingEntries().length,wait=n?` · ${n} en attente`:'';
+  if(!relayOk()) setSync('','local');
+  else if(isOffline()) setSync('err','hors ligne'+wait);
+  else if(live.state==='live') setSync('live','en direct'+(live.n>1?' · '+live.n:''));
+  else if(live.state==='connecting') setSync('wait','connexion…');
+  else if(sync.err) setSync('err','relais injoignable');
+  else setSync('wait','reconnexion…');
+  const el=$('#sync-status');if(el) el.textContent=syncStatusText();
+}
+function syncStatusText(){const n=pendingEntries().length,wait=n?` · ${n} entrée${n>1?'s':''} en attente`:'';
+  if(!relayOk()) return 'Pas de relais : codes et fichiers seulement.';
+  if(isOffline()) return `Hors ligne${wait}${n?', envoyée'+(n>1?'s':'')+' au retour du réseau':''}.`;
+  if(live.state==='live') return `En direct${live.n>1?` · ${live.n} appareils connectés`:''}${n?wait+(sync.err?` (${sync.err})`:''):' · tout est envoyé'}${sync.last?' · synchronisé '+fmtHM.format(new Date(sync.last)):''}.`;
+  if(live.state==='connecting') return `Connexion au relais…${wait}`;
+  if(sync.err) return `Relais injoignable (${sync.err})${wait}.`;
+  return `Canal direct coupé, reconnexion… relecture toutes les 20 s en attendant${wait}.`}
+function startSyncLoop(){ /* au lancement, au changement de partie, de relais ou d'identité */
+  clearTimeout(live.retryT);clearInterval(live.poll);live.poll=null;clearTimeout(sync.catchT);live.tries=0;liveClose();
+  if(!relayOk()){live.state='off';renderSyncState();return}
+  live.state='reconnecting';liveConnect();catchUpSoon()}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible'||!relayOk()) return;
+  if(live.state==='live') liveProbe();else{live.tries=0;liveConnect()}catchUpSoon()});
+window.addEventListener('online',()=>{if(!relayOk()) return;live.tries=0;liveConnect();catchUpSoon()});
+window.addEventListener('offline',()=>renderSyncState());
 async function fetchRemotePlayers(){if(!relayOk()) return null;const r=await relayFetch('/players');return r.players||[]}
 function registerPlayerRemote(p){if(!relayOk()) return;relayFetch('/players',{body:{name:p}}).catch(()=>{})}
 /* ---- Parties : créer, rejoindre, changer ---- */
@@ -2207,7 +2304,7 @@ async function setPhoto(p,sid,file){
 }
 async function delPhoto(p,sid){delete PHOTOS[p+'|'+sid];await idbDel(p+'|'+sid);afterChange(sid);toast('Photo retirée')}
 function albumExport(){const out={v:1,photos:{}};for(const [k,v] of Object.entries(PHOTOS)) out.photos[k]=v;return JSON.stringify(out)}
-async function albumImport(txt){const j=JSON.parse(txt);if(!j||!j.photos) throw new Error('album');let n=0;for(const [k,v] of Object.entries(j.photos)){if(!/^p[1-8]\|[a-z0-9-]+$/.test(k)||!v||typeof v.d!=='string'||!v.d.startsWith('data:image/')||v.d.length>200000) continue;const mine=PHOTOS[k];if(!mine||(v.at||0)>(mine.at||0)){PHOTOS[k]=v;await idbPut(k,v);n++}}renderAll();return n}
+async function albumImport(txt){const j=JSON.parse(txt);if(!j||!j.photos) throw new Error('album');let n=0;for(const [k,v] of Object.entries(j.photos)){if(!/^[a-z0-9][a-z0-9-]{1,23}\|[a-z0-9][a-z0-9-]{0,60}$/.test(k)||!v||typeof v.d!=='string'||!/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(v.d)||v.d.length>200000) continue;const mine=PHOTOS[k];if(!mine||(v.at||0)>(mine.at||0)){PHOTOS[k]=v;await idbPut(k,v);n++}}renderAll();return n}
 async function shareFile(name,text,mime){
   const blob=new Blob([text],{type:mime});
   if(navigator.share&&navigator.canShare){try{const f=new File([blob],name,{type:mime});if(navigator.canShare({files:[f]})){await navigator.share({files:[f],title:name});return true}}catch(e){if(e&&e.name==='AbortError') return true}}
@@ -2241,7 +2338,7 @@ function chooseIdentity(p,n){ /* devient ce joueur sur ce téléphone, et entre 
   if(!view.players.includes(p)){add({k:'player',p,on:true,n:(n||displayName(p)).slice(0,24)});registerPlayerRemote(p)}
   setDevice(p);const el=$('#devpick');if(el) el.hidden=true;const bd=$('#devbd');if(bd) bd.hidden=true;afterChange();toast('Bienvenue '+nameOf(p));
 }
-function setDevice(p){ui.device=p;writeLS(LS_DEV,p);if(view.players.includes(p)) setMe(p);if(ui.tab==='settings') renderSettings();renderHeader()}
+function setDevice(p){ui.device=p;writeLS(LS_DEV,p);if(view.players.includes(p)) setMe(p);if(ui.tab==='settings') renderSettings();renderHeader();if(typeof live!=='undefined'&&relayOk()) liveConnect()}
 
 /* ---- Rendu global et événements ---- */
 function renderBoard(){
@@ -2383,6 +2480,7 @@ renderDevicePicker();
 initPhotos();
 initDb();
 loadSyncState();startSyncLoop();
+window.__naturadex={get sync(){return sync},get live(){return live},syncNow,liveReconnect,pending:()=>pendingEntries().length}; /* poignée de diagnostic (console, tests) */
 })();
 </script>
 
