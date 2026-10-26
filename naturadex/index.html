@@ -305,6 +305,7 @@ table.tbl th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:
     </div>
     <div class="who"><span>Je suis à</span><span class="chips" id="lieu-chips" role="group" aria-label="Lieu"></span></div>
     <p class="sun" id="sun-line"></p>
+    <div class="who"><span>Vignettes</span><span class="seg" id="img-seg"><button type="button" data-v="draw" aria-pressed="true">Dessins</button><button type="button" data-v="photo" aria-pressed="false">Photos</button></span><span class="muted" id="img-msg" style="font-size:12px"></span></div>
     <input class="search" id="q" type="search" placeholder="Chercher une espèce (flamant, martin…)" aria-label="Chercher une espèce" autocomplete="off">
     <div class="chips" id="site-chips" role="group" aria-label="Lieu des espèces"></div>
     <div class="chips" id="like-chips" role="group" aria-label="Probabilité">
@@ -805,7 +806,12 @@ function mammalSVG(sp,uid){
   const exx=cx+9,eyy=cy-6,ec=p.ec||p.c,ei=p.ei||'#d9b8a8',ears=p.ears||'round';
   let o=`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${esc(sp.n)}"><defs><clipPath id="${id}"><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"/></clipPath></defs>`;
   if(p.bat) o+=`<path d="M${cx-8},${cy} Q${cx-30},${cy-30} ${cx-48},${cy+8} Q${cx-30},${cy+2} ${cx-24},${cy+20} Q${cx-14},${cy+10} ${cx-6},${cy+24} Z" fill="${p.c}" ${ST}/><path d="M${cx+8},${cy} Q${cx+30},${cy-30} ${cx+48},${cy+8} Q${cx+30},${cy+2} ${cx+24},${cy+20} Q${cx+14},${cy+10} ${cx+6},${cy+24} Z" fill="${p.c}" ${ST}/>`;
-  if(p.horns) o+=`<path d="M${cx-14},${top+6} Q${cx-32},${top-4} ${cx-18},${top-20}" fill="none" stroke="${p.horns}" stroke-width="4.5" stroke-linecap="round"/><path d="M${cx+8},${top+4} Q${cx+24},${top-8} ${cx+12},${top-20}" fill="none" stroke="${p.horns}" stroke-width="4.5" stroke-linecap="round"/>`;
+  if(p.horns){const hw=p.hornw||4.5,ht=p.hornt||'';
+    if(ht==='ibex') o+=`<path d="M${cx-12},${top+6} C${cx-26},${top-6} ${cx-40},${top-30} ${cx-20},${top-36}" fill="none" stroke="${p.horns}" stroke-width="${hw+1.5}" stroke-linecap="round"/><path d="M${cx+4},${top+4} C${cx-4},${top-10} ${cx-16},${top-30} ${cx+2},${top-35}" fill="none" stroke="${p.horns}" stroke-width="${hw}" stroke-linecap="round"/><path d="M${cx-30},${top-12} l-3,-4 M${cx-34},${top-21} l-3,-3 M${cx-12},${top-14} l-3,-3 M${cx-13},${top-23} l-3,-3" stroke="rgba(0,0,0,.35)" stroke-width="1.4" fill="none"/>`;
+    else if(ht==='chamois') o+=`<path d="M${cx-12},${top+5} Q${cx-12},${top-12} ${cx-20},${top-12}" fill="none" stroke="${p.horns}" stroke-width="${hw}" stroke-linecap="round"/><path d="M${cx+4},${top+3} Q${cx+4},${top-13} ${cx-4},${top-13}" fill="none" stroke="${p.horns}" stroke-width="${hw}" stroke-linecap="round"/>`;
+    else if(ht==='curl') o+=`<path d="M${cx-10},${top+6} C${cx-24},${top-8} ${cx-42},${top+6} ${cx-30},${top+18} C${cx-24},${top+22} ${cx-18},${top+16} ${cx-20},${top+10}" fill="none" stroke="${p.horns}" stroke-width="${hw+2}" stroke-linecap="round"/><path d="M${cx+6},${top+4} C${cx+2},${top-8} ${cx-10},${top-6} ${cx-8},${top+4}" fill="none" stroke="${p.horns}" stroke-width="${hw}" stroke-linecap="round"/>`;
+    else o+=`<path d="M${cx-14},${top+6} Q${cx-32},${top-4} ${cx-18},${top-20}" fill="none" stroke="${p.horns}" stroke-width="${hw}" stroke-linecap="round"/><path d="M${cx+8},${top+4} Q${cx+24},${top-8} ${cx+12},${top-20}" fill="none" stroke="${p.horns}" stroke-width="${hw}" stroke-linecap="round"/>`;}
+  if(p.antlers) o+=`<path d="M${cx-12},${top+6} L${cx-17},${top-12} L${cx-20},${top-30} M${cx-17},${top-12} L${cx-28},${top-18} M${cx-19},${top-22} L${cx-30},${top-30} M${cx-19},${top-22} L${cx-12},${top-32}" fill="none" stroke="${p.antlers}" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M${cx+8},${top+4} L${cx+13},${top-14} L${cx+16},${top-32} M${cx+13},${top-14} L${cx+24},${top-20} M${cx+15},${top-24} L${cx+26},${top-32} M${cx+15},${top-24} L${cx+8},${top-34}" fill="none" stroke="${p.antlers}" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>`;
   const ear=(x,y,back)=>{
     if(ears==='round'){const R=p.bigears?12:9;return `<circle cx="${x}" cy="${y}" r="${R}" fill="${ec}" ${ST}/><circle cx="${x}" cy="${y}" r="${R*.55}" fill="${ei}"/>`}
     if(ears==='point'||ears==='tuft') return `<path d="M${x-9},${y+8} L${x-1},${y-14} L${x+9},${y+6} Z" fill="${ec}" ${ST}/><path d="M${x-4},${y+5} L${x-1},${y-7} L${x+4},${y+4} Z" fill="${ei}"/>`+(ears==='tuft'?`<path d="M${x-1},${y-13} L${x+1},${y-22} M${x+1},${y-12} L${x+5},${y-19}" stroke="${ec}" stroke-width="2" stroke-linecap="round" fill="none"/>`:'')+(p.et?`<path d="M${x-4},${y-6} L${x-1},${y-14} L${x+3},${y-7} Z" fill="${p.et}"/>`:'');
@@ -831,6 +837,7 @@ function mammalSVG(sp,uid){
   o+=`<path d="M${sx+sr-3},${sy+2} Q${sx+2},${sy+5} ${sx-3},${sy+3}" stroke="rgba(0,0,0,.35)" stroke-width="1" fill="none"/>`;
   if(p.teeth) o+=`<rect x="${sx+3}" y="${sy+5}" width="3.2" height="7" rx="1" fill="${p.teeth}" stroke="rgba(0,0,0,.25)" stroke-width=".6"/><rect x="${sx+7}" y="${sy+5}" width="3.2" height="7" rx="1" fill="${p.teeth}" stroke="rgba(0,0,0,.25)" stroke-width=".6"/>`;
   if(p.tusk) o+=`<path d="M${sx+6},${sy+4} L${sx+8},${sy+12} L${sx+11},${sy+3} Z" fill="${p.tusk}"/>`;
+  if(p.beard) o+=`<path d="M${sx-6},${sy+6} Q${sx-4},${sy+22} ${sx+2},${sy+24} Q${sx+6},${sy+16} ${sx+4},${sy+7} Z" fill="${p.beard}" ${ST}/>`;
   if(p.wh) o+=`<path d="M${sx+2},${sy} L${sx+17},${sy-7} M${sx+2},${sy+2} L${sx+18},${sy+3} M${sx+2},${sy+4} L${sx+16},${sy+11}" stroke="${p.wh}" stroke-width=".9" fill="none" opacity=".9"/>`;
   const ey=p.ey||{i:K};o+=eyeSVG(exx,eyy,er,ey.i,ey.r,ey.slit);
   return o+'</svg>';
@@ -933,6 +940,25 @@ function insectSVG(sp,uid){
     o+=`<path d="M46,72 L44,84 M58,72 L60,84" stroke="${c}" stroke-width="2.4" fill="none" stroke-linecap="round"/>`;
     o+=`<circle cx="78" cy="52" r="9" fill="${c}" ${ST}/><path d="M80,44 L86,30 M82,45 L92,34" stroke="${c}" stroke-width="1.4" fill="none"/>`;
     o+=`<ellipse cx="82" cy="50" rx="3.2" ry="4.6" fill="${p.ey||'#d9c9a6'}" stroke="rgba(0,0,0,.4)" stroke-width=".8"/><path d="M81,46 L81,54 M83,46 L83,54" stroke="#3a2a1a" stroke-width=".9"/>`;
+  } else if(t==='beetle'){
+    const c=p.c,el=p.el||c;
+    for(const m of [-1,1]) o+=`<path d="M${cx+m*8},50 L${cx+m*26},38 L${cx+m*30},26 M${cx+m*11},62 L${cx+m*32},62 L${cx+m*38},74 M${cx+m*9},76 L${cx+m*24},90 L${cx+m*22},98" stroke="${c}" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+    o+=`<path d="M${cx-17},52 Q${cx-18},96 ${cx},96 Q${cx+18},96 ${cx+17},52 Z" fill="${el}" ${ST}/><path d="M${cx},54 L${cx},95" stroke="rgba(0,0,0,.35)" stroke-width="1.2"/><path d="M${cx-9},56 Q${cx-10},80 ${cx-6},92 M${cx+9},56 Q${cx+10},80 ${cx+6},92" stroke="rgba(0,0,0,.18)" stroke-width="1" fill="none"/>`;
+    if(p.sheen) o+=`<path d="M${cx-12},58 Q${cx-13},74 ${cx-9},86" stroke="${p.sheen}" stroke-width="2.2" fill="none" stroke-linecap="round" opacity=".7"/>`;
+    o+=`<path d="M${cx-15},40 Q${cx-16},54 ${cx},54 Q${cx+16},54 ${cx+15},40 Q${cx+10},32 ${cx},32 Q${cx-10},32 ${cx-15},40 Z" fill="${c}" ${ST}/>`;
+    o+=`<path d="M${cx-8},33 Q${cx-9},22 ${cx},22 Q${cx+9},22 ${cx+8},33 Z" fill="${c}" ${ST}/>`;
+    if(p.mand) o+=`<path d="M${cx-5},23 Q${cx-14},12 ${cx-6},3 Q${cx-5},10 ${cx-2},15 M${cx+5},23 Q${cx+14},12 ${cx+6},3 Q${cx+5},10 ${cx+2},15" stroke="${p.mand}" stroke-width="3.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M${cx-8},12 l-3,-2 M${cx+8},12 l3,-2" stroke="${p.mand}" stroke-width="2.2" stroke-linecap="round"/>`;
+    if(p.horn) o+=`<path d="M${cx},24 Q${cx+2},12 ${cx-6},6" stroke="${p.horn}" stroke-width="4.5" fill="none" stroke-linecap="round"/>`;
+    o+=`<path d="M${cx-5},24 Q${cx-10},14 ${cx-16},10 M${cx+5},24 Q${cx+10},14 ${cx+16},10" stroke="${c}" stroke-width="1.3" fill="none"/>`;
+    o+=`<circle cx="${cx-5}" cy="26" r="1.8" fill="#111"/><circle cx="${cx+5}" cy="26" r="1.8" fill="#111"/>`;
+  } else if(t==='cicada'){
+    const c=p.c,w=p.wing||'rgba(235,235,225,.55)';
+    o+=`<path d="M${cx-9},44 Q${cx-10},92 ${cx},96 Q${cx+10},92 ${cx+9},44 Z" fill="${c}" ${ST}/>`;
+    for(let y=52;y<90;y+=7) o+=`<line x1="${cx-9}" x2="${cx+9}" y1="${y}" y2="${y}" stroke="rgba(0,0,0,.28)" stroke-width=".9"/>`;
+    for(const m of [-1,1]) o+=`<path d="M${cx+m*3},42 Q${cx+m*30},56 ${cx+m*26},92 Q${cx+m*8},96 ${cx+m*1},60 Z" fill="${w}" ${ST}/><path d="M${cx+m*6},50 Q${cx+m*22},60 ${cx+m*22},84 M${cx+m*4},54 Q${cx+m*14},66 ${cx+m*14},88" stroke="rgba(0,0,0,.22)" stroke-width=".8" fill="none"/>`;
+    o+=`<path d="M${cx-14},32 Q${cx-15},46 ${cx},48 Q${cx+15},46 ${cx+14},32 Q${cx+8},24 ${cx},24 Q${cx-8},24 ${cx-14},32 Z" fill="${c}" ${ST}/><path d="M${cx-9},36 Q${cx},33 ${cx+9},36 M${cx-11},42 Q${cx},39 ${cx+11},42" stroke="rgba(0,0,0,.25)" stroke-width="1" fill="none"/>`;
+    o+=`<path d="M${cx-16},24 Q${cx},16 ${cx+16},24 Q${cx+8},30 ${cx},30 Q${cx-8},30 ${cx-16},24 Z" fill="${c}" ${ST}/>`;
+    o+=`<ellipse cx="${cx-15}" cy="23" rx="4.2" ry="3.4" fill="${p.ey||'#6a5a4a'}" ${ST}/><ellipse cx="${cx+15}" cy="23" rx="4.2" ry="3.4" fill="${p.ey||'#6a5a4a'}" ${ST}/><circle cx="${cx}" cy="20" r="1.3" fill="#c0302a"/>`;
   } else if(t==='spider'){
     const c=p.c,lc=p.legs||'#2a2a2a';
     for(const m of [-1,1]) o+=`<path d="M${cx+m*4},38 L${cx+m*22},16 L${cx+m*30},28 M${cx+m*6},40 L${cx+m*34},34 L${cx+m*42},46 M${cx+m*6},44 L${cx+m*34},52 L${cx+m*42},66 M${cx+m*4},46 L${cx+m*24},66 L${cx+m*30},82" stroke="${lc}" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
@@ -948,7 +974,7 @@ function insectSVG(sp,uid){
   }
   return o+'</svg>';
 }
-function drawSVG(sp,uid){if(sp.img) return `<img class="spimg" src="${esc(imgUrl(sp.img))}" alt="" loading="lazy" decoding="async">`;const k=sp.h&&sp.h.k;let o=k==='m'?mammalSVG(sp,uid):k==='h'?herpSVG(sp,uid):k==='i'?insectSVG(sp,uid):headSVG(sp,uid);
+function drawSVG(sp,uid){if(sp.img&&!sp.drawn) return `<img class="spimg" src="${esc(imgUrl(sp.img))}" alt="" loading="lazy" decoding="async">`;const k=sp.h&&sp.h.k;let o=k==='m'?mammalSVG(sp,uid):k==='h'?herpSVG(sp,uid):k==='i'?insectSVG(sp,uid):headSVG(sp,uid);
   if(sp.custom) o=o.replace(/<\/svg>$/,'<circle cx="82" cy="82" r="13" fill="#e8c33a" stroke="rgba(0,0,0,.25)"/><text x="82" y="88" text-anchor="middle" font-size="17" font-weight="700" font-family="sans-serif" fill="#1d1d1f">?</text></svg>');
   return o}
 
@@ -975,8 +1001,89 @@ const knownSpecies=sid=>!!SPECIES_BY[sid]||isCustomId(sid)||isDiscId(sid);
 function allSpecies(){return SPECIES.concat(Object.values(CUSTOM),Object.values(DISC))}
 const WIKI_THUMB='https://upload.wikimedia.org/wikipedia/commons/thumb/';
 function imgUrl(img){return /^https?:\/\//.test(img)?img:WIKI_THUMB+img}
-function discoveredSpecies(s,lid){const g=Math.max(0,Math.min(GROUPS.length-1,s.g|0));const h=GEN_HEAD[g];const kind=h.k==='m'?'m':h.k?'hi':'b';
-  const sp={id:s.id,n:s.n,l:s.l,g,c:[s.bp||3,3,3,3,3],like:2,site:'',h,ic:false,alt:'',disc:true,auto:true,fam:s.fam||'',lieux:[lid],wk:!!s.wk};
+/* Têtes dessinées pour les espèces emblématiques de France absentes de la liste de Camargue (clé : nom latin GBIF). Une espèce relevée qui a son dessin l'affiche ; sinon la photo Wikipédia. */
+const EXTRA_HEADS={
+  'Strix aluco':{s:'owl',c:'#8a6a4a',dk:'#c9b193',sp:'#5a4030',bl:{t:'owl',c:'#d8d0b0'},ey:{i:K}},
+  'Bubo bubo':{s:'owl',c:'#8a6a44',dk:'#b89a74',sp:'#4a3420',cs:{t:'ears',c:'#5a4028'},bl:{t:'owl',c:DG},ey:{i:'#e8891c'}},
+  'Gypaetus barbatus':{s:'raptor',c:'#f0e2c0',es:K,ms:1,mo:K,bl:{t:'hook',c:'#7a7a74',cere:'#9a9a90'},ey:{i:'#f0e6d8',r:RD}},
+  'Gyps fulvus':{s:'long',c:'#e9e4d8',nk:'#e9e4d8',ns:'#c9b89a',bl:{t:'hook',c:'#9a9a90',cere:'#6a6a64'},ey:{i:'#c9a060'}},
+  'Aquila chrysaetos':{s:'raptor',c:'#5a3a22',cr:'#c9963a',crh:-2,np:'#b8863a',bl:{t:'hook',c:DG,cere:YL},ey:{i:'#c9a040'}},
+  'Tetrao urogallus':{s:'round',c:'#2e2e34',th:'#1f3a30',su:RD,bl:{t:'thick',c:'#e9e4d8'},ey:{i:'#3a2a22'}},
+  'Lagopus muta':{s:'round',c:'#f4f2ec',su:RD,es:K,bl:{t:'cone',c:'#2a2a2a',k:.8},ey:{i:K}},
+  'Tichodroma muraria':{s:'round',c:'#8e9aa4',th:K,bl:{t:'decurved',c:'#2a2a2a',k:.75},ey:{i:K}},
+  'Dryocopus martius':{s:'round',c:K,cr:RD,crh:-10,bl:{t:'chisel',c:'#e9e4d8',k:1.1},ey:{i:'#f2f0e8'}},
+  'Cinclus cinclus':{s:'round',c:'#4a3a2e',th:W,bl:{t:'fine',c:'#2a2a2a'},ey:{i:K}},
+  'Pyrrhula pyrrhula':{s:'round',c:'#8e8e94',cr:K,crh:-4,ck:'#e0646a',th:'#e0646a',bl:{t:'thick',c:K,k:.7},ey:{i:K}},
+  'Oriolus oriolus':{s:'round',c:'#e8c42a',lo:K,bl:{t:'cone',c:'#c0564a'},ey:{i:'#9a2a22'}},
+  'Merops apiaster':{s:'round',c:'#2a9aa8',cr:'#8a4a2a',crh:-6,th:'#e8c42a',es:K,bl:{t:'fine',c:K,k:1.4},ey:{i:'#c0302a'}},
+  'Coracias garrulus':{s:'round',c:'#3aa0c0',nk:'#b07a4a',cr:'#2a8ab0',bl:{t:'cone',c:'#2a2a2a'},ey:{i:'#4a3a2a'}},
+  'Monticola solitarius':{s:'round',c:'#3a5a8c',bl:{t:'fine',c:'#2a2a2a',k:1.1},ey:{i:K}},
+  'Nucifraga caryocatactes':{s:'round',c:'#5a3e2e',cr:'#3a2a20',crh:-6,sp:W,bl:{t:'dagger',c:'#2a2a2a',k:.8},ey:{i:K}},
+  'Lophophanes cristatus':{s:'round',c:'#f0ebe0',np:'#b8a890',cs:{t:'spiky',c:K},es:K,th:K,cl:K,bl:{t:'fine',c:K,k:.6},ey:{i:K}},
+  'Cuculus canorus':{s:'round',c:'#8a9098',th:'#d8dce0',bl:{t:'cone',c:DG,k:.9},ey:{i:YL,r:YL}},
+  'Corvus corax':{s:'round',c:K,gu:'#2a2a2a',bl:{t:'thick',c:K,k:1.25},ey:{i:'#2a2a2a'}},
+  'Pyrrhocorax graculus':{s:'round',c:K,bl:{t:'cone',c:YL,k:.85},ey:{i:'#3a2a1a'}},
+  'Pyrrhocorax pyrrhocorax':{s:'round',c:K,bl:{t:'decurved',c:RD,k:.8},ey:{i:'#3a2a1a'}},
+  'Phoenicurus phoenicurus':{s:'round',c:'#8a949c',fc:K,su:W,th:K,bl:{t:'fine',c:'#2a2a2a'},ey:{i:K}},
+  'Luscinia megarhynchos':{s:'round',c:'#9a7a5e',bl:{t:'fine',c:'#5a4a3a'},ey:{i:K,r:'#d8c8b0'}},
+  'Apus apus':{s:'round',c:'#3a3230',th:'#9a9088',bl:{t:'fine',c:K,k:.5},ey:{i:K}},
+  'Lanius collurio':{s:'round',c:'#8a949c',es:K,ms:1,bl:{t:'hook',c:'#2a2a2a',k:.75},ey:{i:K}},
+  'Emberiza citrinella':{s:'round',c:'#e8d040',es:'#8a8a3a',mo:'#8a8a3a',cr:'#c8b838',crh:-10,bl:{t:'cone',c:'#7a7a6a',k:.8},ey:{i:K}},
+  'Coccothraustes coccothraustes':{s:'round',c:'#c48a4a',np:'#8e9098',lo:K,gu:K,bl:{t:'thick',c:'#9ab0c8',k:1.3},ey:{i:K}},
+  'Sitta europaea':{s:'round',c:'#6a86a8',es:K,ck:'#f0ebe0',th:'#e0b080',bl:{t:'dagger',c:'#2a2a2a',k:.7},ey:{i:K}},
+  'Morus bassanus':{s:'long',c:'#f0e2b0',nk:W,lo:K,bl:{t:'dagger',c:'#9ab0c0',k:1.05},ey:{i:'#dde8f0',r:'#4a7ab0'}},
+  'Fratercula arctica':{s:'round',c:K,fc:'#dcdcd8',bl:{t:'thick',c:'#e8782a',base:'#8a9aa0',band:YL,k:1.3},ey:{i:K,r:'#e8782a'}},
+  'Tetrax tetrax':{s:'goose',c:'#9a8a6a',th:'#4a5a6c',cl:W,ns:K,bl:{t:'cone',c:'#7a7a6a'},ey:{i:'#3a2a1a'}},
+  'Cervus elaphus':{k:'m',c:'#9a6a44',ears:'round',bigears:1,ei:'#d9c9b0',antlers:'#8a7050',sn:'#8a6a4a',nose:K,ey:{i:K},er:5},
+  'Rupicapra rupicapra':{k:'m',c:'#e8dcc8',ears:'point',ec:'#c9b89a',mask:'#2a2a2a',horns:'#2a2a2a',hornt:'chamois',hornw:3.5,sn:'#e8dcc8',nose:K,ey:{i:K}},
+  'Capra ibex':{k:'m',c:'#a08a6a',ears:'small',horns:'#6a5a44',hornt:'ibex',hornw:5,beard:'#5a4a3a',sn:'#8a7a60',nose:K,ey:{i:'#c9a040',slit:'h'}},
+  'Marmota marmota':{k:'m',c:'#b08a5a',ears:'round',ec:'#9a7a4a',rx:28,ry:23,sn:'#c9a878',nose:K,wh:'#5a4a3a',teeth:W,ey:{i:K}},
+  'Canis lupus':{k:'m',c:'#8a8a84',ears:'point',ec:'#7a7a74',ei:'#b8a898',fc:'#c9c4b8',sn:'#d8d0c4',nose:K,ey:{i:'#c9a040'}},
+  'Lynx lynx':{k:'m',c:'#c9a878',ears:'tuft',ec:'#b89868',et:K,sp:'#5a4030',ck:'#f0ebe0',sn:'#f0ebe0',nose:'#8a5a4a',wh:W,ey:{i:'#c9b040',slit:'v'}},
+  'Felis silvestris':{k:'m',c:'#9a9080',ears:'point',ec:'#8a8070',mask:'#4a4a40',sn:'#e8e0d0',nose:'#c08070',wh:W,ey:{i:'#c9b040',slit:'v'}},
+  'Martes martes':{k:'m',c:'#6a4a34',ears:'round',ec:'#5a3a28',ei:'#c9b090',th:'#e8c860',sn:'#5a3a28',nose:K,rx:26,ry:19,ey:{i:K}},
+  'Halichoerus grypus':{k:'m',c:'#8a8a86',ears:'none',sp:'#5a5a56',sn:'#8a8a86',snr:13,nose:K,wh:'#e8e8e0',er:5.5,ey:{i:K}},
+  'Glis glis':{k:'m',c:'#9a9a94',ears:'round',ec:'#8a8a84',ep:DG,sn:'#c9c4b8',nose:'#c08070',wh:W,er:5,ey:{i:K}},
+  'Mustela erminea':{k:'m',c:'#f4f2ec',ears:'round',ec:'#e8e4dc',ei:'#d9b8a8',sn:'#f4f2ec',nose:'#c08070',wh:'#8a8a84',rx:24,ry:17,ey:{i:K}},
+  'Lacerta bilineata':{k:'h',t:'lizard',c:'#4aa048',th:'#3a8ac0',sp:'#2a6a30',ey:{i:'#8a6a30'}},
+  'Lacerta viridis':{k:'h',t:'lizard',c:'#4aa048',th:'#3a8ac0',sp:'#2a6a30',ey:{i:'#8a6a30'}},
+  'Timon lepidus':{k:'h',t:'lizard',c:'#6aa040',sp:'#3a7ac8',ey:{i:'#8a6a30'}},
+  'Vipera aspis':{k:'h',t:'snake',c:'#9a8a70',zig:'#3a3028',slit:'v',ey:{i:'#c9a040'}},
+  'Hierophis viridiflavus':{k:'h',t:'snake',c:'#3a3a30',sp:'#e8d040',ey:{i:'#8a6a30'}},
+  'Zamenis longissimus':{k:'h',t:'snake',c:'#6a6a50',ey:{i:'#5a4a30'}},
+  'Natrix helvetica':{k:'h',t:'snake',c:'#5a6a50',th:'#e8d040',ey:{i:'#5a4a30'}},
+  'Salamandra salamandra':{k:'h',t:'lizard',c:K,sp:'#e8c42a',ey:{i:K,r:DG}},
+  'Testudo hermanni':{k:'h',t:'turtle',c:'#b8a060',shell:'#c8a848',sp:'#5a4a20',ey:{i:'#3a2a1a'}},
+  'Bufo bufo':{k:'h',t:'frog',c:'#9a7a50',sp:'#6a4a30',ey:{i:'#c87830',r:'#e8a040'}},
+  'Anguis fragilis':{k:'h',t:'snake',c:'#b08a5a',ey:{i:'#3a2a1a'}},
+  'Papilio machaon':{k:'i',t:'butterfly',wc:'#e8d040',border:'#2a2a2a',hb:'#2a2a2a',hspot:RD,spots:'#2a2a2a',tail:1,body:'#2a2a2a'},
+  'Iphiclides podalirius':{k:'i',t:'butterfly',wc:'#f0ead0',band:'#2a2a2a',hb:'#2a2a2a',hspot:'#e8882a',tail:1,body:'#2a2a2a'},
+  'Aglais io':{k:'i',t:'butterfly',wc:'#b0302a',hw:'#9a2a26',spot:'#3a4a9a',hspot:'#3a4a9a',border:'#6a4a3a',body:'#3a2a2a'},
+  'Inachis io':{k:'i',t:'butterfly',wc:'#b0302a',hw:'#9a2a26',spot:'#3a4a9a',hspot:'#3a4a9a',border:'#6a4a3a',body:'#3a2a2a'},
+  'Nymphalis antiopa':{k:'i',t:'butterfly',wc:'#5a2a3a',border:'#e8dca0',spots:'#4a6ac0',body:'#2a2a2a'},
+  'Saturnia pyri':{k:'i',t:'butterfly',wc:'#8a7a6a',hw:'#9a8a78',spot:'#2a3a5a',hspot:'#2a3a5a',border:'#d8d0c0',body:'#6a5a4a'},
+  'Gonepteryx rhamni':{k:'i',t:'butterfly',wc:'#e8e040',spot:'#e8882a',hspot:'#e8882a',body:'#6a6a30'},
+  'Polyommatus icarus':{k:'i',t:'butterfly',wc:'#5a7ad8',border:'#f0f0f0',body:'#3a3a4a'},
+  'Argynnis paphia':{k:'i',t:'butterfly',wc:'#e89a30',spots:'#2a2a2a',border:'#c87a20',body:'#6a4a2a'},
+  'Melanargia galathea':{k:'i',t:'butterfly',wc:'#f0ede0',band:'#2a2a2a',spots:'#2a2a2a',border:'#2a2a2a',body:'#2a2a2a'},
+  'Macroglossum stellatarum':{k:'i',t:'butterfly',wc:'#8a7a60',hw:'#e8982a',body:'#6a5a4a'},
+  'Lucanus cervus':{k:'i',t:'beetle',c:'#2a2a28',el:'#6a3a28',mand:'#6a3a28'},
+  'Cetonia aurata':{k:'i',t:'beetle',c:'#2a7a4a',el:'#3a9a58',sheen:'#9ad8a0'},
+  'Oryctes nasicornis':{k:'i',t:'beetle',c:'#4a2a1a',el:'#7a4a2a',horn:'#4a2a1a'},
+  'Cicada orni':{k:'i',t:'cicada',c:'#8a8a7a',wing:'rgba(230,230,220,.55)',ey:'#6a5a4a'},
+  'Lyristes plebejus':{k:'i',t:'cicada',c:'#4a4a40',wing:'rgba(220,225,230,.5)',ey:'#8a7a60'},
+  'Tibicen plebejus':{k:'i',t:'cicada',c:'#4a4a40',wing:'rgba(220,225,230,.5)',ey:'#8a7a60'},
+  'Calopteryx virgo':{k:'i',t:'damsel',ab:'#2a4a9a',th:'#2a4a9a',wing:'rgba(30,50,120,.75)',ey:'#2a4a9a'},
+  'Calopteryx splendens':{k:'i',t:'damsel',ab:'#2a5aa0',th:'#2a5aa0',wing:'rgba(60,90,180,.45)',ey:'#2a5aa0'},
+  'Libellula depressa':{k:'i',t:'dragonfly',ab:'#5a9ad8',th:'#8a7a5a',wide:1,ey:'#6a5a3a'},
+  'Orthetrum cancellatum':{k:'i',t:'dragonfly',ab:'#6a8ab8',th:'#5a5a50',tip:K,ey:'#3a6a3a'},
+  'Cordulegaster boltonii':{k:'i',t:'dragonfly',ab:K,spots:'#e8c42a',th:K,th2:'#e8c42a',big:1,ey:'#3a9a4a'},
+  'Tettigonia viridissima':{k:'i',t:'grasshopper',c:'#5aa048',ey:'#d8e0a0'},
+  'Vespa crabro':{k:'i',t:'bee',c:'#d89a30',wing:'rgba(200,150,80,.45)'},
+  'Empusa pennata':{k:'i',t:'mantis',c:'#b8a888',ey:'#d9d060'}
+};
+function discoveredSpecies(s,lid){const g=Math.max(0,Math.min(GROUPS.length-1,s.g|0));const x=EXTRA_HEADS[s.l];const h=x||GEN_HEAD[g];const kind=(h.k==='m')?'m':h.k?'hi':'b';
+  const sp={id:s.id,n:s.n,l:s.l,g,c:[s.bp||3,3,3,3,3],like:2,site:'',h,ic:false,alt:'',disc:true,auto:true,drawn:!!x,fam:s.fam||'',lieux:[lid],wk:!!s.wk};
   if(Number.isFinite(s.wc)){sp.wc=s.wc;sp.wm=worldNote(s.wc,kind);sp.c[1]=sp.wm}
   if(Number.isFinite(s.ps)&&Number.isFinite(s.wc)&&s.wc>0){sp.ps=s.ps;sp.pd=photoNote(s.ps,kind);sp.c[4]=sp.pd}
   if(s.img) sp.img=s.img;
@@ -1181,7 +1288,7 @@ function curve(v){ /* recalculée avec le barème actuel, dans l'ordre des coche
 /* Rareté ici / période calculée en direct depuis GBIF (hors bac à sable : version installée) */
 const GBIF_SYN={'Phoeniconaias minor':['Phoenicopterus minor'],'Ardea alba':['Egretta alba','Casmerodius albus'],'Bubulcus ibis':['Ardea ibis'],'Spatula clypeata':['Anas clypeata'],'Mareca penelope':['Anas penelope'],'Mareca strepera':['Anas strepera'],'Hieraaetus pennatus':['Aquila pennata'],'Clanga clanga':['Aquila clanga'],'Anarhynchus alexandrinus':['Charadrius alexandrinus'],'Calidris pugnax':['Philomachus pugnax'],'Chroicocephalus ridibundus':['Larus ridibundus'],'Ichthyaetus melanocephalus':['Larus melanocephalus'],'Chroicocephalus genei':['Larus genei'],'Larus michahellis':['Larus michaellis'],'Thalasseus sandvicensis':['Sterna sandvicensis'],'Hydroprogne caspia':['Sterna caspia'],'Dryobates minor':['Dendrocopos minor'],'Curruca melanocephala':['Sylvia melanocephala'],'Saxicola rubicola':['Saxicola torquatus','Saxicola torquata'],'Cyanistes caeruleus':['Parus caeruleus'],'Spinus spinus':['Carduelis spinus'],'Coloeus monedula':['Corvus monedula'],'Chloris chloris':['Carduelis chloris'],'Linaria cannabina':['Carduelis cannabina'],'Emberiza calandra':['Miliaria calandra'],'Microcarbo pygmaeus':['Phalacrocorax pygmeus'],'Regulus ignicapilla':['Regulus ignicapillus']};
 /* Clés GBIF interrogées pour le relevé d'un lieu : oiseaux, mammifères, squamates + tortues + amphibiens (GBIF n'a plus de classe Reptilia), et les familles de gros insectes. */
-const GBIF_SURVEY=[{kind:'b',keys:[212]},{kind:'m',keys:[359]},{kind:'h',keys:[11592253,11418114,131]},{kind:'i',keys:[789,788,9417,5481,7017,5473,6953,8868,8864,3263244,5602,5840,4204,3789,4205,3991]}];
+const GBIF_SURVEY=[{kind:'b',keys:[212]},{kind:'m',keys:[359]},{kind:'h',keys:[11592253,11418114,131]},{kind:'i',keys:[789,788,9417,5481,7017,5473,6953,8868,8864,3263244,5602,5840,4204,3789,4205,3991,6049,4490]}];
 const DISC_CAP={b:250,m:50,h:50,i:150},DISC_MIN=2;
 function gbifMonths(d){const m=(d||new Date()).getMonth()+1;const a=m===1?12:m-1,b=m===12?1:m+1;return {a,b,label:`${MONTHS_FR[a-1]}–${MONTHS_FR[b-1]}`}}
 async function fetchJson(url,plain){const ctl=typeof AbortController!=='undefined'?new AbortController():null;const tm=ctl?setTimeout(()=>ctl.abort(),25000):null;
@@ -1220,7 +1327,7 @@ const BEAUTY_SP={'Porphyrio porphyrio':5,'Aix galericulata':5,'Netta rufina':4,'
 const BEAUTY_FAM={Alcedinidae:5,Meropidae:5,Coraciidae:5,Upupidae:5,Oriolidae:5,Phoenicopteridae:5,Gruidae:5,Pandionidae:5,Strigidae:5,Tytonidae:5,Panuridae:5,Bombycillidae:5,Otididae:5,Ardeidae:4,Ciconiidae:4,Threskiornithidae:4,Pelecanidae:4,Accipitridae:4,Falconidae:4,Picidae:4,Recurvirostridae:4,Laniidae:4,Regulidae:4,Sittidae:4,Aegithalidae:4,Muscicapidae:4,Caprimulgidae:4,Pteroclidae:4,Anatidae:3,Podicipedidae:3,Rallidae:3,Charadriidae:3,Scolopacidae:3,Laridae:3,Paridae:3,Fringillidae:3,Turdidae:3,Hirundinidae:3,Emberizidae:3,Troglodytidae:3,Certhiidae:3,Phasianidae:3,Cuculidae:3,Burhinidae:3,Haematopodidae:3,Phalacrocoracidae:3,Columbidae:2,Corvidae:2,Passeridae:2,Sturnidae:2,Sylviidae:2,Phylloscopidae:2,Motacillidae:2,Alaudidae:2,Prunellidae:2,Apodidae:2,Cisticolidae:2,Acrocephalidae:2,Locustellidae:2,Cettiidae:2,Scotocercidae:2,
   Cervidae:4,Canidae:4,Mustelidae:4,Sciuridae:4,Felidae:5,Erinaceidae:4,Leporidae:3,Suidae:3,Castoridae:4,Bovidae:4,Gliridae:4,Muridae:1,Cricetidae:2,Soricidae:2,Talpidae:2,Vespertilionidae:2,Rhinolophidae:3,Molossidae:2,Phocidae:4,Delphinidae:5,Viverridae:5,
   Lacertidae:3,Gekkonidae:3,Phyllodactylidae:3,Anguidae:3,Colubridae:3,Natricidae:3,Lamprophiidae:3,Psammophiidae:3,Viperidae:4,Testudinidae:4,Emydidae:3,Geoemydidae:3,Ranidae:2,Hylidae:4,Bufonidae:2,Salamandridae:4,Pelobatidae:3,Alytidae:3,Pelodytidae:3,Scincidae:3,
-  Aeshnidae:4,Libellulidae:4,Calopterygidae:5,Coenagrionidae:3,Lestidae:3,Gomphidae:4,Cordulegastridae:5,Corduliidae:3,Platycnemididae:3,Papilionidae:5,Nymphalidae:4,Pieridae:2,Lycaenidae:3,Hesperiidae:2,Riodinidae:3,Sphingidae:4,Saturniidae:5,Zygaenidae:3,Mantidae:4,Empusidae:5,Lucanidae:5,Cerambycidae:3,Scarabaeidae:3,Cetoniidae:4,Buprestidae:4,Dynastidae:4,Tettigoniidae:2};
+  Aeshnidae:4,Libellulidae:4,Calopterygidae:5,Coenagrionidae:3,Lestidae:3,Gomphidae:4,Cordulegastridae:5,Corduliidae:3,Platycnemididae:3,Papilionidae:5,Nymphalidae:4,Pieridae:2,Lycaenidae:3,Hesperiidae:2,Riodinidae:3,Sphingidae:4,Saturniidae:5,Zygaenidae:3,Mantidae:4,Empusidae:5,Lucanidae:5,Cerambycidae:3,Scarabaeidae:3,Cetoniidae:4,Buprestidae:4,Dynastidae:4,Tettigoniidae:2,Cicadidae:3,Vespidae:3};
 const BEAUTY_CLASS={Aves:3,Mammalia:3,Insecta:2};
 function beautyPrior(latin,family,cls){return BEAUTY_SP[latin]||BEAUTY_FAM[family]||BEAUTY_CLASS[cls]||3}
 const GROUP_ORDER={Phoenicopteriformes:0,Pelecaniformes:0,Ciconiiformes:0,Suliformes:0,Anseriformes:1,Podicipediformes:1,Accipitriformes:2,Falconiformes:2,Strigiformes:2,Gruiformes:3,Coraciiformes:6,Bucerotiformes:6,Piciformes:6,Passeriformes:8};
@@ -1355,10 +1462,11 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
 (function(){
 const $=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s));
 const LS_LOG='duel-camargue-log-v2',LS_V1='duel-camargue-v1',LS_ME='duel-camargue-me',LS_DEV='duel-camargue-device',LS_CODEAT='duel-camargue-codeat',LS_LIEU='duel-camargue-lieu',LS_DISP='duel-camargue-display';
-const disp=Object.assign({cols:'auto',zoom:100,skin:'auto'},readLS(LS_DISP)||{});
+const disp=Object.assign({cols:'auto',zoom:100,skin:'auto',photos:false},readLS(LS_DISP)||{});
 function applyDisplay(){document.body.classList.remove('cols-1','cols-2','cols-3');if(disp.cols!=='auto') document.body.classList.add('cols-'+disp.cols);
   if(disp.skin&&disp.skin!=='auto') document.documentElement.setAttribute('data-skin',disp.skin); else document.documentElement.removeAttribute('data-skin');
   $$('#skin-seg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===(disp.skin||'auto'))));
+  $$('#img-seg button').forEach(b=>b.setAttribute('aria-pressed',String((b.dataset.v==='photo')===!!disp.photos)));
   try{document.body.style.zoom=disp.zoom===100?'':(disp.zoom/100)}catch(e){}
   const zv=$('#zoom-val');if(zv) zv.textContent=disp.zoom+' %';$$('#cols-seg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===disp.cols)));writeLS(LS_DISP,disp)}
 function readLS(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null}catch(e){return null}}
@@ -1424,6 +1532,22 @@ function filtered(){
   else list.sort((a,b)=>a.g-b.g||d*(bp(b)-bp(a))||a.n.localeCompare(b.n,'fr'));
   return list;
 }
+/* Vignette : en mode Photos, la photo Wikipédia de toute espèce qui en a une (relevée, ou chargée pour la liste de base) ; sinon le dessin, ou la photo quand il n'y a pas de dessin. */
+const LS_WIMG='duel-camargue-wikiimg';const WIKI_IMG=readLS(LS_WIMG)||{};
+function imgFor(sp){if(disp.photos) return sp.img||WIKI_IMG[sp.id]||'';return sp.drawn?'':(sp.img||'')}
+function headHTML(sp,uid){const im=imgFor(sp);return im?`<img class="spimg" src="${esc(imgUrl(im))}" alt="" loading="lazy" decoding="async">`:drawSVG(sp,uid)}
+let wikiLoading=false;
+async function loadWikiPhotos(){ /* photos Wikipédia des espèces dessinées (liste de base, hors liste, relevées avec dessin), une fois, gardées dans le téléphone */
+  if(wikiLoading) return;const todo=allSpecies().filter(sp=>!sp.img&&sp.l&&WIKI_IMG[sp.id]===undefined);if(!todo.length) return;
+  wikiLoading=true;const msg=$('#img-msg');let done=0,found=0;
+  try{const chunks=[];for(let i=0;i<todo.length;i+=50) chunks.push(todo.slice(i,i+50));
+    for(const ch of chunks){msg.textContent=`Photos Wikipédia… ${done}/${todo.length}`;const r=await wikiBatch(ch.map(sp=>canon(sp.l)));
+      for(const sp of ch){const w=r[canon(sp.l)];WIKI_IMG[sp.id]=(w&&w.img)||'';if(w&&w.img) found++;done++}
+      writeLS(LS_WIMG,WIKI_IMG);if(ui.tab==='birds') renderList();}
+    msg.textContent='';toast(`Photos trouvées pour ${found} espèce${found>1?'s':''} sur ${todo.length}`);}
+  catch(e){msg.textContent='';toast('Photos indisponibles (pas de réseau ?) : dessins conservés')}
+  finally{wikiLoading=false;renderAll()}
+}
 function tierBtns(sp,p){
   const t=view.tiers[p][sp.id]||0;
   const lieu=(t&&view.tierLieu[p][sp.id])||ui.lieu;
@@ -1448,7 +1572,7 @@ function otherLine(sp){
 function cardHTML(sp){
   const mine=view.tiers[ui.me][sp.id]||0;
   return `<article class="card${mine?' taken':''}" data-id="${sp.id}">
-    <button type="button" class="head" aria-label="Détails : ${esc(sp.n)}">${drawSVG(sp,'c-'+sp.id)}${photoOf(ui.me,sp.id)&&mine?`<img class="ph" src="${photoOf(ui.me,sp.id)}" alt="">`:''}</button>
+    <button type="button" class="head" aria-label="Détails : ${esc(sp.n)}">${headHTML(sp,'c-'+sp.id)}${photoOf(ui.me,sp.id)&&mine?`<img class="ph" src="${photoOf(ui.me,sp.id)}" alt="">`:''}</button>
     <div class="info"><h3>${esc(sp.n)}</h3><p class="latin">${esc(sp.l)}</p><div class="tags">${tagsHTML(sp)}</div></div>
     <div class="pts">${fmtPts(basePts(view,sp.id,ui.lieu))}<small>pts</small></div>
     ${tierBtns(sp,ui.me)}
@@ -1547,9 +1671,9 @@ function renderSheet(sid){
     sp.wk?`<a class="btn small" href="https://fr.wikipedia.org/wiki/${encodeURIComponent(sp.n.replace(/ /g,'_'))}" target="_blank" rel="noopener">Fiche Wikipédia</a>`:(!isBird||sp.disc)?`<a class="btn small" href="https://fr.wikipedia.org/w/index.php?search=${encodeURIComponent(latin)}&go=Go" target="_blank" rel="noopener">Fiche Wikipédia</a>`:'',
     `<a class="btn small" href="https://www.inaturalist.org/taxa/search?q=${encodeURIComponent(latin)}" target="_blank" rel="noopener">Photos iNaturalist</a>`
   ].filter(Boolean).join(' ');
-  const listen=links+(sp.img?` <span class="muted" style="font-size:12px">Photo : Wikimedia Commons, via Wikipédia.</span>`:'');
+  const listen=links+(imgFor(sp)?` <span class="muted" style="font-size:12px">Photo : Wikimedia Commons, via Wikipédia.</span>`:'');
   const note=view.notes[sid]?view.notes[sid].t:'';
-  $('#sheet').innerHTML=`<div class="grab"></div><div class="hd"><div class="head">${drawSVG(sp,'s-'+sid)}</div><div><h2>${esc(sp.n)}</h2><p class="latin" style="margin:0;font-style:italic;color:var(--ink-2);font-size:13px">${esc(sp.l)}</p>
+  $('#sheet').innerHTML=`<div class="grab"></div><div class="hd"><div class="head">${headHTML(sp,'s-'+sid)}</div><div><h2>${esc(sp.n)}</h2><p class="latin" style="margin:0;font-style:italic;color:var(--ink-2);font-size:13px">${esc(sp.l)}</p>
     <div class="tags">${tagsHTML(sp,true)}</div></div><button type="button" class="close" aria-label="Fermer">×</button></div>
     ${tipGen||tipLieu||listen?`<div class="tip">${tipGen?`<p><b>Repères de terrain</b> ${esc(tipGen)} <span class="src">Valeurs indicatives, d\u2019expérience.</span></p>`:''}${tipLieu?`<p><b>GBIF · ${esc(lieuName(view,ui.lieu))}</b> ${esc(tipLieu)}</p>`:''}${listen?`<p>${listen}</p>`:''}</div>`:''}
     <div class="cote"><div class="cote-h"><span>Cote à ${esc(lieuName(view,ui.lieu))}</span><b>${fmtPts(basePts(view,sid,ui.lieu))} pts</b></div>
@@ -1739,7 +1863,7 @@ function renderPtsList(){
   const q=fold0(($('#ptsq').value||'').trim());
   const list=allSpecies().filter(sp=>!q||fold0(sp.n).includes(q)||fold0(sp.l).includes(q)||(sp.alt&&fold0(sp.alt).includes(q))).sort((a,b)=>basePts(view,b.id)-basePts(view,a.id)||a.n.localeCompare(b.n,'fr'));
   $('#ptslist').innerHTML=list.map(sp=>{const v=basePts(view,sp.id),f=formulaOf(view,sp.id),manual=view.pts[sp.id]!=null,chg=manual||view.comp[sp.id];const c=compOf(view,sp.id);
-    return `<div class="ptrow${chg?' changed':''}" data-id="${sp.id}"><div class="head">${drawSVG(sp,'p-'+sp.id)}</div><div class="nm">${esc(sp.n)}<small> · ${c.join(' ')}${manual?' · forcée':''}</small></div><input type="number" min="0" max="2000" step="5" value="${v}" aria-label="Cote de ${esc(sp.n)}"></div>`}).join('');
+    return `<div class="ptrow${chg?' changed':''}" data-id="${sp.id}"><div class="head">${headHTML(sp,'p-'+sp.id)}</div><div class="nm">${esc(sp.n)}<small> · ${c.join(' ')}${manual?' · forcée':''}</small></div><input type="number" min="0" max="2000" step="5" value="${v}" aria-label="Cote de ${esc(sp.n)}"></div>`}).join('');
 }
 
 /* ---- Partage : base partagée de la page (si accès), sinon codes de téléphone à téléphone ---- */
@@ -1846,7 +1970,7 @@ function renderBoard(){
     if(ui.boardSort==='time') items.sort((a,b)=>b.at-a.at); else if(ui.boardSort==='name') items.sort((a,b)=>a.sp.n.localeCompare(b.sp.n,'fr')); else items.sort((a,b)=>b.v-a.v||a.sp.n.localeCompare(b.sp.n,'fr'));
     const os=others(p),s=sc[p],kept=s.kept;
     return `<div class="bcol ${p}"><div class="bh"><div class="nm">${esc(nameOf(p))}${p===ui.me?' <span class="muted">(moi)</span>':''}</div><div class="big">${fmtPts(s.pts)}</div><div class="sub">${s.n} espèce${s.n>1?'s':''} · ${s.tiers[2]} portfolio${view.topN?` · top ${view.topN} compté`:''}</div></div>
-      ${items.length?items.map(it=>`<button type="button" class="bitem${kept&&!kept.has(it.sp.id)?' out':''}" data-id="${it.sp.id}"><div class="head">${photoOf(p,it.sp.id)?`<img src="${photoOf(p,it.sp.id)}" alt="">`:drawSVG(it.sp,'b'+p+'-'+it.sp.id)}</div><div><b>${esc(it.sp.n)}</b><div class="meta"><span class="tq t${it.t}"></span>${TIER_NAMES[it.t]}<span class="bp">${fmtPts(it.v)} pts</span>${os.filter(o=>(cur[o][it.sp.id]||0)>0).map(o=>`<span class="also ${o}" title="aussi chez ${esc(nameOf(o))}"></span>`).join('')}${kept&&!kept.has(it.sp.id)?'<span class="muted">hors top</span>':''}</div></div></button>`).join(''):`<div class="bempty">Rien de coché pour ${esc(nameOf(p))}.</div>`}
+      ${items.length?items.map(it=>`<button type="button" class="bitem${kept&&!kept.has(it.sp.id)?' out':''}" data-id="${it.sp.id}"><div class="head">${photoOf(p,it.sp.id)?`<img src="${photoOf(p,it.sp.id)}" alt="">`:headHTML(it.sp,'b'+p+'-'+it.sp.id)}</div><div><b>${esc(it.sp.n)}</b><div class="meta"><span class="tq t${it.t}"></span>${TIER_NAMES[it.t]}<span class="bp">${fmtPts(it.v)} pts</span>${os.filter(o=>(cur[o][it.sp.id]||0)>0).map(o=>`<span class="also ${o}" title="aussi chez ${esc(nameOf(o))}"></span>`).join('')}${kept&&!kept.has(it.sp.id)?'<span class="muted">hors top</span>':''}</div></div></button>`).join(''):`<div class="bempty">Rien de coché pour ${esc(nameOf(p))}.</div>`}
     </div>`}).join('');
 }
 function renderAll(){renderHeader();renderLieuChips();if(ui.tab==='birds') renderList(); else if(ui.tab==='board') renderBoard(); else if(ui.tab==='stats') renderStats(); else renderSettings(); if(sheetSid) renderSheet(sheetSid)}
@@ -1947,6 +2071,7 @@ $('#end-duel').addEventListener('click',e=>{if(e.target.dataset.armed){add({k:'e
 
 $('#cols-seg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b) return;disp.cols=b.dataset.v;applyDisplay()});
 $('#skin-seg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b) return;disp.skin=b.dataset.v;applyDisplay();if(ui.tab==='stats') renderStats()});
+$('#img-seg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b) return;disp.photos=b.dataset.v==='photo';applyDisplay();renderAll();if(disp.photos) loadWikiPhotos()});
 $('#zoom-minus').addEventListener('click',()=>{disp.zoom=Math.max(70,disp.zoom-10);applyDisplay()});
 $('#zoom-plus').addEventListener('click',()=>{disp.zoom=Math.min(160,disp.zoom+10);applyDisplay()});
 $('#zoom-reset').addEventListener('click',()=>{disp.zoom=100;applyDisplay()});
