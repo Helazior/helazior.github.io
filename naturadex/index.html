@@ -1089,7 +1089,26 @@ const EXTRA_HEADS={
   'Cordulegaster boltonii':{k:'i',t:'dragonfly',ab:K,spots:'#e8c42a',th:K,th2:'#e8c42a',big:1,ey:'#3a9a4a'},
   'Tettigonia viridissima':{k:'i',t:'grasshopper',c:'#5aa048',ey:'#d8e0a0'},
   'Vespa crabro':{k:'i',t:'bee',c:'#d89a30',wing:'rgba(200,150,80,.45)'},
-  'Empusa pennata':{k:'i',t:'mantis',c:'#b8a888',ey:'#d9d060'}
+  'Empusa pennata':{k:'i',t:'mantis',c:'#b8a888',ey:'#d9d060'},
+  'Otus scops':{s:'owl',c:'#8a7a66',dk:'#bcb0a0',sp:'#3e3630',cs:{t:'ears',c:'#6a5a48'},bl:{t:'owl',c:DG},ey:{i:YL}},
+  'Curruca undata':{s:'round',c:'#5a5a60',th:'#8a4a4a',bl:{t:'fine',c:'#5a4a3a',k:.7},ey:{i:'#9a2a22',r:RD}},
+  'Sylvia undata':{s:'round',c:'#5a5a60',th:'#8a4a4a',bl:{t:'fine',c:'#5a4a3a',k:.7},ey:{i:'#9a2a22',r:RD}},
+  'Caprimulgus europaeus':{s:'round',c:'#8a7a62',sp:'#3e3630',mo:'#e8e0d0',bl:{t:'fine',c:K,k:.45},ey:{i:K}},
+  'Aquila fasciata':{s:'raptor',c:'#6a5a48',cr:'#4a3a2e',crh:-6,th:'#e8e0d0',bl:{t:'hook',c:DG,cere:YL},ey:{i:'#c9a040'}},
+  'Neophron percnopterus':{s:'raptor',c:W,fc:'#e8c040',bl:{t:'hook',c:DG,cere:'#e8c040',k:.85},ey:{i:'#9a2a22'}},
+  'Lanius senator':{s:'round',c:'#f0ebe0',cr:'#a05a2a',crh:-4,es:K,ms:1,fh:'#f0ebe0',bl:{t:'hook',c:'#2a2a2a',k:.7},ey:{i:K}},
+  'Lullula arborea':{s:'round',c:'#b09a78',sp:'#4a3a2a',su:'#f0ebe0',bl:{t:'cone',c:'#7a6a5a',k:.75},ey:{i:K}},
+  'Periparus ater':{s:'round',c:'#8a8a84',cr:K,crh:-4,ck:W,th:K,bl:{t:'fine',c:K,k:.55},ey:{i:K}},
+  'Oenanthe hispanica':{s:'round',c:'#e8d8b8',es:K,ms:1,th:K,bl:{t:'fine',c:K,k:.8},ey:{i:K}},
+  'Streptopelia turtur':{s:'round',c:'#c8b4a4',esp:K,bl:{t:'pigeon',c:'#5a4a4a'},ey:{i:'#e89a30',r:'#d06a6a'}},
+  'Tarentola mauritanica':{k:'h',t:'lizard',c:'#9a948a',sp:'#5a5450',slit:'v',ey:{i:'#c9b890'}},
+  'Martes foina':{k:'m',c:'#7a6a5a',ears:'round',ec:'#6a5a4a',ei:'#c9b090',th:W,sn:'#6a5a4a',nose:'#c08070',rx:26,ry:19,ey:{i:K}},
+  'Eliomys quercinus':{k:'m',c:'#a08a6a',ears:'round',bigears:1,ei:'#d9b8a8',mask:K,th:W,sn:'#c9b8a0',nose:K,wh:W,er:5,ey:{i:K}},
+  'Mustela nivalis':{k:'m',c:'#b07a4a',ears:'round',ec:'#a06a3a',ei:'#d9b8a8',th:W,sn:'#b07a4a',nose:'#c08070',rx:24,ry:16,ey:{i:K}},
+  'Zerynthia polyxena':{k:'i',t:'butterfly',wc:'#e8d040',border:'#2a2a2a',spots:'#2a2a2a',hspot:RD,hb:'#2a2a2a',body:'#2a2a2a'},
+  'Charaxes jasius':{k:'i',t:'butterfly',wc:'#5a3a2a',border:'#e8a040',hb:'#e8a040',hspot:'#3a4a9a',tail:1,body:'#3a2a1a'},
+  'Cerambyx cerdo':{k:'i',t:'beetle',c:'#1d1d1f',el:'#2a2420',sheen:'#5a4a40'},
+  'Vespa velutina':{k:'i',t:'bee',c:'#3a2a1a',wing:'rgba(120,90,60,.45)'}
 };
 function discoveredSpecies(s,lid){const g=Math.max(0,Math.min(GROUPS.length-1,s.g|0));const x=EXTRA_HEADS[s.l];const h=x||GEN_HEAD[g];const kind=(h.k==='m')?'m':h.k?'hi':'b';
   const sp={id:s.id,n:s.n,l:s.l,g,c:[s.bp||3,3,3,3,3],like:2,site:'',h,ic:false,alt:'',disc:true,auto:true,drawn:!!x,fam:s.fam||'',lieux:[lid],wk:!!s.wk};
