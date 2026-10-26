@@ -453,14 +453,15 @@ table.tbl th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:
   <div class="panel">
     <h2>Partage entre téléphones</h2>
     <p class="hint" id="sync-hint">Pas de serveur : chaque téléphone garde le journal complet, et les journaux se réunissent par code, de téléphone à téléphone. Générez un code, montrez le QR ou envoyez le texte ; l'autre le colle et fusionne. Rien n'est jamais écrasé, chaque entrée garde son auteur et son heure.</p>
-    <div class="row"><button class="btn primary" type="button" id="code-delta">Nouveautés depuis mon dernier code</button><button class="btn" type="button" id="code-full">Code complet</button><button class="btn" type="button" id="code-share">Envoyer…</button></div>
+    <div class="row"><button class="btn primary" type="button" id="code-delta">Nouveautés depuis mon dernier code</button><button class="btn" type="button" id="code-full">Code complet</button><button class="btn" type="button" id="code-share">Envoyer…</button><button class="btn" type="button" id="code-file">Envoyer en fichier</button></div>
     <p class="muted" id="code-info"></p>
     <div id="qr" class="qr"></div>
     <textarea class="code hide" id="code-out" aria-label="Votre code" readonly></textarea>
     <textarea class="code" id="code-in" placeholder="Coller ici le code reçu (ou le texte lu dans le QR)" aria-label="Code reçu"></textarea>
-    <div class="row" style="margin-top:6px"><button class="btn" type="button" id="merge-code">Fusionner</button><span class="muted" id="merge-msg"></span></div>
+    <div class="row" style="margin-top:6px"><button class="btn" type="button" id="merge-code">Fusionner</button><label class="btn"><input type="file" accept=".txt,.json,text/plain,application/json" id="journal-import" style="display:none">Importer un fichier reçu</label><span class="muted" id="merge-msg"></span></div>
+    <p class="hint">Un code court tient dans un QR (≈ 2 300 caractères) ; un code moyen passe en message ; au-delà de ce qu'une messagerie accepte (WhatsApp : 65 000 caractères), par exemple après l'ajout d'un lieu avec ses espèces, « Envoyer en fichier » joint le journal comme pièce, et l'autre l'importe ici. Les codes sont compressés quand le téléphone le permet.</p>
     <h2 style="margin-top:14px">Photos</h2>
-    <p class="hint">Les vignettes (≈ 20 Ko chacune) restent dans le téléphone, hors du journal. Pour les voir sur l'autre téléphone : exporter l'album (fichier), l'envoyer, l'importer. Un fichier journal complet existe aussi, pour les longs codes.</p>
+    <p class="hint">Les vignettes (≈ 20 Ko chacune) restent dans le téléphone, hors du journal. Pour les voir sur l'autre téléphone : exporter l'album (fichier), l'envoyer, l'importer (ici ou avec « Importer un fichier reçu »).</p>
     <div class="row"><button class="btn" type="button" id="album-export">Exporter l'album</button><label class="btn"><input type="file" accept=".json,application/json" id="album-import" style="display:none">Importer un album</label><button class="btn" type="button" id="journal-export">Exporter le journal (fichier)</button></div>
     <p class="muted" id="album-msg"></p>
   </div>
@@ -1325,11 +1326,23 @@ function history(log){ /* entrées décrites, de la plus récente à la plus anc
   return out.reverse();
 }
 function encodeCode(entries){const json=JSON.stringify({v:2,log:entries});const bytes=new TextEncoder().encode(json);let bin='';for(let i=0;i<bytes.length;i+=0x8000) bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));return 'DUEL2.'+btoa(bin)}
+function b64enc(bytes){let bin='';for(let i=0;i<bytes.length;i+=0x8000) bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));return btoa(bin)}
+function b64dec(s){const bin=atob(s);const bytes=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);return bytes}
+const canDeflate=()=>typeof CompressionStream!=='undefined'&&typeof DecompressionStream!=='undefined';
+async function pipeBytes(bytes,stream){const w=stream.writable.getWriter();w.write(bytes);w.close();return new Uint8Array(await new Response(stream.readable).arrayBuffer())}
+/* Code compressé (deflate) : 3 à 5 fois plus court qu'un DUEL2, donc plus de nouveautés par QR et un journal avec lieux qui tient dans un message. */
+async function encodeCodeZ(entries){if(!canDeflate()) return encodeCode(entries);const json=new TextEncoder().encode(JSON.stringify({v:2,log:entries}));try{return 'DUEL3.'+b64enc(await pipeBytes(json,new CompressionStream('deflate-raw')))}catch(e){return encodeCode(entries)}}
 function decodeCode(txt){
   txt=String(txt||'').trim();if(!txt) throw new Error('vide');
   if(txt.startsWith('{')||txt.startsWith('[')) return JSON.parse(txt);
+  if(txt.startsWith('DUEL3.')) throw new Error('code compressé : utiliser decodeCodeZ');
   const b64=txt.replace(/^DUEL[12]\./,'').replace(/\s+/g,'');
-  const bin=atob(b64);const bytes=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
+  return JSON.parse(new TextDecoder().decode(b64dec(b64)));
+}
+async function decodeCodeZ(txt){
+  txt=String(txt||'').trim();if(!txt.startsWith('DUEL3.')) return decodeCode(txt);
+  if(!canDeflate()) throw new Error('ce téléphone ne sait pas lire les codes compressés');
+  const bytes=await pipeBytes(b64dec(txt.slice(6).replace(/\s+/g,'')),new DecompressionStream('deflate-raw'));
   return JSON.parse(new TextDecoder().decode(bytes));
 }
 </script>
@@ -1758,16 +1771,18 @@ async function flushDb(){
   finally{ dbWriting=false; if(dbDirty) scheduleDbWrite(); }
 }
 let lastCode='';
-function makeCode(delta){
+const MSG_MAX=60000; /* au-delà : trop long pour un message WhatsApp, on passe en fichier */
+async function makeCode(delta){
   let entries=log;
   if(delta){const since=Number(readLS(LS_CODEAT))||0;entries=log.filter(e=>e.by===who()&&e.at>since);
     if(!entries.length){toast('Rien de nouveau depuis le dernier code : envoyez le code complet');return null}}
-  const code=encodeCode(entries);lastCode=code;$('#code-out').value=code;
+  const code=await encodeCodeZ(entries);lastCode=code;$('#code-out').value=code;
   writeLS(LS_CODEAT,Date.now());
-  $('#code-info').textContent=`${entries.length} entrée${entries.length>1?'s':''} · ${code.length} caractères`;
+  $('#code-info').textContent=`${entries.length} entrée${entries.length>1?'s':''} · ${code.length.toLocaleString('fr-FR')} caractères${code.startsWith('DUEL3.')?' (compressé)':''}${code.length>MSG_MAX?' · trop long pour un message : envoyez-le en fichier':code.length>2300?' · trop long pour un QR : envoyez le texte':''}`;
   renderQR(code);
   return code;
 }
+async function shareCodeFile(code){const ok=await shareFile(`naturadex-${who()}-${new Date().toISOString().slice(0,10)}.txt`,code,'text/plain');toast(ok?'Fichier prêt : l\u2019autre l\u2019importe avec « Importer un fichier reçu »':'Export indisponible ici');return ok}
 function renderQR(code){
   const box=$('#qr');box.innerHTML='';
   if(typeof QRCode==='undefined'){box.textContent='QR indisponible hors connexion : copiez le code texte.';return}
@@ -1779,9 +1794,9 @@ async function copyText(txt,okMsg){
   try{ await navigator.clipboard.writeText(txt); toast(okMsg); }
   catch(err){ const out=$('#code-out'); out.classList.remove('hide'); out.focus(); out.select(); toast('Sélectionnez et copiez le code affiché'); }
 }
-function mergeFrom(txt){
+async function mergeFrom(txt){
   const msg=$('#merge-msg');
-  try{ const data=decodeCode(txt); const {added}=mergeLog(log,data); refresh();persist();scheduleDbWrite();renderAll();
+  try{ const data=await decodeCodeZ(txt); const {added}=mergeLog(log,data); refresh();persist();scheduleDbWrite();renderAll();
     msg.textContent=added?`Fusion faite : ${added} nouveauté${added>1?'s':''} ajoutée${added>1?'s':''}.`:'Rien de nouveau dans ce code.';msg.className='ok';$('#code-in').value=''; }
   catch(err){ msg.textContent='Code illisible : collez le code complet, tel qu’il a été copié.'; msg.className='muted'; }
 }
@@ -1913,13 +1928,15 @@ let resetPtsArmed=null;
 $('#pts-reset').addEventListener('click',e=>{const changed=allSpecies().filter(sp=>view.pts[sp.id]!=null||view.comp[sp.id]);if(!changed.length){toast('Les cotes sont déjà celles par défaut');return}
   if(resetPtsArmed){clearTimeout(resetPtsArmed);resetPtsArmed=null;for(const sp of changed){if(view.pts[sp.id]!=null) add({k:'pts',s:sp.id,v:null});if(view.comp[sp.id]) add({k:'comp',s:sp.id,v:sp.c})}afterChange();e.target.textContent='Valeurs par défaut';toast('Cotes remises par défaut');return}
   e.target.textContent='Confirmer ?';resetPtsArmed=setTimeout(()=>{resetPtsArmed=null;e.target.textContent='Valeurs par défaut'},4000)});
-$('#code-full').addEventListener('click',()=>{const c=makeCode(false);if(c) copyText(c,'Code complet copié : envoyez-le à l’autre téléphone')});
-$('#code-delta').addEventListener('click',()=>{const c=makeCode(true);if(c) copyText(c,'Nouveautés copiées : envoyez-les à l’autre téléphone')});
-$('#code-share').addEventListener('click',async()=>{const c=lastCode||makeCode(false);if(!c) return;if(navigator.share){try{await navigator.share({title:'Duel photo Camargue',text:c});return}catch(e){}}copyText(c,'Partage indisponible ici : code copié')});
+$('#code-full').addEventListener('click',async()=>{const c=await makeCode(false);if(!c) return;if(c.length>MSG_MAX){shareCodeFile(c);return}copyText(c,'Code complet copié : envoyez-le à l’autre téléphone')});
+$('#code-delta').addEventListener('click',async()=>{const c=await makeCode(true);if(!c) return;if(c.length>MSG_MAX){shareCodeFile(c);return}copyText(c,'Nouveautés copiées : envoyez-les à l’autre téléphone')});
+$('#code-share').addEventListener('click',async()=>{const c=lastCode||await makeCode(false);if(!c) return;if(c.length>MSG_MAX){shareCodeFile(c);return}if(navigator.share){try{await navigator.share({title:'Naturadex',text:c});return}catch(e){}}copyText(c,'Partage indisponible ici : code copié')});
+$('#code-file').addEventListener('click',async()=>{const c=lastCode||await makeCode(false);if(c) shareCodeFile(c)});
+$('#journal-import').addEventListener('change',async e=>{const f=e.target.files&&e.target.files[0];if(!f) return;try{const txt=await f.text();if(txt.trim().startsWith('DUEL')||txt.trim().startsWith('{')){await mergeFrom(txt)}else{const n=await albumImport(txt);$('#merge-msg').textContent=`${n} photo${n>1?'s':''} importée${n>1?'s':''}.`;$('#merge-msg').className='ok'}}catch(err){$('#merge-msg').textContent='Fichier illisible.';$('#merge-msg').className='muted'}e.target.value=''});
 $('#merge-code').addEventListener('click',()=>mergeFrom($('#code-in').value));
 $('#album-export').addEventListener('click',async()=>{const n=Object.keys(PHOTOS).length;if(!n){toast('Aucune photo à exporter');return}const ok=await shareFile(`album-${who()}-${new Date().toISOString().slice(0,10)}.json`,albumExport(),'application/json');$('#album-msg').textContent=ok?`Album de ${n} photo${n>1?'s':''} prêt.`:'Export indisponible ici.'});
-$('#journal-export').addEventListener('click',async()=>{const ok=await shareFile(`journal-${who()}-${new Date().toISOString().slice(0,10)}.txt`,encodeCode(log),'text/plain');$('#album-msg').textContent=ok?'Journal exporté : l\u2019autre le colle dans « Coller ici le code reçu » ou l\u2019importe comme album.':'Export indisponible ici.'});
-$('#album-import').addEventListener('change',async e=>{const f=e.target.files&&e.target.files[0];if(!f) return;try{const txt=await f.text();if(txt.trim().startsWith('DUEL')){mergeFrom(txt);return}const n=await albumImport(txt);$('#album-msg').textContent=`${n} photo${n>1?'s':''} importée${n>1?'s':''}.`;toast(`${n} photo${n>1?'s':''} importée${n>1?'s':''}`)}catch(err){$('#album-msg').textContent='Fichier illisible.'}e.target.value=''});
+$('#journal-export').addEventListener('click',async()=>{const ok=await shareFile(`journal-${who()}-${new Date().toISOString().slice(0,10)}.txt`,await encodeCodeZ(log),'text/plain');$('#album-msg').textContent=ok?'Journal exporté : l\u2019autre le colle dans « Coller ici le code reçu » ou l\u2019importe comme album.':'Export indisponible ici.'});
+$('#album-import').addEventListener('change',async e=>{const f=e.target.files&&e.target.files[0];if(!f) return;try{const txt=await f.text();if(txt.trim().startsWith('DUEL')){await mergeFrom(txt);return}const n=await albumImport(txt);$('#album-msg').textContent=`${n} photo${n>1?'s':''} importée${n>1?'s':''}.`;toast(`${n} photo${n>1?'s':''} importée${n>1?'s':''}`)}catch(err){$('#album-msg').textContent='Fichier illisible.'}e.target.value=''});
 let resetArmed=null;
 $('#reset-all').addEventListener('click',e=>{if(resetArmed){clearTimeout(resetArmed);resetArmed=null;add({k:'reset'});afterChange();e.target.textContent='Tout effacer';toast('Tout est effacé (annulable dans l\u2019historique, onglet Stats)');return}
   e.target.textContent='Confirmer l’effacement ?';resetArmed=setTimeout(()=>{resetArmed=null;e.target.textContent='Tout effacer'},5000)});
