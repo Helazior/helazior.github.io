@@ -968,6 +968,14 @@ function insectSVG(sp,uid){
     o+=`<path d="M${cx-14},32 Q${cx-15},46 ${cx},48 Q${cx+15},46 ${cx+14},32 Q${cx+8},24 ${cx},24 Q${cx-8},24 ${cx-14},32 Z" fill="${c}" ${ST}/><path d="M${cx-9},36 Q${cx},33 ${cx+9},36 M${cx-11},42 Q${cx},39 ${cx+11},42" stroke="rgba(0,0,0,.25)" stroke-width="1" fill="none"/>`;
     o+=`<path d="M${cx-16},24 Q${cx},16 ${cx+16},24 Q${cx+8},30 ${cx},30 Q${cx-8},30 ${cx-16},24 Z" fill="${c}" ${ST}/>`;
     o+=`<ellipse cx="${cx-15}" cy="23" rx="4.2" ry="3.4" fill="${p.ey||'#6a5a4a'}" ${ST}/><ellipse cx="${cx+15}" cy="23" rx="4.2" ry="3.4" fill="${p.ey||'#6a5a4a'}" ${ST}/><circle cx="${cx}" cy="20" r="1.3" fill="#c0302a"/>`;
+  } else if(t==='scorpion'){
+    const c=p.c,tl=p.tail||c;
+    for(const m of [-1,1]) o+=`<path d="M${cx+m*6},52 L${cx+m*22},44 L${cx+m*30},52 M${cx+m*7},58 L${cx+m*24},56 L${cx+m*32},64 M${cx+m*7},64 L${cx+m*22},68 L${cx+m*30},78 M${cx+m*6},70 L${cx+m*18},80 L${cx+m*24},90" stroke="${c}" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+    o+=`<path d="M${cx-10},44 Q${cx-11},80 ${cx},82 Q${cx+11},80 ${cx+10},44 Z" fill="${c}" ${ST}/>`;
+    for(let y=50;y<80;y+=6) o+=`<line x1="${cx-10}" x2="${cx+10}" y1="${y}" y2="${y}" stroke="rgba(0,0,0,.3)" stroke-width=".9"/>`;
+    o+=`<path d="M${cx},82 Q${cx+2},96 ${cx+14},94 Q${cx+30},90 ${cx+30},70 Q${cx+30},60 ${cx+22},54" stroke="${tl}" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M${cx+22},54 L${cx+18},44" stroke="${tl}" stroke-width="3.5" fill="none" stroke-linecap="round"/><circle cx="${cx+18}" cy="44" r="1.6" fill="#111"/>`;
+    for(const m of [-1,1]) o+=`<path d="M${cx+m*8},44 Q${cx+m*22},36 ${cx+m*30},22" stroke="${c}" stroke-width="3.2" fill="none" stroke-linecap="round"/><path d="M${cx+m*30},22 l${m*6},-8 M${cx+m*30},22 l${m*-4},-8" stroke="${c}" stroke-width="3.4" fill="none" stroke-linecap="round"/>`;
+    o+=`<ellipse cx="${cx}" cy="42" rx="9" ry="6" fill="${c}" ${ST}/><circle cx="${cx-2}" cy="40" r="1.3" fill="#111"/><circle cx="${cx+2}" cy="40" r="1.3" fill="#111"/>`;
   } else if(t==='spider'){
     const c=p.c,lc=p.legs||'#2a2a2a';
     for(const m of [-1,1]) o+=`<path d="M${cx+m*4},38 L${cx+m*22},16 L${cx+m*30},28 M${cx+m*6},40 L${cx+m*34},34 L${cx+m*42},46 M${cx+m*6},44 L${cx+m*34},52 L${cx+m*42},66 M${cx+m*4},46 L${cx+m*24},66 L${cx+m*30},82" stroke="${lc}" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
@@ -1108,10 +1116,16 @@ const EXTRA_HEADS={
   'Zerynthia polyxena':{k:'i',t:'butterfly',wc:'#e8d040',border:'#2a2a2a',spots:'#2a2a2a',hspot:RD,hb:'#2a2a2a',body:'#2a2a2a'},
   'Charaxes jasius':{k:'i',t:'butterfly',wc:'#5a3a2a',border:'#e8a040',hb:'#e8a040',hspot:'#3a4a9a',tail:1,body:'#3a2a1a'},
   'Cerambyx cerdo':{k:'i',t:'beetle',c:'#1d1d1f',el:'#2a2420',sheen:'#5a4a40'},
-  'Vespa velutina':{k:'i',t:'bee',c:'#3a2a1a',wing:'rgba(120,90,60,.45)'}
+  'Vespa velutina':{k:'i',t:'bee',c:'#3a2a1a',wing:'rgba(120,90,60,.45)'},
+  'Felis catus':{k:'m',c:'#8a8a84',ears:'point',ec:'#7a7a74',ei:'#d9b8a8',mask:'#5a5a54',ck:W,sn:W,nose:'#c08070',wh:W,ey:{i:'#7ab048',slit:'v'}},
+  'Canis familiaris':{k:'m',c:'#b08a5a',ears:'round',bigears:1,ec:'#8a6a3a',ei:'#a07a4a',sn:'#c9a878',snr:13,nose:K,ey:{i:'#5a3a22'}},
+  'Canis lupus familiaris':{k:'m',c:'#b08a5a',ears:'round',bigears:1,ec:'#8a6a3a',ei:'#a07a4a',sn:'#c9a878',snr:13,nose:K,ey:{i:'#5a3a22'}},
+  'Buthus occitanus':{k:'i',t:'scorpion',c:'#d8b84a',tail:'#c9a030'},
+  'Euscorpius flavicaudis':{k:'i',t:'scorpion',c:'#2a2a28',tail:'#c9a030'},
+  'Euscorpius italicus':{k:'i',t:'scorpion',c:'#3a3a34',tail:'#5a5a50'}
 };
 function discoveredSpecies(s,lid){const g=Math.max(0,Math.min(GROUPS.length-1,s.g|0));const x=EXTRA_HEADS[s.l];const h=x||GEN_HEAD[g];const kind=(h.k==='m')?'m':h.k?'hi':'b';
-  const sp={id:s.id,n:s.n,l:s.l,g,c:[s.bp||3,3,3,3,3],like:2,site:'',h,ic:false,alt:'',disc:true,auto:true,drawn:!!x,fam:s.fam||'',lieux:[lid],wk:!!s.wk};
+  const dom=DOMESTIC.has(s.l);const sp={id:s.id,n:s.n,l:s.l,g,c:[dom?1:(s.bp||3),3,3,3,3],like:2,site:'',h,ic:false,alt:'',disc:true,auto:true,drawn:!!x,dom,fam:s.fam||'',lieux:[lid],wk:!!s.wk};
   if(Number.isFinite(s.wc)){sp.wc=s.wc;sp.wm=worldNote(s.wc,kind);sp.c[1]=sp.wm}
   if(Number.isFinite(s.ps)&&Number.isFinite(s.wc)&&s.wc>0){sp.ps=s.ps;sp.pd=photoNote(s.ps,kind);sp.c[4]=sp.pd}
   if(s.img) sp.img=s.img;
@@ -1266,7 +1280,7 @@ function mergeLog(local,incoming){
 function r1(x){return Math.round(x*10)/10}
 function compOf(v,sid,lieu){const sp=spOf(sid);if(v.comp[sid]) return v.comp[sid];const base=sp?sp.c.slice():[3,3,3,3,3];if(sp&&sp.wm) base[1]=sp.wm;if(sp&&sp.pd){const dw=(v.w.photo!=null?v.w.photo:DEFAULT_DW)/100;base[4]=Math.round((base[4]*(1-dw)+sp.pd*dw)*2)/2}const pr=lieuProfile(v,lieu);if(pr&&pr[sid]){base[2]=pr[sid][0];base[3]=pr[sid][1]}return base}
 function compSource(v,sid,lieu){if(v.comp[sid]) return 'manuel';const pr=lieuProfile(v,lieu);return (pr&&pr[sid])?'gbif':'defaut'}
-function formulaOf(v,sid,lieu){return formulaPts(compOf(v,sid,lieu),v.w)}
+function formulaOf(v,sid,lieu){const f=formulaPts(compOf(v,sid,lieu),v.w);const sp=spOf(sid);return (sp&&sp.dom)?Math.min(f,DOMESTIC_CAP):f}
 function basePts(v,sid,lieu){const x=v.pts[sid];return (typeof x==='number'&&x>=0)?x:formulaOf(v,sid,lieu)}
 function spName(sid){const sp=spOf(sid);return sp?sp.n:'espèce retirée'}
 function tierValue(v,sid,t,lieu){if(!t) return 0;const sp=spOf(sid);const mul=(t===3&&sp&&sp.ic)?v.icoMul:1;return r1(basePts(v,sid,lieu)*v.pct[t-1]/100*mul)}
@@ -1319,7 +1333,7 @@ function curve(v){ /* recalculée avec le barème actuel, dans l'ordre des coche
 /* Rareté ici / période calculée en direct depuis GBIF (hors bac à sable : version installée) */
 const GBIF_SYN={'Phoeniconaias minor':['Phoenicopterus minor'],'Ardea alba':['Egretta alba','Casmerodius albus'],'Bubulcus ibis':['Ardea ibis'],'Spatula clypeata':['Anas clypeata'],'Mareca penelope':['Anas penelope'],'Mareca strepera':['Anas strepera'],'Hieraaetus pennatus':['Aquila pennata'],'Clanga clanga':['Aquila clanga'],'Anarhynchus alexandrinus':['Charadrius alexandrinus'],'Calidris pugnax':['Philomachus pugnax'],'Chroicocephalus ridibundus':['Larus ridibundus'],'Ichthyaetus melanocephalus':['Larus melanocephalus'],'Chroicocephalus genei':['Larus genei'],'Larus michahellis':['Larus michaellis'],'Thalasseus sandvicensis':['Sterna sandvicensis'],'Hydroprogne caspia':['Sterna caspia'],'Dryobates minor':['Dendrocopos minor'],'Curruca melanocephala':['Sylvia melanocephala'],'Saxicola rubicola':['Saxicola torquatus','Saxicola torquata'],'Cyanistes caeruleus':['Parus caeruleus'],'Spinus spinus':['Carduelis spinus'],'Coloeus monedula':['Corvus monedula'],'Chloris chloris':['Carduelis chloris'],'Linaria cannabina':['Carduelis cannabina'],'Emberiza calandra':['Miliaria calandra'],'Microcarbo pygmaeus':['Phalacrocorax pygmeus'],'Regulus ignicapilla':['Regulus ignicapillus']};
 /* Clés GBIF interrogées pour le relevé d'un lieu : oiseaux, mammifères, squamates + tortues + amphibiens (GBIF n'a plus de classe Reptilia), et les familles de gros insectes. */
-const GBIF_SURVEY=[{kind:'b',keys:[212]},{kind:'m',keys:[359]},{kind:'h',keys:[11592253,11418114,131]},{kind:'i',keys:[789,788,9417,5481,7017,5473,6953,8868,8864,3263244,5602,5840,4204,3789,4205,3991,6049,4490]}];
+const GBIF_SURVEY=[{kind:'b',keys:[212]},{kind:'m',keys:[359]},{kind:'h',keys:[11592253,11418114,131]},{kind:'i',keys:[789,788,9417,5481,7017,5473,6953,8868,8864,3263244,5602,5840,4204,3789,4205,3991,6049,4490,872]}];
 const DISC_CAP={b:250,m:50,h:50,i:150},DISC_MIN=2;
 function gbifMonths(d){const m=(d||new Date()).getMonth()+1;const a=m===1?12:m-1,b=m===12?1:m+1;return {a,b,label:`${MONTHS_FR[a-1]}–${MONTHS_FR[b-1]}`}}
 async function fetchJson(url,plain){const ctl=typeof AbortController!=='undefined'?new AbortController():null;const tm=ctl?setTimeout(()=>ctl.abort(),25000):null;
@@ -1328,7 +1342,8 @@ async function pool(items,n,fn,onStep){let i=0;const out=new Array(items.length)
 const canon=n=>String(n||'').split(' ').slice(0,2).join(' ');
 async function gbifFacet(url){const j=await fetchJson(url);const d={};for(const f of (j.facets&&j.facets[0]&&j.facets[0].counts)||[]){const parts=String(f.name).split(' ');if(parts.length<2||!/^[a-z]/.test(parts[1])) continue;const key=parts[0]+' '+parts[1];d[key]=(d[key]||0)+f.count}return {counts:d,total:j.count||0}}
 function gbifBox(lat,lng,rkm){const dl=rkm/111,dg=rkm/(111*Math.cos(lat*Math.PI/180));return `decimalLatitude=${(lat-dl).toFixed(3)},${(lat+dl).toFixed(3)}&decimalLongitude=${(lng-dg).toFixed(3)},${(lng+dg).toFixed(3)}`}
-function rarityNotes(cy,cp,ty,tp){const sy=ty?cy/ty:0,ratio=(tp&&sy>0)?(cp/tp)/sy:0;const ui=sy>=0.015?1:sy>=0.004?2:sy>=0.001?3:sy>=0.0002?4:5;const up=cy===0?5:ratio>=0.8?1:ratio>=0.5?2:ratio>=0.25?3:ratio>=0.08?4:5;return [ui,up]}
+function rarityNotes(cy,cp,ty,tp){ /* période : part observée dans la fenêtre comparée à la part attendue, lissée (3 observations fictives) pour ne pas déclarer « hors saison » une espèce vue 10 fois dans l'année */
+  const sy=ty?cy/ty:0,exp=ty?cy*(tp/ty):0,k=3,ratio=sy>0?(cp+k)/(exp+k):0;const ui=sy>=0.015?1:sy>=0.004?2:sy>=0.001?3:sy>=0.0002?4:5;const up=cy===0?5:ratio>=0.8?1:ratio>=0.5?2:ratio>=0.25?3:ratio>=0.08?4:5;return [ui,up]}
 async function gbifSurvey(lat,lng,rkm,months,prog){ /* par classe : comptes par espèce sur l'année et sur la période, totaux */
   const box=gbifBox(lat,lng,rkm);const mon=months.a<=months.b?`&month=${months.a},${months.b}`:`&month=${months.a},12`; /* fenêtre à cheval sur l'année : approximation */
   const base=`https://api.gbif.org/v1/occurrence/search?limit=0&facet=scientificName&facetLimit=500&year=2010,2030&${box}`;
@@ -1358,8 +1373,11 @@ const BEAUTY_SP={'Porphyrio porphyrio':5,'Aix galericulata':5,'Netta rufina':4,'
 const BEAUTY_FAM={Alcedinidae:5,Meropidae:5,Coraciidae:5,Upupidae:5,Oriolidae:5,Phoenicopteridae:5,Gruidae:5,Pandionidae:5,Strigidae:5,Tytonidae:5,Panuridae:5,Bombycillidae:5,Otididae:5,Ardeidae:4,Ciconiidae:4,Threskiornithidae:4,Pelecanidae:4,Accipitridae:4,Falconidae:4,Picidae:4,Recurvirostridae:4,Laniidae:4,Regulidae:4,Sittidae:4,Aegithalidae:4,Muscicapidae:4,Caprimulgidae:4,Pteroclidae:4,Anatidae:3,Podicipedidae:3,Rallidae:3,Charadriidae:3,Scolopacidae:3,Laridae:3,Paridae:3,Fringillidae:3,Turdidae:3,Hirundinidae:3,Emberizidae:3,Troglodytidae:3,Certhiidae:3,Phasianidae:3,Cuculidae:3,Burhinidae:3,Haematopodidae:3,Phalacrocoracidae:3,Columbidae:2,Corvidae:2,Passeridae:2,Sturnidae:2,Sylviidae:2,Phylloscopidae:2,Motacillidae:2,Alaudidae:2,Prunellidae:2,Apodidae:2,Cisticolidae:2,Acrocephalidae:2,Locustellidae:2,Cettiidae:2,Scotocercidae:2,
   Cervidae:4,Canidae:4,Mustelidae:4,Sciuridae:4,Felidae:5,Erinaceidae:4,Leporidae:3,Suidae:3,Castoridae:4,Bovidae:4,Gliridae:4,Muridae:1,Cricetidae:2,Soricidae:2,Talpidae:2,Vespertilionidae:2,Rhinolophidae:3,Molossidae:2,Phocidae:4,Delphinidae:5,Viverridae:5,
   Lacertidae:3,Gekkonidae:3,Phyllodactylidae:3,Anguidae:3,Colubridae:3,Natricidae:3,Lamprophiidae:3,Psammophiidae:3,Viperidae:4,Testudinidae:4,Emydidae:3,Geoemydidae:3,Ranidae:2,Hylidae:4,Bufonidae:2,Salamandridae:4,Pelobatidae:3,Alytidae:3,Pelodytidae:3,Scincidae:3,
-  Aeshnidae:4,Libellulidae:4,Calopterygidae:5,Coenagrionidae:3,Lestidae:3,Gomphidae:4,Cordulegastridae:5,Corduliidae:3,Platycnemididae:3,Papilionidae:5,Nymphalidae:4,Pieridae:2,Lycaenidae:3,Hesperiidae:2,Riodinidae:3,Sphingidae:4,Saturniidae:5,Zygaenidae:3,Mantidae:4,Empusidae:5,Lucanidae:5,Cerambycidae:3,Scarabaeidae:3,Cetoniidae:4,Buprestidae:4,Dynastidae:4,Tettigoniidae:2,Cicadidae:3,Vespidae:3};
-const BEAUTY_CLASS={Aves:3,Mammalia:3,Insecta:2};
+  Aeshnidae:4,Libellulidae:4,Calopterygidae:5,Coenagrionidae:3,Lestidae:3,Gomphidae:4,Cordulegastridae:5,Corduliidae:3,Platycnemididae:3,Papilionidae:5,Nymphalidae:4,Pieridae:2,Lycaenidae:3,Hesperiidae:2,Riodinidae:3,Sphingidae:4,Saturniidae:5,Zygaenidae:3,Mantidae:4,Empusidae:5,Lucanidae:5,Cerambycidae:3,Scarabaeidae:3,Cetoniidae:4,Buprestidae:4,Dynastidae:4,Tettigoniidae:2,Cicadidae:3,Vespidae:3,Buthidae:4,Euscorpiidae:3};
+const BEAUTY_CLASS={Aves:3,Mammalia:3,Insecta:2,Arachnida:3};
+/* Espèces domestiques ou férales : dessinées, mais cote plafonnée (les comptages GBIF les rendraient « rares », ce qui n'a pas de sens). */
+const DOMESTIC=new Set(['Felis catus','Canis familiaris','Canis lupus familiaris','Bos taurus','Equus caballus','Equus asinus','Ovis aries','Capra hircus','Gallus gallus','Gallus gallus domesticus','Anser anser domesticus','Cairina moschata','Columba livia domestica','Oryctolagus cuniculus domesticus','Sus scrofa domesticus','Mus musculus']);
+const DOMESTIC_CAP=15;
 function beautyPrior(latin,family,cls){return BEAUTY_SP[latin]||BEAUTY_FAM[family]||BEAUTY_CLASS[cls]||3}
 const GROUP_ORDER={Phoenicopteriformes:0,Pelecaniformes:0,Ciconiiformes:0,Suliformes:0,Anseriformes:1,Podicipediformes:1,Accipitriformes:2,Falconiformes:2,Strigiformes:2,Gruiformes:3,Coraciiformes:6,Bucerotiformes:6,Piciformes:6,Passeriformes:8};
 const GROUP_FAM={Charadriidae:4,Scolopacidae:4,Recurvirostridae:4,Haematopodidae:4,Burhinidae:4,Glareolidae:4,Jacanidae:4,Laridae:5,Stercorariidae:5,Alcidae:5,Acrocephalidae:7,Locustellidae:7,Cettiidae:7,Scotocercidae:7,Panuridae:7,Remizidae:7};
@@ -1405,7 +1423,7 @@ async function surveyLieu(L,months,prog){
     const d=byKey.get(m.key);if(d){d.cy+=c.cy;d.cp+=c.cp;return}
     byKey.set(m.key,{id:'g-'+m.key,key:m.key,kind:c.kind,l:m.l,order:m.order,fam:m.family,cls:m.cls,cy:c.cy,cp:c.cp})});
   const list=Array.from(byKey.values());
-  for(const d of list){const o=sv[d.kind];p[d.id]=rarityNotes(d.cy,d.cp,o.ty,o.tp);d.g=groupOf(d.kind,d.order,d.fam);d.bp=beautyPrior(d.l,d.fam,d.cls)}
+  for(const d of list){const o=sv[d.kind];p[d.id]=rarityNotes(d.cy,d.cp,o.ty,o.tp);d.g=groupOf(d.kind,d.order,d.fam);d.bp=DOMESTIC.has(d.l)?1:beautyPrior(d.l,d.fam,d.cls)}
   const chunks=[];for(let i=0;i<list.length;i+=50) chunks.push(list.slice(i,i+50));
   done=0;const wk=await pool(chunks,3,ch=>wikiBatch(ch.map(d=>d.l)),()=>{done++;if(prog) prog(`Noms et photos Wikipédia ${done}/${chunks.length}`)});
   chunks.forEach((ch,i)=>{const r=wk[i]||{};for(const d of ch){const w=r[d.l];if(!w) continue;if(w.img) d.img=w.img;if(w.fr){d.n=w.title;d.wk=1}}});
@@ -1736,6 +1754,7 @@ function renderSheet(sid){
       <div class="ptsedit"><label for="sheet-pts">Forcer la cote</label><input id="sheet-pts" type="number" min="0" max="2000" step="5" value="${manual!=null?manual:''}" placeholder="${f}"> pts <span class="muted">(vide = calculée)</span></div>
     </div>
     ${sp.ic?`<p class="muted" style="margin:8px 0 0">★ Iconique : la photo portfolio vaut ×${fmtPts(view.icoMul)}. En objectif personnel, elle rapporte encore +${fmtPts(view.objPct)} %.</p>`:`<p class="muted" style="margin:8px 0 0">En objectif personnel (${OBJ_MAX} par joueur), un portfolio rapporte +${fmtPts(view.objPct)} %.</p>`}
+    ${sp.dom?`<p class="muted" style="margin:4px 0 0">Espèce domestique ou férale : cote plafonnée à ${DOMESTIC_CAP} pts (les comptages GBIF la rendraient « rare », ce qui n\u2019aurait pas de sens).</p>`:''}
     <p class="muted" style="margin:4px 0 0">♥ Favori : sans effet sur les points, en nombre illimité ; les autres voient vos favoris sur les cartes pour vous prévenir quand ils repèrent l\u2019espèce.</p>
     ${sp.custom?`<p class="muted" style="margin:6px 0 0">Espèce hors liste ajoutée par ${esc(nameOf(sp.by))}. <button type="button" class="btn small" data-xedit="${sp.id}">Modifier</button> <button type="button" class="btn small danger" data-xdel="${sp.id}">Retirer</button></p>`:''}
     ${rows}
