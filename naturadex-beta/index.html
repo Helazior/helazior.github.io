@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-3Gi1l0nX+HcoMecGN/xbjnIsiKBP1xkJRmA2/ghJ7ZM=' 'sha256-NyI4Uq9qltdaVcoVhCZjvCxVZXvsBTBek9ViT24R0yQ=' 'sha256-nz0UQi7XMlPcIxC+4SqEpyPKY3cgL1fqMOy1pBFH8oY=' 'sha256-po8XboZH7ZgzD9d/nLTBxL3jvetToYHdiFLHVCpmXzE=' 'sha256-S18pspuvVFoUWB+b5SPn6mwrCLSbkDQFw6mtGARB3N4='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.wikimedia.org https://*.wikipedia.org; connect-src 'self' https: wss: http://127.0.0.1:* ws://127.0.0.1:* http://localhost:* ws://localhost:*; font-src 'self' data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; media-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-3Gi1l0nX+HcoMecGN/xbjnIsiKBP1xkJRmA2/ghJ7ZM=' 'sha256-WG8nq8p6iYIA/rm4Vib0kAKW1o2ys4qUNZfasKU/qW4=' 'sha256-nz0UQi7XMlPcIxC+4SqEpyPKY3cgL1fqMOy1pBFH8oY=' 'sha256-CqggANazlmDNGS92TKVtb4NLQvf+IbEjU3zP64pW0gM=' 'sha256-S18pspuvVFoUWB+b5SPn6mwrCLSbkDQFw6mtGARB3N4='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.wikimedia.org https://*.wikipedia.org; connect-src 'self' https: wss: http://127.0.0.1:* ws://127.0.0.1:* http://localhost:* ws://localhost:*; font-src 'self' data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; media-src 'none'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0e5c6b">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -93,6 +93,7 @@ h1,h2,h3{text-wrap:balance}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chips .chip{border:0;background:var(--surface-2);border-radius:var(--radius-chip);padding:5px 11px;font-size:12.5px;font-weight:700;color:var(--ink-2);cursor:pointer;min-height:28px}
 .chips .chip[aria-pressed="true"]{background:var(--ink);color:var(--ink-inv)}
+.tag.spec{background:var(--good-fill);color:var(--good-on)}
 .chips .chip.ico[aria-pressed="true"]{background:var(--ico-fill);color:var(--ico-on)}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .row select{flex:1;min-width:140px}
@@ -345,6 +346,7 @@ table.tbl th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:
       <button type="button" class="chip" data-v="3" aria-pressed="false">Rares</button>
       <button type="button" class="chip ico" id="ico-chip" aria-pressed="false">★ Iconiques</button>
       <button type="button" class="chip fav" id="fav-chip" aria-pressed="false">♥ Mes favoris</button>
+      <button type="button" class="chip spec" id="spec-chip" aria-pressed="false" title="Moins rares ici et maintenant que dans le monde : part dans les observations du lieu à cette période, rapportée à la part mondiale de l’espèce">◎ Spécialités d’ici</button>
     </div>
     <div class="row">
       <select id="group-sel" aria-label="Famille"><option value="all">Toutes les familles</option></select>
@@ -357,6 +359,7 @@ table.tbl th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:
         <option value="c2">Par rareté ici</option>
         <option value="c3">Par rareté à cette période</option>
         <option value="c4">Par difficulté photo</option>
+        <option value="ratio">Par spécialité d’ici</option>
       </select>
       <button type="button" class="btn small" id="sort-dir" aria-label="Sens du tri" title="Sens du tri">↓ décroissant</button>
     </div>
@@ -525,7 +528,7 @@ table.tbl th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:
     <p class="hint" style="margin-top:14px">Supprimer mon compte : efface définitivement ce nom, ses captures, favoris, notes, bonus et son pokédex, sur le relais et sur tous les téléphones. Les lieux et relevés qu’il a ajoutés restent, anonymisés.</p>
     <div class="row"><button class="btn danger" type="button" id="acct-erase">Supprimer mon compte…</button></div>
   </div>
-  <p class="hint" id="app-version" style="text-align:center;margin:16px 0 4px">Version du 27/10/2026 14:14</p>
+  <p class="hint" id="app-version" style="text-align:center;margin:16px 0 4px">Version du 27/10/2026 14:25</p>
 </section>
 </main>
 
@@ -1200,6 +1203,20 @@ function discoveredSpecies(s,lid){const g=Math.max(0,Math.min(GROUPS.length-1,s.
 function sitesOf(v,sp){if(sp.disc) return sp.lieux.slice();const s=String(sp.site||'');let out=[];
   if(s==='*') out=Object.keys(LIEUX).concat(Object.keys(v.lieux));else{if(s.includes('PG')) out.push('pg');if(s.includes('MV')) out.push('mv');if(/^l-/.test(s)&&v.lieux[s]) out.push(s)}
   for(const lid of (v.present[sp.id]||[])) if(!out.includes(lid)) out.push(lid);return out}
+/* Spécialité d'ici : part de l'espèce dans les observations GBIF du lieu sur la période, rapportée à sa part dans les
+   observations mondiales de sa classe. ×12 = douze fois plus fréquente ici et maintenant que dans le monde ; ×0,3 = plus rare
+   ici qu'ailleurs. Totaux mondiaux approximatifs (ordre de grandeur GBIF) : ils fixent l'échelle des rapports, pas leur ordre. */
+const WORLD_TOTAL={b:2.5e9,m:4e7,hi:1.5e8};
+const lieuTotalsMemo=new WeakMap();
+function lieuTotals(v,lieu){ /* Σ des comptes de période par classe, sur les espèces connues du lieu (mémorisé par état) */
+  let m=lieuTotalsMemo.get(v);if(!m){m={};lieuTotalsMemo.set(v,m)}if(m[lieu]) return m[lieu];
+  const t={b:0,m:0,hi:0};for(const sp of allSpecies()){const c=lieuCounts(v,lieu,sp.id);if(c&&c[0]>0) t[worldKind(sp)]+=c[0]}m[lieu]=t;return t}
+function localRatio(v,sp,lieu){ /* {r,cp,tp,share,wshare} ou null sans données (espèce sans compte mondial, lieu sans relevé, domestique) */
+  if(!lieu||!sp||sp.dom||!Number.isFinite(sp.wc)||sp.wc<=0) return null;const c=lieuCounts(v,lieu,sp.id);if(!c) return null;
+  const kind=worldKind(sp),tp=lieuTotals(v,lieu)[kind];if(!tp) return null;
+  const share=c[0]/tp,wshare=sp.wc/WORLD_TOTAL[kind];return {r:share/wshare,cp:c[0],tp,share,wshare}}
+const fmtRatio=r=>'×'+(r>=10?Math.round(r).toLocaleString('fr-FR'):r>=1?r.toLocaleString('fr-FR',{maximumFractionDigits:1}):r.toLocaleString('fr-FR',{maximumFractionDigits:2}));
+const fmtShare=x=>(x*100).toLocaleString('fr-FR',x>=0.001?{maximumFractionDigits:1}:{maximumSignificantDigits:2})+' %';
 function lieuCounts(v,lid,sid){ /* [période, année, rang] des observations GBIF du secteur */
   if(GBIF_COUNTS[lid]) return GBIF_COUNTS[lid][sid]||null;const L=v.lieuSpecies[lid];if(!L) return null;if(L.b[sid]) return L.b[sid];const s=L.sp.find(x=>x.id===sid);return s?[s.cp||0,s.cy||0,s.rk||0]:null}
 const GEN_HEAD=[{s:'long',c:'#b9bfb6',bl:{t:'dagger',c:'#8a8a84'}},{s:'duck',c:'#b9bfb6',bl:{t:'duck',c:'#8a8a84'}},{s:'raptor',c:'#b9bfb6',bl:{t:'hook',c:'#3a3a38',cere:'#c9c0a0'},ey:{i:'#8a8a64'}},{c:'#b9bfb6',bl:{t:'cone',c:'#8a8a84'}},{c:'#b9bfb6',bl:{t:'long',c:'#8a8a84'}},{c:'#e9e9e4',bl:{t:'gull',c:'#c9b860'}},{c:'#b9bfb6',bl:{t:'chisel',c:'#3a3a38'}},{c:'#c9c0a0',bl:{t:'fine',c:'#3a3a38'}},{c:'#b9bfb6',bl:{t:'cone',c:'#3a3a38'}},{c:'#b9bfb6',bl:{t:'pigeon',c:'#3a3a38'}},{k:'m',c:'#b9bfb6',ears:'round',sn:'#c9c9c4'},{k:'h',t:'lizard',c:'#b9bfb6',ey:{i:'#3a2a22'}},{k:'i',t:'butterfly',wc:'#c9c9c4',border:'#8a8a84'}];
@@ -1625,7 +1642,7 @@ let log=(()=>{const own=readLS(gameKey(gameId));if(own) return normalizeLog(own)
 if(legacyImported) writeLS(gameKey(gameId),{v:3,log}); /* écrit tout de suite : l'import n'a lieu qu'une fois */
 let view=fold(log);
 const legacyId=v=>LEGACY_SLOTS[v]||v;
-const ui={tab:'birds',q:'',site:readLS(LS_SITE)||'all',like:'all',group:'all',sort:'group',dir:-1,taken:'all',ico:false,fav:false,boardShare:'all',boardSort:'pts',device:readLS(LS_DEV)||legacyId(readLS(LS_DEV_OLD)||''),me:readLS(LS_ME)||legacyId(readLS(LS_ME_OLD)||''),lieu:readLS(LS_LIEU)||'pg'};
+const ui={tab:'birds',q:'',site:readLS(LS_SITE)||'all',like:'all',group:'all',sort:'group',dir:-1,taken:'all',ico:false,fav:false,spec:false,boardShare:'all',boardSort:'pts',device:readLS(LS_DEV)||legacyId(readLS(LS_DEV_OLD)||''),me:readLS(LS_ME)||legacyId(readLS(LS_ME_OLD)||''),lieu:readLS(LS_LIEU)||'pg'};
 const others=p=>view.players.filter(x=>x!==p);
 const nameOf=p=>view.names[p]||displayName(p);
 /* Couleur d'un joueur : son rang d'entrée dans la partie (8 teintes, en boucle) ; un joueur hors partie prend une teinte stable d'après son nom */
@@ -1687,6 +1704,7 @@ function filtered(){
     if(ui.like!=='all'&&String(likeOf(view,sp,spLieu(sp)))!==ui.like) return false;
     if(ui.ico&&!sp.ic) return false;
     if(ui.fav&&!isFav(view,ui.me,sp.id)) return false;
+    if(ui.spec){const lr=localRatio(view,sp,spLieu(sp));if(!lr||lr.r<1) return false}
     if(ui.group!=='all'&&String(sp.g)!==ui.group) return false;
     const mine=(cur[ui.me][sp.id]||0)>0;
     if(ui.taken==='mine'&&!mine) return false;
@@ -1698,6 +1716,7 @@ function filtered(){
   if(ui.sort==='pts') list.sort((a,b)=>d*(bp(b)-bp(a))||a.n.localeCompare(b.n,'fr'));
   else if(ui.sort==='name') list.sort((a,b)=>ui.dir*a.n.localeCompare(b.n,'fr'));
   else if(/^c[0-4]$/.test(ui.sort)){const i=Number(ui.sort[1]);const cv=sp=>compOf(view,sp.id,spLieu(sp))[i];list.sort((a,b)=>d*(cv(b)-cv(a))||bp(b)-bp(a)||a.n.localeCompare(b.n,'fr'))}
+  else if(ui.sort==='ratio'){const rv=sp=>{const x=localRatio(view,sp,spLieu(sp));return x?x.r:-1};list.sort((a,b)=>d*(rv(b)-rv(a))||bp(b)-bp(a)||a.n.localeCompare(b.n,'fr'))}
   else list.sort((a,b)=>a.g-b.g||d*(bp(b)-bp(a))||a.n.localeCompare(b.n,'fr'));
   return list;
 }
@@ -1735,6 +1754,7 @@ function tagsHTML(sp,withGroup){
   const lk=likeOf(view,sp,spLieu(sp));
   const st=siteTag(sp);let t=`${st?`<span class="tag">${esc(st)}</span>`:''}<span class="tag l${lk}">${LIKE[lk]}</span>`;
   if(!withGroup&&/^c[0-4]$/.test(ui.sort)){const i=Number(ui.sort[1]);const c=compOf(view,sp.id,spLieu(sp))[i];t+=`<span class="tag crit">${['Beauté','Monde','Ici','Période','Photo'][i]} ${fmtPts(c)} · ${Number.isInteger(c)?COMP_LEVELS[i][c-1]:'calculé'}</span>`}
+  if(!withGroup&&(ui.spec||ui.sort==='ratio')){const lr=localRatio(view,sp,spLieu(sp));if(lr) t+=`<span class="tag spec" title="${esc(fmtShare(lr.share))} des observations ici à cette période, ${esc(fmtShare(lr.wshare))} dans le monde">${fmtRatio(lr.r)} ici</span>`}
   if(sp.ic) t+=`<span class="tag ic">★ Iconique ×${fmtPts(view.icoMul)}</span>`;
   for(const p of view.players) if(isObj(view,p,sp.id)) t+=`<span class="tag obj ${cls(p)}">Objectif ${esc(nameOf(p))}</span>`;
   for(const p of view.players) if(p!==ui.me&&isFav(view,p,sp.id)) t+=`<span class="tag fav">♥ ${esc(nameOf(p))}</span>`;
@@ -1759,18 +1779,18 @@ function cardHTML(sp){
     <div class="other">${otherLine(sp)}</div>
   </article>`;
 }
-const FILTER_KEYS=['q','like','group','sort','dir','taken','ico','fav','boardSort','boardShare'];
+const FILTER_KEYS=['q','like','group','sort','dir','taken','ico','fav','spec','boardSort','boardShare'];
 function saveFilters(){const o={};for(const k of FILTER_KEYS) o[k]=ui[k];writeLS(LS_FILT,o)}
 function restoreFilters(){ /* au chargement : filtres mémorisés, et contrôles alignés dessus (le navigateur peut rétablir seul les champs, mais pas l'état interne) */
   const f=readLS(LS_FILT)||{};for(const k of FILTER_KEYS) if(f[k]!==undefined&&f[k]!==null) ui[k]=f[k];
-  if(!['group','pts','name','c0','c1','c2','c3','c4'].includes(ui.sort)) ui.sort='group';ui.dir=ui.dir>0?1:-1;
+  if(!['group','pts','name','c0','c1','c2','c3','c4','ratio'].includes(ui.sort)) ui.sort='group';ui.spec=!!ui.spec;ui.dir=ui.dir>0?1:-1;
   if(!['all','mine','rest'].includes(ui.taken)) ui.taken='all';if(!['all','1','2','3'].includes(String(ui.like))) ui.like='all';
   if(ui.group!=='all'&&!GROUPS[Number(ui.group)]) ui.group='all';if(!['pts','time','name'].includes(ui.boardSort)) ui.boardSort='pts';if(!['all','shared','solo'].includes(ui.boardShare)) ui.boardShare='all';
   $$('#board-share .chip').forEach(c=>c.setAttribute('aria-pressed',String(c.dataset.v===ui.boardShare)));
   $('#q').value=ui.q||'';$('#sort-sel').value=ui.sort;$('#group-sel').value=String(ui.group);$('#board-sort').value=ui.boardSort;
-  $$('#like-chips .chip:not(#ico-chip):not(#fav-chip)').forEach(c=>c.setAttribute('aria-pressed',String(c.dataset.v===String(ui.like))));
+  $$('#like-chips .chip:not(#ico-chip):not(#fav-chip):not(#spec-chip)').forEach(c=>c.setAttribute('aria-pressed',String(c.dataset.v===String(ui.like))));
   $$('#taken-chips .chip').forEach(c=>c.setAttribute('aria-pressed',String(c.dataset.v===ui.taken)));
-  $('#ico-chip').setAttribute('aria-pressed',String(!!ui.ico));$('#fav-chip').setAttribute('aria-pressed',String(!!ui.fav));
+  $('#ico-chip').setAttribute('aria-pressed',String(!!ui.ico));$('#fav-chip').setAttribute('aria-pressed',String(!!ui.fav));$('#spec-chip').setAttribute('aria-pressed',String(!!ui.spec));
   sortDirLabel();
 }
 function renderList(){
@@ -1859,7 +1879,8 @@ function renderSheet(sid){
   const comps=COMP_LABELS.map((lab,i)=>`<div class="crow"><label for="comp-${i}">${lab}${(i===2||i===3)?` <small>(${esc(lieuName(view,lieu))}${src==='gbif'?', GBIF':src==='manuel'?', à la main':''})</small>`:(i===0&&sp.auto)?` <small>(estimée d\u2019après la famille${sp.fam?' '+esc(sp.fam):''}, à ajuster${src==='manuel'?' ; fixée à la main':''})</small>`:(i===1&&sp.wc)?` <small>(${sp.wc.toLocaleString('fr-FR')} obs. GBIF monde${src==='manuel'?', à la main':''})</small>`:(i===4&&sp.ps!=null)?` <small>(${(sp.ps*100).toFixed(1).replace('.',',')} % des obs. GBIF ont une photo → note ${sp.pd}${sp.auto?'':' ; à la main '+sp.c[4]}${src==='manuel'?' ; fixée à la main':''})</small>`:''}</label><select id="comp-${i}" data-ci="${i}">${(Number.isInteger(c[i])?[1,2,3,4,5]:[1,2,3,4,5,c[i]].sort((a,b)=>a-b)).map(n=>`<option value="${n}"${c[i]===n?' selected':''}>${fmtPts(n)} · ${Number.isInteger(n)?COMP_LEVELS[i][n-1]:'calculé'}</option>`).join('')}</select></div>`).join('');
   const tipAll=TIPS[sid]||{};const tipGen=typeof tipAll==='string'?tipAll:tipAll.g;
   const gc=lieuCounts(view,lieu,sid),gcL=allLieux()[lieu],gcM=GBIF_COUNTS[lieu]?'oct.–nov.':(view.lieuSpecies[lieu]&&view.lieuSpecies[lieu].m)||'cette période',gcR=gcL?gcL.r:9;
-  const tipLieu=gc?(gc[0]?`${gc[0].toLocaleString('fr-FR')} observation${gc[0]>1?'s':''} en ${gcM} depuis 2010 dans un carré de ±${gcR} km${gc[2]?` (${gc[2]===1?'espèce la plus notée':gc[2]+'e espèce la plus notée'})`:''}, ${gc[1].toLocaleString('fr-FR')} sur l\u2019année.`:`Aucune observation en ${gcM} depuis 2010 dans un carré de ±${gcR} km${gc[1]?` (${gc[1].toLocaleString('fr-FR')} sur l\u2019année)`:''}.`):null;
+  const lr=localRatio(view,sp,lieu);const tipRatio=lr?(lr.r>=1?` Spécialité d\u2019ici : ${fmtRatio(lr.r)}, ${lr.r>=1.05?'plus':'aussi'} fréquente ici en ${gcM} que dans le monde (${fmtShare(lr.share)} des observations du lieu, ${fmtShare(lr.wshare)} des observations mondiales).`:` Plus rare ici en ${gcM} que dans le monde : ${fmtRatio(lr.r)} (${fmtShare(lr.share)} des observations du lieu, ${fmtShare(lr.wshare)} dans le monde).`):'';
+  const tipLieu=gc?(gc[0]?`${gc[0].toLocaleString('fr-FR')} observation${gc[0]>1?'s':''} en ${gcM} depuis 2010 dans un carré de ±${gcR} km${gc[2]?` (${gc[2]===1?'espèce la plus notée':gc[2]+'e espèce la plus notée'})`:''}, ${gc[1].toLocaleString('fr-FR')} sur l\u2019année.${tipRatio}`:`Aucune observation en ${gcM} depuis 2010 dans un carré de ±${gcR} km${gc[1]?` (${gc[1].toLocaleString('fr-FR')} sur l\u2019année)`:''}.`):null;
   const canListen=!(sp.h&&sp.h.k==='m')&&!(sp.h&&sp.h.k==='h'&&sp.h.t!=='frog')&&!(sp.h&&sp.h.k==='i'&&sp.h.t!=='grasshopper');
   const latin=sp.l.split(' /')[0].replace(' sp.','');
   const slug=sp.n.replace(/œ/g,'oe').replace(/Œ/g,'oe').replace(/æ/g,'ae').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/['\u2019 ]+/g,'.').replace(/[^a-z0-9.-]/g,'');
@@ -2446,9 +2467,10 @@ $('#game-change').addEventListener('click',renderGamePicker);
 $('#sync-now').addEventListener('click',async()=>{if(!relayOk()){toast('Pas de relais configuré');return}toast('Synchronisation…');await syncNow();$('#sync-status').textContent=syncStatusText();toast(sync.err?'Relais injoignable : '+sync.err:'Synchronisé')});
 $('#relay-save').addEventListener('click',()=>{const v=$('#relay-url').value.trim();if(v&&!/^https?:\/\//.test(v)){toast('Adresse invalide (https://…)');return}relayUrl=v;writeLS(LS_RELAY,v);loadSyncState();startSyncLoop();$('#sync-status').textContent=syncStatusText();toast(v?'Relais enregistré':'Synchronisation en ligne désactivée')});
 $('#q').addEventListener('input',e=>{ui.q=e.target.value;renderList()});
-for(const [id,key] of [['#like-chips','like']]) $(id).addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b||b.id==='ico-chip'||b.id==='fav-chip') return;ui[key]=b.dataset.v;$$(id+' .chip:not(#ico-chip):not(#fav-chip)').forEach(c=>c.setAttribute('aria-pressed',String(c===b)));renderList()});
+for(const [id,key] of [['#like-chips','like']]) $(id).addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b||b.id==='ico-chip'||b.id==='fav-chip'||b.id==='spec-chip') return;ui[key]=b.dataset.v;$$(id+' .chip:not(#ico-chip):not(#fav-chip):not(#spec-chip)').forEach(c=>c.setAttribute('aria-pressed',String(c===b)));renderList()});
 $('#ico-chip').addEventListener('click',e=>{ui.ico=!ui.ico;e.currentTarget.setAttribute('aria-pressed',String(ui.ico));renderList()});
 $('#fav-chip').addEventListener('click',e=>{ui.fav=!ui.fav;e.currentTarget.setAttribute('aria-pressed',String(ui.fav));renderList()});
+$('#spec-chip').addEventListener('click',e=>{ui.spec=!ui.spec;e.currentTarget.setAttribute('aria-pressed',String(ui.spec));if(ui.spec&&ui.sort==='group'){ui.sort='ratio';$('#sort-sel').value='ratio'}renderList()});
 const gs=$('#group-sel');GROUPS.forEach((g,i)=>{const o=document.createElement('option');o.value=String(i);o.textContent=g;gs.appendChild(o)});
 gs.addEventListener('change',e=>{ui.group=e.target.value;renderList()});
 function sortDirLabel(){const asc=ui.dir>0;const s=ui.sort;const lbl=s==='name'?(asc?'↑ A→Z':'↓ Z→A'):s==='c0'?(asc?'↑ du moins beau au plus beau':'↓ du plus beau au moins beau'):/^c[1-3]$/.test(s)?(asc?'↑ du plus commun au plus rare':'↓ du plus rare au plus commun'):s==='c4'?(asc?'↑ du plus facile au plus difficile':'↓ du plus difficile au plus facile'):(asc?'↑ croissant':'↓ décroissant');$('#sort-dir').textContent=lbl}
