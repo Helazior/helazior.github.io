@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-3Gi1l0nX+HcoMecGN/xbjnIsiKBP1xkJRmA2/ghJ7ZM=' 'sha256-rWrLJb8Lx2c7Huu3yQLLSREoC3T8QdrCGk4nCrXi/xE=' 'sha256-nz0UQi7XMlPcIxC+4SqEpyPKY3cgL1fqMOy1pBFH8oY=' 'sha256-ZRxaQHsO6XNLinREsxixfb5jDPo8W0GlkI7cUR87Dg8=' 'sha256-S18pspuvVFoUWB+b5SPn6mwrCLSbkDQFw6mtGARB3N4='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://upload.wikimedia.org; connect-src 'self' https: wss: http://127.0.0.1:* ws://127.0.0.1:* http://localhost:* ws://localhost:*; font-src 'self' data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; media-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-3Gi1l0nX+HcoMecGN/xbjnIsiKBP1xkJRmA2/ghJ7ZM=' 'sha256-rWrLJb8Lx2c7Huu3yQLLSREoC3T8QdrCGk4nCrXi/xE=' 'sha256-nz0UQi7XMlPcIxC+4SqEpyPKY3cgL1fqMOy1pBFH8oY=' 'sha256-b9ezvA8Tg9klei9aiMXpGPv/eES7/HZjcINQ4OrYCRU=' 'sha256-S18pspuvVFoUWB+b5SPn6mwrCLSbkDQFw6mtGARB3N4='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://upload.wikimedia.org; connect-src 'self' https: wss: http://127.0.0.1:* ws://127.0.0.1:* http://localhost:* ws://localhost:*; font-src 'self' data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; media-src 'none'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0e5c6b">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1623,8 +1623,14 @@ const fold0=s=>String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
 let toastT;function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2400)}
 function persist(){writeLS(gameKey(gameId),{v:3,log})}
 function refresh(){view=fold(log);checkPlayers()}
+/* Heure du relais : chaque réponse du relais porte `now` ; les entrées sont datées avec ce décalage, pour qu'un téléphone
+   à l'heure fausse garde un journal ordonné comme les autres (le relais refuse ce qui vient du futur). */
+const clock={offset:0,known:false,warned:false};
+const nowMs=()=>Date.now()+clock.offset;
+function learnClock(serverNow){if(!Number.isFinite(serverNow)||serverNow<=0) return;const off=serverNow-Date.now();if(clock.known&&Math.abs(off-clock.offset)<1500) return;clock.offset=off;clock.known=true;
+  if(Math.abs(off)>120000&&!clock.warned){clock.warned=true;toast(`L’heure de ce téléphone est décalée de ${Math.round(Math.abs(off)/60000)} min : les coches sont datées à l’heure du relais`)}}
 function add(entry){
-  const e=cleanEntry(Object.assign({},entry,{at:Date.now(),by:who(),id:undefined}));
+  const e=cleanEntry(Object.assign({},entry,{at:nowMs(),by:who(),id:undefined}));
   if(!e) return null; log.push(e);refresh();persist();scheduleDbWrite();scheduleSync();return e;
 }
 
@@ -2089,7 +2095,7 @@ async function flush(){
       if(!liveSend({t:'push',rid,entries:chunk})){live.inflight.delete(rid);break}}
     clearTimeout(live.ackT);live.ackT=setTimeout(()=>{if([...live.inflight.values()].some(f=>Date.now()-f.at>8000)) liveReconnect('envoi sans accusé')},8500);return}
   if(sync.pushing) return;sync.pushing=true; /* sans canal : HTTP, même dépôt côté relais */
-  try{for(let i=0;i<pend.length;i+=400){const chunk=pend.slice(i,i+400);const r=await relayFetch(`/games/${encodeURIComponent(gameId)}/entries`,{body:{entries:chunk}});for(const e of chunk) sync.acked.add(e.id);applyRange(r.prev,r.last)}
+  try{for(let i=0;i<pend.length;i+=400){const chunk=pend.slice(i,i+400);const r=await relayFetch(`/games/${encodeURIComponent(gameId)}/entries`,{body:{entries:chunk}});learnClock(r.now);for(const e of chunk) sync.acked.add(e.id);noteRejected(r.rejected);applyRange(r.prev,r.last)}
     sync.err='';sync.last=Date.now();saveSyncState()}
   catch(e){sync.err=e.message||'erreur'}
   finally{sync.pushing=false;renderSyncState()}
@@ -2100,7 +2106,7 @@ async function syncNow(){
   if(!relayOk()) return false;if(sync.busy){sync.again=true;return false}if(isOffline()){renderSyncState();return false}
   sync.busy=true;
   try{let more=true,guard=0,fresh=[];
-    while(more&&guard++<50){const r=await relayFetch(`/games/${encodeURIComponent(gameId)}/entries?after=${sync.seq}`);fresh=fresh.concat(absorb(r.entries));sync.seq=Math.max(sync.seq,Number(r.seq)||0);more=!!r.more}
+    while(more&&guard++<50){const r=await relayFetch(`/games/${encodeURIComponent(gameId)}/entries?after=${sync.seq}`);learnClock(r.now);fresh=fresh.concat(absorb(r.entries));sync.seq=Math.max(sync.seq,Number(r.seq)||0);more=!!r.more}
     sync.err='';sync.last=Date.now();saveSyncState();announce(fresh)}
   catch(e){sync.err=e.message||'erreur'}
   finally{sync.busy=false;renderSyncState();if(sync.again){sync.again=false;setTimeout(syncNow,0)}else flush()}
@@ -2135,11 +2141,13 @@ function liveProbe(){ /* ping : sans pong sous 8 s, la connexion est tenue pour 
   if(!live.ws||live.ws.readyState!==1||live.pongT) return;if(!liveSend('ping')) return;
   live.pongT=setTimeout(()=>{live.pongT=null;liveReconnect('pas de réponse')},8000)}
 function liveReconnect(){liveClose();live.tries=0;liveConnect()}
-function liveOnEntries(m){const fresh=absorb(m.entries);if(applyRange(m.prev,m.last)){sync.err='';sync.last=Date.now()}saveSyncState();announce(fresh);renderSyncState()}
-function liveOnAck(m){const f=live.inflight.get(m.rid);live.inflight.delete(m.rid);if(!live.inflight.size){clearTimeout(live.ackT);live.ackT=null}
+function liveOnEntries(m){learnClock(m.now);const fresh=absorb(m.entries);if(applyRange(m.prev,m.last)){sync.err='';sync.last=Date.now()}saveSyncState();announce(fresh);renderSyncState()}
+function liveOnAck(m){const f=live.inflight.get(m.rid);live.inflight.delete(m.rid);if(!live.inflight.size){clearTimeout(live.ackT);live.ackT=null}learnClock(m.now);
   if(m.error){sync.err=m.error;renderSyncState();clearTimeout(sync.flushT);sync.flushT=setTimeout(flush,5000);return} /* refus (cadence, taille) : on réessaie dans 5 s */
-  if(f) for(const id of f.ids) sync.acked.add(id);applyRange(m.prev,m.last);sync.err='';sync.last=Date.now();saveSyncState();renderSyncState()}
-function liveOnPresence(m){live.online=Array.isArray(m.online)?m.online.filter(isPlayerId):[];live.n=Number(m.n)||0;renderPresence();renderSyncState()}
+  if(f) for(const id of f.ids) sync.acked.add(id);noteRejected(m.rejected);applyRange(m.prev,m.last);sync.err='';sync.last=Date.now();saveSyncState();renderSyncState()}
+function noteRejected(ids){ /* entrées refusées par le schéma du relais (date, forme) : elles restent dans ce journal, ne repartent pas, et on le dit */
+  const n=Array.isArray(ids)?ids.length:0;if(!n) return;for(const id of ids) sync.acked.add(id);toast(`${n} entrée${n>1?'s':''} refusée${n>1?'s':''} par le relais${clock.known&&Math.abs(clock.offset)>120000?' (heure du téléphone)':''}`)}
+function liveOnPresence(m){learnClock(m.now);live.online=Array.isArray(m.online)?m.online.filter(isPlayerId):[];live.n=Number(m.n)||0;renderPresence();renderSyncState()}
 function renderPresence(){for(const b of document.querySelectorAll('#scoreboard .player[data-p]')) b.classList.toggle('online',live.state==='live'&&live.online.includes(b.dataset.p))}
 /* Pastille d'en-tête et ligne des réglages */
 function renderSyncState(){
@@ -2152,7 +2160,7 @@ function renderSyncState(){
   else setSync('wait','reconnexion…');
   const el=$('#sync-status');if(el) el.textContent=syncStatusText();
 }
-function syncStatusText(){const n=pendingEntries().length,wait=n?` · ${n} entrée${n>1?'s':''} en attente`:'';
+function syncStatusText(){const n=pendingEntries().length,skew=clock.known&&Math.abs(clock.offset)>120000?` · heure du téléphone décalée de ${Math.round(Math.abs(clock.offset)/60000)} min, entrées datées par le relais`:'',wait=(n?` · ${n} entrée${n>1?'s':''} en attente`:'')+skew;
   if(!relayOk()) return 'Pas de relais : codes et fichiers seulement.';
   if(isOffline()) return `Hors ligne${wait}${n?', envoyée'+(n>1?'s':'')+' au retour du réseau':''}.`;
   if(live.state==='live') return `En direct${live.n>1?` · ${live.n} appareils connectés`:''}${n?wait+(sync.err?` (${sync.err})`:''):' · tout est envoyé'}${sync.last?' · synchronisé '+fmtHM.format(new Date(sync.last)):''}.`;
@@ -2480,7 +2488,7 @@ renderDevicePicker();
 initPhotos();
 initDb();
 loadSyncState();startSyncLoop();
-window.__naturadex={get sync(){return sync},get live(){return live},syncNow,liveReconnect,pending:()=>pendingEntries().length}; /* poignée de diagnostic (console, tests) */
+window.__naturadex={get sync(){return sync},get live(){return live},get clock(){return clock},syncNow,liveReconnect,pending:()=>pendingEntries().length}; /* poignée de diagnostic (console, tests) */
 })();
 </script>
 
