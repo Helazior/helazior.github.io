@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-3Gi1l0nX+HcoMecGN/xbjnIsiKBP1xkJRmA2/ghJ7ZM=' 'sha256-rWrLJb8Lx2c7Huu3yQLLSREoC3T8QdrCGk4nCrXi/xE=' 'sha256-nz0UQi7XMlPcIxC+4SqEpyPKY3cgL1fqMOy1pBFH8oY=' 'sha256-b9ezvA8Tg9klei9aiMXpGPv/eES7/HZjcINQ4OrYCRU=' 'sha256-S18pspuvVFoUWB+b5SPn6mwrCLSbkDQFw6mtGARB3N4='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://upload.wikimedia.org; connect-src 'self' https: wss: http://127.0.0.1:* ws://127.0.0.1:* http://localhost:* ws://localhost:*; font-src 'self' data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; media-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-3Gi1l0nX+HcoMecGN/xbjnIsiKBP1xkJRmA2/ghJ7ZM=' 'sha256-rWrLJb8Lx2c7Huu3yQLLSREoC3T8QdrCGk4nCrXi/xE=' 'sha256-nz0UQi7XMlPcIxC+4SqEpyPKY3cgL1fqMOy1pBFH8oY=' 'sha256-VEUmgCtCn+ynt5SI+e6rsKSG9e8t9F2a4QxoVC4kimE=' 'sha256-S18pspuvVFoUWB+b5SPn6mwrCLSbkDQFw6mtGARB3N4='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://upload.wikimedia.org; connect-src 'self' https: wss: http://127.0.0.1:* ws://127.0.0.1:* http://localhost:* ws://localhost:*; font-src 'self' data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; media-src 'none'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0e5c6b">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -121,7 +121,7 @@ body.cols-2 .card h3,body.cols-3 .card h3{font-size:15px}
 .card.taken{box-shadow:0 0 0 2px var(--good)}
 .card .head{grid-area:head;width:56px;height:56px;border-radius:50%;background:var(--raised);display:grid;place-items:center;overflow:hidden;cursor:pointer;border:0;padding:0}
 .card .head svg{width:56px;height:56px;display:block}
-.head .spimg{width:100%;height:100%;object-fit:cover;display:block;background:var(--surface-2)}
+.head .spimg{width:100%;height:100%;object-fit:cover;display:block;background:var(--surface-2)} .head .spimg.broken{visibility:hidden}
 .card .info{grid-area:info;min-width:0;cursor:pointer}
 .card h3{margin:0;font-family:var(--font-display);font-size:17px;font-weight:800;line-height:1.15;letter-spacing:-.3px}
 .card .latin{margin:0;font-size:12px;color:var(--ink-2);font-style:italic}
@@ -1678,7 +1678,11 @@ function filtered(){
 /* Vignette : en mode Photos, la photo Wikipédia de toute espèce qui en a une (relevée, ou chargée pour la liste de base) ; sinon le dessin, ou la photo quand il n'y a pas de dessin. */
 const LS_WIMG='duel-camargue-wikiimg';const WIKI_IMG=readLS(LS_WIMG)||{};
 function imgFor(sp){if(disp.photos) return sp.img||WIKI_IMG[sp.id]||'';return sp.drawn?'':(sp.img||'')}
-function headHTML(sp,uid){const im=imgFor(sp);return im?`<img class="spimg" src="${esc(imgUrl(im))}" alt="" loading="lazy" decoding="async">`:drawSVG(sp,uid)}
+function headHTML(sp,uid){const im=imgFor(sp);return im?`<img class="spimg" src="${esc(imgUrl(im))}" alt="" loading="lazy" decoding="async" data-sp="${esc(sp.id)}" data-uid="${esc(uid||'')}">`:drawSVG(sp,uid)}
+/* Photo qui ne charge pas (réseau, limite de Wikimedia) : le dessin reprend sa place quand il existe, sinon un fond neutre ; la bannière de la fiche s'efface. */
+document.addEventListener('error',e=>{const img=e.target;if(!(img instanceof HTMLImageElement)) return;
+  if(img.classList.contains('spimg')){const sp=spOf(img.dataset.sp);if(sp&&(!sp.disc||sp.drawn)){const t=document.createElement('template');t.innerHTML=drawSVG(sp,img.dataset.uid||('e-'+sp.id));img.replaceWith(t.content)}else img.classList.add('broken');return}
+  const b=img.closest('.sheet-photo');if(b) b.remove()},true);
 async function fetchOnePhoto(sp){ /* photo Wikipédia d'une espèce ouverte dans la fiche, à la demande */
   try{const r=await wikiBatch([canon(sp.l)]);const w=r[canon(sp.l)];WIKI_IMG[sp.id]=(w&&w.img)||'';writeLS(LS_WIMG,WIKI_IMG);if(sheetSid===sp.id) renderSheet(sp.id)}catch(e){}
 }
