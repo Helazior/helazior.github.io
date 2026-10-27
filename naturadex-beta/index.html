@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-3Gi1l0nX+HcoMecGN/xbjnIsiKBP1xkJRmA2/ghJ7ZM=' 'sha256-cw+6ilAM60MNTfPBbw3LmMUZ5QWpg9awT2A8de4PD+0=' 'sha256-nz0UQi7XMlPcIxC+4SqEpyPKY3cgL1fqMOy1pBFH8oY=' 'sha256-DpGDegqE0kKSOquS+bK7dUhbjbCdTbLi2/+Q2bZa9ic=' 'sha256-S18pspuvVFoUWB+b5SPn6mwrCLSbkDQFw6mtGARB3N4='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.wikimedia.org https://*.wikipedia.org; connect-src 'self' https: wss: http://127.0.0.1:* ws://127.0.0.1:* http://localhost:* ws://localhost:*; font-src 'self' data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; media-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-3Gi1l0nX+HcoMecGN/xbjnIsiKBP1xkJRmA2/ghJ7ZM=' 'sha256-NyI4Uq9qltdaVcoVhCZjvCxVZXvsBTBek9ViT24R0yQ=' 'sha256-nz0UQi7XMlPcIxC+4SqEpyPKY3cgL1fqMOy1pBFH8oY=' 'sha256-po8XboZH7ZgzD9d/nLTBxL3jvetToYHdiFLHVCpmXzE=' 'sha256-S18pspuvVFoUWB+b5SPn6mwrCLSbkDQFw6mtGARB3N4='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.wikimedia.org https://*.wikipedia.org; connect-src 'self' https: wss: http://127.0.0.1:* ws://127.0.0.1:* http://localhost:* ws://localhost:*; font-src 'self' data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; media-src 'none'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0e5c6b">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -522,6 +522,8 @@ table.tbl th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:
     <div class="row"><button class="btn danger" type="button" id="reset-all">Tout effacer</button></div>
     <p class="hint" style="margin-top:14px">Repartir de zéro sur ce téléphone : efface ici les parties, le pokédex, les photos de cette version et l’identité (le relais et l’ancienne appli ne bougent pas) ; au prochain lancement, « Qui es-tu ? ».</p>
     <div class="row"><button class="btn danger" type="button" id="reset-local">Repartir de zéro sur ce téléphone</button></div>
+    <p class="hint" style="margin-top:14px">Supprimer mon compte : efface définitivement ce nom, ses captures, favoris, notes, bonus et son pokédex, sur le relais et sur tous les téléphones. Les lieux et relevés qu’il a ajoutés restent, anonymisés.</p>
+    <div class="row"><button class="btn danger" type="button" id="acct-erase">Supprimer mon compte…</button></div>
   </div>
 </section>
 </main>
@@ -1055,7 +1057,16 @@ const RARITY={pg:{"flamant-rose":[1,1],"flamant-nain":[4,3],"heron-cendre":[1,1]
 const MONTHS_FR=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
 const GBIF_COUNTS={"pg":{"flamant-rose":[1448,12366,2],"flamant-nain":[12,244,123],"heron-cendre":[981,7749,9],"grande-aigrette":[1001,6697,8],"aigrette-garzette":[1852,13413,1],"heron-garde-boeufs":[439,4255,30],"bihoreau-gris":[113,3081,81],"crabier-chevelu":[15,2232,121],"heron-pourpre":[8,2521,131],"butor-etoile":[23,795,118],"ibis-falcinelle":[165,7981,68],"spatule-blanche":[100,2882,86],"cigogne-blanche":[657,5899,20],"cigogne-noire":[38,217,113],"grand-cormoran":[639,4381,22],"cormoran-pygmee":[0,0,0],"ibis-sacre":[56,431,103],"canard-colvert":[1272,10075,4],"sarcelle-hiver":[807,3323,14],"canard-souchet":[380,2251,35],"canard-siffleur":[99,561,87],"canard-pilet":[34,299,114],"canard-chipeau":[129,1487,78],"nette-rousse":[53,2325,105],"fuligule-milouin":[45,342,109],"fuligule-morillon":[12,41,124],"fuligule-nyroca":[0,0,0],"tadorne-belon":[253,4155,47],"oie-cendree":[82,436,94],"cygne-tubercule":[896,6906,12],"erismature-tete-blanche":[0,0,0],"grebe-castagneux":[157,1384,71],"grebe-huppe":[236,2681,53],"grebe-cou-noir":[168,873,66],"busard-roseaux":[1287,7048,3],"busard-saint-martin":[252,1298,48],"buse-variable":[638,3643,23],"faucon-crecerelle":[393,2395,32],"epervier-europe":[155,797,72],"milan-noir":[6,2593,132],"milan-royal":[111,376,82],"balbuzard-pecheur":[65,472,100],"faucon-pelerin":[81,369,95],"faucon-emerillon":[87,402,93],"elanion-blanc":[2,0,140],"aigle-botte":[181,729,63],"circaete":[11,1001,126],"aigle-criard":[55,303,104],"pygargue-queue-blanche":[2,0,141],"hibou-marais":[0,27,0],"cheveche":[3,27,138],"effraie":[110,492,83],"hibou-moyen-duc":[3,37,139],"foulque-macroule":[767,6885,16],"gallinule":[1059,6908,5],"rale-eau":[544,2318,26],"taleve-sultane":[233,2573,55],"marouette-ponctuee":[0,0,0],"grue-cendree":[188,2411,61],"avocette":[496,4585,27],"echasse-blanche":[160,7115,69],"vanneau-huppe":[370,2284,36],"pluvier-dore":[61,456,101],"pluvier-argente":[354,2366,38],"grand-gravelot":[195,1408,60],"gravelot-collier-interrompu":[73,1872,98],"becasseau-variable":[225,1807,57],"becasseau-minute":[93,951,91],"combattant-varie":[175,1218,64],"becassine-marais":[561,2257,25],"becassine-sourde":[6,30,133],"barge-queue-noire":[49,1143,108],"courlis-cendre":[370,2121,37],"chevalier-gambette":[277,2335,45],"chevalier-arlequin":[234,2317,54],"chevalier-aboyeur":[182,1588,62],"chevalier-culblanc":[306,1775,44],"chevalier-guignette":[226,1817,56],"oedicneme":[9,88,129],"huitrier-pie":[14,1491,122],"tournepierre":[168,1242,67],"mouette-rieuse":[1039,9529,7],"mouette-melanocephale":[43,1824,111],"goeland-railleur":[105,1534,85],"goeland-leucophee":[951,7950,11],"goeland-brun":[24,175,117],"goeland-cendre":[4,22,136],"sterne-caugek":[258,1700,46],"sterne-caspienne":[96,1170,89],"martin-pecheur":[1058,4399,6],"huppe-fasciee":[51,1440,107],"pic-vert":[11,122,127],"pic-epeiche":[30,192,115],"pic-epeichette":[16,182,120],"panure-moustaches":[159,939,70],"lusciniole":[99,792,88],"bouscarle-cetti":[970,6671,10],"cisticole-joncs":[238,4024,52],"remiz-penduline":[152,571,73],"gorgebleue":[109,232,84],"bruant-roseaux":[461,2113,29],"fauvette-melanocephale":[640,4537,21],"fauvette-tete-noire":[202,1143,58],"pouillot-veloce":[684,2518,18],"roitelet-triple-bandeau":[137,401,77],"roitelet-huppe":[80,233,96],"tarier-patre":[314,1092,43],"rougequeue-noir":[250,1022,49],"rougegorge":[702,1936,17],"troglodyte":[151,578,74],"accenteur-mouchet":[28,127,116],"merle-noir":[172,972,65],"grive-musicienne":[95,399,90],"grive-litorne":[4,27,137],"grive-mauvis":[12,38,125],"mesange-charbonniere":[334,2341,40],"mesange-bleue":[417,1444,31],"orite-longue-queue":[70,438,99],"tarin-aulnes":[52,99,106],"etourneau":[807,5103,15],"pie-bavarde":[658,4351,19],"geai-chenes":[6,51,134],"choucas":[492,2698,28],"corneille-noire":[382,2338,33],"pipit-farlouse":[382,1638,34],"pipit-spioncelle":[42,242,112],"bergeronnette-grise":[331,1252,41],"bergeronnette-ruisseaux":[79,220,97],"alouette-champs":[145,1202,75],"cochevis-huppe":[335,2715,39],"moineau-domestique":[862,6465,13],"moineau-friquet":[144,1154,76],"pinson-arbres":[322,1402,42],"verdier":[59,938,102],"chardonneret":[242,2288,51],"linotte":[89,574,92],"serin-cini":[22,219,119],"grimpereau-jardins":[11,142,128],"pie-grieche-meridionale":[5,37,135],"bruant-proyer":[121,1154,80],"bruant-zizi":[9,58,130],"hirondelle-rustique":[196,3845,59],"pigeon-ramier":[123,1706,79],"tourterelle-turque":[567,4477,24],"faisan-colchide":[250,1621,50],"perdrix-rouge":[45,334,110]},"mv":{"flamant-rose":[964,7200,14],"flamant-nain":[0,0,0],"heron-cendre":[1006,7023,12],"grande-aigrette":[1050,6973,8],"aigrette-garzette":[1038,8259,10],"heron-garde-boeufs":[491,4316,38],"bihoreau-gris":[54,1712,115],"crabier-chevelu":[16,1770,129],"heron-pourpre":[12,2627,134],"butor-etoile":[91,2079,108],"ibis-falcinelle":[114,4513,103],"spatule-blanche":[84,2314,109],"cigogne-blanche":[492,6285,37],"cigogne-noire":[148,781,94],"grand-cormoran":[953,5961,15],"cormoran-pygmee":[0,0,0],"ibis-sacre":[3,51,139],"canard-colvert":[1044,8172,9],"sarcelle-hiver":[684,3564,24],"canard-souchet":[538,3140,33],"canard-siffleur":[136,769,97],"canard-pilet":[115,596,102],"canard-chipeau":[314,2514,57],"nette-rousse":[96,2479,106],"fuligule-milouin":[126,916,99],"fuligule-morillon":[37,442,119],"fuligule-nyroca":[3,64,140],"tadorne-belon":[199,3286,80],"oie-cendree":[408,2227,45],"cygne-tubercule":[552,4686,32],"erismature-tete-blanche":[0,0,0],"grebe-castagneux":[243,1796,72],"grebe-huppe":[518,3979,34],"grebe-cou-noir":[391,1873,51],"busard-roseaux":[715,4839,21],"busard-saint-martin":[278,1618,65],"buse-variable":[653,4088,25],"faucon-crecerelle":[450,2763,43],"epervier-europe":[399,1904,49],"milan-noir":[14,4957,133],"milan-royal":[277,717,66],"balbuzard-pecheur":[156,1001,92],"faucon-pelerin":[169,950,84],"faucon-emerillon":[265,915,68],"elanion-blanc":[5,57,137],"aigle-botte":[215,756,77],"circaete":[47,2742,116],"aigle-criard":[21,100,127],"pygargue-queue-blanche":[0,0,0],"hibou-marais":[10,73,135],"cheveche":[27,433,124],"effraie":[62,284,113],"hibou-moyen-duc":[15,102,130],"foulque-macroule":[696,5591,23],"gallinule":[394,2589,50],"rale-eau":[620,2503,28],"taleve-sultane":[36,403,120],"marouette-ponctuee":[0,46,0],"grue-cendree":[302,1221,58],"avocette":[157,1736,90],"echasse-blanche":[19,4260,128],"vanneau-huppe":[512,2803,36],"pluvier-dore":[143,674,95],"pluvier-argente":[322,1312,56],"grand-gravelot":[128,639,98],"gravelot-collier-interrompu":[24,709,126],"becasseau-variable":[187,878,83],"becasseau-minute":[56,416,114],"combattant-varie":[122,1169,101],"becassine-marais":[578,2399,30],"becassine-sourde":[31,97,122],"barge-queue-noire":[15,664,131],"courlis-cendre":[595,3342,29],"chevalier-gambette":[206,1396,78],"chevalier-arlequin":[153,1582,93],"chevalier-aboyeur":[250,2226,71],"chevalier-culblanc":[481,3469,40],"chevalier-guignette":[233,2089,73],"oedicneme":[92,2695,107],"huitrier-pie":[4,361,138],"tournepierre":[9,91,136],"mouette-rieuse":[881,6088,16],"mouette-melanocephale":[63,1168,111],"goeland-railleur":[137,817,96],"goeland-leucophee":[801,6789,17],"goeland-brun":[15,87,132],"goeland-cendre":[0,39,0],"sterne-caugek":[157,623,91],"sterne-caspienne":[160,1976,89],"martin-pecheur":[1001,4268,13],"huppe-fasciee":[25,2281,125],"pic-vert":[124,1345,100],"pic-epeiche":[109,685,104],"pic-epeichette":[161,792,88],"panure-moustaches":[289,858,62],"lusciniole":[360,1247,53],"bouscarle-cetti":[1784,8434,2],"cisticole-joncs":[258,4526,70],"remiz-penduline":[1011,1575,11],"gorgebleue":[488,1135,39],"bruant-roseaux":[1737,3104,4],"fauvette-melanocephale":[1322,5118,7],"fauvette-tete-noire":[1745,4418,3],"pouillot-veloce":[2017,3691,1],"roitelet-triple-bandeau":[652,1051,26],"roitelet-huppe":[206,347,79],"tarier-patre":[404,1417,46],"rougequeue-noir":[403,1108,47],"rougegorge":[1623,3194,5],"troglodyte":[471,963,41],"accenteur-mouchet":[275,471,67],"merle-noir":[518,1473,35],"grive-musicienne":[402,774,48],"grive-litorne":[35,224,121],"grive-mauvis":[44,99,117],"mesange-charbonniere":[702,2989,22],"mesange-bleue":[1500,3011,6],"orite-longue-queue":[193,967,82],"tarin-aulnes":[228,395,75],"etourneau":[562,4305,31],"pie-bavarde":[323,3291,55],"geai-chenes":[63,295,112],"choucas":[283,2844,63],"corneille-noire":[365,3508,52],"pipit-farlouse":[735,2036,20],"pipit-spioncelle":[230,492,74],"bergeronnette-grise":[293,929,61],"bergeronnette-ruisseaux":[196,415,81],"alouette-champs":[409,3138,44],"cochevis-huppe":[457,2646,42],"moineau-domestique":[621,3832,27],"moineau-friquet":[163,811,87],"pinson-arbres":[771,2134,18],"verdier":[297,1678,60],"chardonneret":[757,3489,19],"linotte":[165,625,86],"serin-cini":[169,399,85],"grimpereau-jardins":[41,321,118],"pie-grieche-meridionale":[103,1194,105],"bruant-proyer":[340,3178,54],"bruant-zizi":[31,145,123],"hirondelle-rustique":[281,4135,64],"pigeon-ramier":[302,2359,59],"tourterelle-turque":[222,2006,76],"faisan-colchide":[262,2379,69],"perdrix-rouge":[70,981,110]}}; /* {lieu:{espèce:[obs. oct.–nov., obs. année, rang oct.–nov.]}} carré ±9 km, 2010–2026 */
 const LIEU_INFO={pg:'Parc : 10 h – 17 h d\u2019octobre à mars, sortie ouverte jusqu\u2019au coucher du soleil ; 7 km de sentiers sur 60 ha ; entrée 8 € (à vérifier sur parcornithologique.com)',mv:'Sentier de la Palunette : 2,5 km, 2 observatoires et une plateforme ; 15 km de pistes ; parking au bout d\u2019une piste de 2 km depuis Mas-Thibert (horaires sur marais-vigueirat.reserves-naturelles.org)'};
-const KINDS=new Set(['tier','pts','comp','w','pct','mode','name','ico','objpct','obj','bonus','bonusdel','note','reset','unreset','add','xdel','lieuadd','profile','topn','end','resume','player','lieusp','lieudel','fav']);
+const KINDS=new Set(['tier','pts','comp','w','pct','mode','name','ico','objpct','obj','bonus','bonusdel','note','reset','unreset','add','xdel','lieuadd','profile','topn','end','resume','player','lieusp','lieudel','fav','erase']);
+const ANON='anonyme',PERSONAL_KINDS=new Set(['tier','fav','obj','bonus','name','player']);
+/* Compte supprimé : une pierre tombale {k:'erase',p} (posée par le relais) efface, sur chaque téléphone, tout ce qui concernait
+   ce compte avant elle — captures, favoris, objectifs, bonus, nom, adhésions, notes signées — et réattribue ses autres
+   contributions (lieux, relevés, réglages) à « anonyme ». Ce qui vient après (le nom repris plus tard) reste. */
+function purgeErased(entries,erased){
+  if(!erased) {erased={};for(const e of entries) if(e.k==='erase'&&(!erased[e.p]||e.at>erased[e.p])) erased[e.p]=e.at}
+  if(!Object.keys(erased).length) return entries;
+  return entries.filter(e=>{if(e.k==='erase') return true;const T=erased[e.p],Tb=erased[e.by];
+    if(T&&PERSONAL_KINDS.has(e.k)&&e.at<T) return false;if(Tb&&e.k==='note'&&e.at<Tb) return false;if(Tb&&e.at<Tb) e.by=ANON;return true})}
 const isLieuId=l=>!!LIEUX[l]||/^l-[a-z0-9]{3,40}$/.test(String(l||''));
 /* Espèces hors liste : ajoutées par les joueurs (entrée « add »), identifiant x-…, dessin générique par famille. */
 const CUSTOM={};
@@ -1231,6 +1242,7 @@ function cleanEntry(e){
     case 'mode': o.v=e.v==='duel'?'duel':'each';break;
     case 'name': if(!isPlayerId(e.p)) return null; o.p=e.p;o.v=String(e.v||'').slice(0,24);break;
     case 'player': if(!isPlayerId(e.p)) return null; o.p=e.p;o.on=e.on!==false;if(e.n) o.n=String(e.n).slice(0,24);break;
+    case 'erase': if(!isPlayerId(e.p)) return null; o.p=e.p;break;
     case 'ico': if(!Number.isFinite(e.v)) return null; o.v=Math.max(1,Math.min(5,e.v));break;
     case 'objpct': if(!Number.isFinite(e.v)) return null; o.v=Math.max(0,Math.min(500,e.v));break;
     case 'obj': if(!isPlayerId(e.p)||!Array.isArray(e.v)) return null; o.p=e.p;o.v=e.v.filter(knownSpecies).slice(0,OBJ_MAX);break;
@@ -1276,7 +1288,7 @@ function normalizeLog(raw){
   if(raw&&Array.isArray(raw.log)) entries=((raw.v||2)<3||legacy(raw.log))?migrateSlots(raw.log):raw.log; else if(raw&&Array.isArray(raw.events)) entries=migrateSlots(migrateV1(raw)); else if(Array.isArray(raw)) entries=legacy(raw)?migrateSlots(raw):raw;
   const seen=new Set(),out=[];
   for(const e of entries){const c=cleanEntry(e);if(!c||seen.has(c.id)) continue;seen.add(c.id);out.push(c)}
-  return out;
+  return purgeErased(out);
 }
 function ensurePlayer(v,p){if(!v.tiers[p]){v.tiers[p]={};v.tierAt[p]={};v.tierLieu[p]={}}if(!v.obj[p]) v.obj[p]=[];if(!v.fav[p]) v.fav[p]={};return v}
 function emptyView(){return {custom:{},lieux:{},profiles:{},lieuSpecies:{},present:{},topN:0,ended:0,players:[],tiers:{},tierAt:{},tierLieu:{},pts:{},comp:{},w:Object.assign({},DEFAULT_W),pct:DEFAULT_PCT.slice(),mode:'each',names:Object.assign({},DEFAULT_NAMES),icoMul:2,objPct:100,obj:{},fav:{},bonus:[],bonusMap:new Map(),deleted:new Set(),notes:{},resetAt:0,events:[]}}
@@ -1284,6 +1296,7 @@ function applyEntry(v,e){
   switch(e.k){
     case 'reset': if(v.cancelled&&v.cancelled.has(e.id)) break; v.resetAt=e.at;v.tiers={};v.tierAt={};v.tierLieu={};for(const p of v.players) ensurePlayer(v,p);v.bonusMap.clear();v.notes={};v.events=[];v.ended=0;break;
     case 'player': {const i=v.players.indexOf(e.p);if(e.on&&i<0&&v.players.length<MAX_PLAYERS) v.players.push(e.p);if(!e.on&&i>=0) v.players.splice(i,1);if(e.n) v.names[e.p]=e.n;ensurePlayer(v,e.p);break}
+    case 'erase': break; /* ses entrées ont déjà été retirées du journal (purgeErased) */
     case 'unreset': break;
     case 'tier': ensurePlayer(v,e.p);v.tiers[e.p][e.s]=e.t;v.tierAt[e.p][e.s]=e.at;v.tierLieu[e.p][e.s]=e.lieu||null;v.events.push(e);break;
     case 'lieuadd': v.lieux[e.lid]={id:e.lid,n:e.n,lat:e.lat,lng:e.lng,r:e.r,by:e.by,at:e.at};break;
@@ -1340,6 +1353,7 @@ function lieuProfile(v,l){if(!l) return null;if(v&&v.profiles[l]) return v.profi
 function mergeLog(local,incoming){
   const have=new Set(local.map(e=>e.id));let added=0;const inc=normalizeLog(incoming);
   for(const e of inc){if(!have.has(e.id)){local.push(e);have.add(e.id);added++}}
+  if(inc.some(e=>e.k==='erase')){const kept=purgeErased(local);if(kept.length!==local.length){local.length=0;for(const e of kept) local.push(e)}}
   const theirs=new Set(inc.map(e=>e.id));const extra=local.some(e=>!theirs.has(e.id));
   return {added,extra};
 }
@@ -1538,6 +1552,7 @@ function describeEntry(e,before){ /* before : état juste avant l'entrée */
     case 'mode': return `${who} passe en mode « ${e.v==='duel'?'le meilleur rafle tout':'chacun ses points'} »`;
     case 'name': return `${who} renomme ${n(e.p)} en ${e.v||'(vide)'}`;
     case 'player': return e.on?`${who} ajoute ${e.n||n(e.p)} à la partie`:`${who} retire ${n(e.p)} de la partie`;
+    case 'erase': return `${n(e.p)} supprime son compte`;
     case 'ico': return `${who} met le bonus iconique à ×${fmtPts(e.v)}`;
     case 'objpct': return `${who} met le bonus objectif à +${fmtPts(e.v)} %`;
     case 'obj': return `${who} définit les objectifs de ${n(e.p)} : ${e.v.length?e.v.map(spName).join(', '):'aucun'}`;
@@ -2131,6 +2146,32 @@ async function syncNow(){
    garde l'adresse du relais et, si demandé, l'identité ; le journal de l'ancienne appli n'est pas réimporté.
    Du relais : chaque lecture de partie et chaque arrivée sur le canal portent `epoch` ; s'il change, le relais a été remis
    à zéro par l'administrateur et ce téléphone repart de zéro tout seul. */
+/* Suppression du compte : fenêtre de confirmation (le nom doit être retapé), puis le relais efface et dépose les pierres tombales,
+   et ce téléphone efface sa copie dans toutes ses parties, le pokédex, les photos du compte et son identité. */
+function openErasePicker(p){
+  let el=$('#erasepick');const name=nameOf(p);
+  if(!el){el=document.createElement('div');el.id='erasepick';el.className='sheet';el.setAttribute('role','alertdialog');el.setAttribute('aria-modal','true');document.body.appendChild(el);
+    const bd=document.createElement('div');bd.id='erasebd';bd.className='backdrop';document.body.appendChild(bd);bd.addEventListener('click',closeErasePicker);
+    el.addEventListener('input',()=>{const v=$('#erase-confirm').value.trim();$('#erase-go').disabled=!(fold0(v)===fold0(el.dataset.name)||v===el.dataset.p)});
+    el.addEventListener('click',async e=>{if(e.target.closest('#erase-cancel')){closeErasePicker();return}
+      if(e.target.closest('#erase-go')&&!$('#erase-go').disabled){$('#erase-go').disabled=true;$('#erase-go').textContent='Suppression…';
+        try{await eraseAccount(el.dataset.p)}catch(err){$('#erase-go').textContent='Supprimer définitivement';$('#erase-go').disabled=false;toast('Suppression impossible : '+(err.message||'relais injoignable'))}}})}
+  el.dataset.p=p;el.dataset.name=name;
+  el.innerHTML=`<div class="grab"></div><h2 style="font-family:var(--font-display);font-size:20px;margin:4px 0 6px">Supprimer le compte « ${esc(name)} » ?</h2>
+    <p style="margin:0 0 8px"><b>C’est définitif.</b> Le nom, ses captures, favoris, objectifs, bonus, notes et son pokédex disparaissent du relais et de tous les téléphones. Les lieux, relevés et réglages qu’il a ajoutés restent, signés « anonyme ».</p>
+    <p class="hint" style="margin:0 0 4px">Pour confirmer, tapez le nom : ${esc(name)}</p>
+    <input id="erase-confirm" type="text" maxlength="24" autocomplete="off" placeholder="${esc(name)}" style="width:100%;box-sizing:border-box">
+    <div class="row" style="margin-top:12px"><button type="button" class="btn" id="erase-cancel">Annuler</button><button type="button" class="btn danger" id="erase-go" disabled>Supprimer définitivement</button></div>`;
+  el.hidden=false;$('#erasebd').hidden=false;setTimeout(()=>$('#erase-confirm').focus(),50)}
+function closeErasePicker(){const el=$('#erasepick');if(el) el.hidden=true;const bd=$('#erasebd');if(bd) bd.hidden=true}
+async function eraseAccount(p){
+  const r=await relayFetch(`/players/${encodeURIComponent(p)}/erase`,{body:{}});if(r.error) throw new Error(r.error);
+  liveClose();const T=Number(r.now)||Date.now();
+  for(const k of Object.keys(localStorage)) if(k.startsWith('naturadex-log:')){const raw=readLS(k);if(raw&&Array.isArray(raw.log)){raw.log=purgeErased(raw.log,{[p]:T});writeLS(k,raw)}}
+  localStorage.removeItem(LS_DEX+p);const known=readLS(LS_KNOWN)||{};delete known[p];writeLS(LS_KNOWN,known);
+  if(ui.device===p){localStorage.removeItem(LS_DEV);localStorage.removeItem(LS_ME)}
+  const done=()=>location.reload();
+  if(idb){idbAll().then(all=>Promise.all(Object.keys(all).filter(k=>k.startsWith(p+'|')).map(idbDel))).then(done,done)} else done()}
 function localReset(opt){opt=opt||{};liveClose();
   const keep=new Set([LS_RELAY,LS_EPOCH,LS_LEGACY_SEEN].concat(opt.keepIdentity?[LS_DEV,LS_ME,LS_KNOWN]:[]));
   const legacy=readLS(LS_LOG)||readLS(LS_V1);if(legacy) writeLS(LS_LEGACY_SEEN,legacyFp(legacy));
@@ -2496,6 +2537,7 @@ $('#album-export').addEventListener('click',async()=>{const n=Object.keys(PHOTOS
 $('#journal-export').addEventListener('click',async()=>{const ok=await shareFile(`journal-${who()}-${new Date().toISOString().slice(0,10)}.txt`,await encodeCodeZ(log),'text/plain');$('#album-msg').textContent=ok?'Journal exporté : l\u2019autre le colle dans « Coller ici le code reçu » ou l\u2019importe comme album.':'Export indisponible ici.'});
 $('#album-import').addEventListener('change',async e=>{const f=e.target.files&&e.target.files[0];if(!f) return;try{const txt=await f.text();if(txt.trim().startsWith('DUEL')){await mergeFrom(txt);return}const n=await albumImport(txt);$('#album-msg').textContent=`${n} photo${n>1?'s':''} importée${n>1?'s':''}.`;toast(`${n} photo${n>1?'s':''} importée${n>1?'s':''}`)}catch(err){$('#album-msg').textContent='Fichier illisible.'}e.target.value=''});
 let resetArmed=null;
+$('#acct-erase').addEventListener('click',()=>{if(!ui.device){toast('Choisissez d\u2019abord qui vous êtes');return}if(!relayOk()){toast('Suppression impossible sans relais');return}openErasePicker(ui.device)});
 let localArmed=null;$('#reset-local').addEventListener('click',e=>{if(localArmed){clearTimeout(localArmed);localReset({photos:true});return}localArmed=setTimeout(()=>{localArmed=null;e.target.textContent='Repartir de zéro sur ce téléphone'},4000);e.target.textContent='Confirmer : tout effacer ici ?'});
 $('#reset-all').addEventListener('click',e=>{if(resetArmed){clearTimeout(resetArmed);resetArmed=null;add({k:'reset'});afterChange();e.target.textContent='Tout effacer';toast('Tout est effacé (annulable dans l\u2019historique, onglet Stats)');return}
   e.target.textContent='Confirmer l’effacement ?';resetArmed=setTimeout(()=>{resetArmed=null;e.target.textContent='Tout effacer'},5000)});
