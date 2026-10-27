@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-3Gi1l0nX+HcoMecGN/xbjnIsiKBP1xkJRmA2/ghJ7ZM=' 'sha256-WG8nq8p6iYIA/rm4Vib0kAKW1o2ys4qUNZfasKU/qW4=' 'sha256-nz0UQi7XMlPcIxC+4SqEpyPKY3cgL1fqMOy1pBFH8oY=' 'sha256-CqggANazlmDNGS92TKVtb4NLQvf+IbEjU3zP64pW0gM=' 'sha256-S18pspuvVFoUWB+b5SPn6mwrCLSbkDQFw6mtGARB3N4='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.wikimedia.org https://*.wikipedia.org; connect-src 'self' https: wss: http://127.0.0.1:* ws://127.0.0.1:* http://localhost:* ws://localhost:*; font-src 'self' data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; media-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-3Gi1l0nX+HcoMecGN/xbjnIsiKBP1xkJRmA2/ghJ7ZM=' 'sha256-5oOn2KaYXp0ipX4bmB9SCJN8Yzj01nWc+HGmXcnt+AM=' 'sha256-nz0UQi7XMlPcIxC+4SqEpyPKY3cgL1fqMOy1pBFH8oY=' 'sha256-bbXE9IvEVwkZHm4A5GMtsqMiboQ6hQJKVunAYNiurzw=' 'sha256-S18pspuvVFoUWB+b5SPn6mwrCLSbkDQFw6mtGARB3N4='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.wikimedia.org https://*.wikipedia.org; connect-src 'self' https: wss: http://127.0.0.1:* ws://127.0.0.1:* http://localhost:* ws://localhost:*; font-src 'self' data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; media-src 'none'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0e5c6b">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -122,7 +122,7 @@ body.cols-2 .card h3,body.cols-3 .card h3{font-size:15px}
 .card.taken{box-shadow:0 0 0 2px var(--good)}
 .card .head{grid-area:head;width:56px;height:56px;border-radius:50%;background:var(--raised);display:grid;place-items:center;overflow:hidden;cursor:pointer;border:0;padding:0}
 .card .head svg{width:56px;height:56px;display:block}
-.head .spimg{width:100%;height:100%;object-fit:cover;display:block;background:var(--surface-2)} .head .spimg.broken{visibility:hidden}
+.head .spimg{width:100%;height:100%;object-fit:cover;display:block;background:var(--surface-2)}
 .card .info{grid-area:info;min-width:0;cursor:pointer}
 .card h3{margin:0;font-family:var(--font-display);font-size:17px;font-weight:800;line-height:1.15;letter-spacing:-.3px}
 .card .latin{margin:0;font-size:12px;color:var(--ink-2);font-style:italic}
@@ -528,7 +528,7 @@ table.tbl th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:
     <p class="hint" style="margin-top:14px">Supprimer mon compte : efface définitivement ce nom, ses captures, favoris, notes, bonus et son pokédex, sur le relais et sur tous les téléphones. Les lieux et relevés qu’il a ajoutés restent, anonymisés.</p>
     <div class="row"><button class="btn danger" type="button" id="acct-erase">Supprimer mon compte…</button></div>
   </div>
-  <p class="hint" id="app-version" style="text-align:center;margin:16px 0 4px">Version du 27/10/2026 14:25</p>
+  <p class="hint" id="app-version" style="text-align:center;margin:16px 0 4px">Version du 27/10/2026 14:32</p>
 </section>
 </main>
 
@@ -1046,7 +1046,8 @@ function insectSVG(sp,uid){
   }
   return o+'</svg>';
 }
-function drawSVG(sp,uid){if(sp.img&&!sp.drawn) return `<img class="spimg" src="${esc(imgUrl(sp.img))}" alt="" loading="lazy" decoding="async">`;const k=sp.h&&sp.h.k;let o=k==='m'?mammalSVG(sp,uid):k==='h'?herpSVG(sp,uid):k==='i'?insectSVG(sp,uid):headSVG(sp,uid);
+const hasDrawing=sp=>!!sp&&((!sp.disc&&!sp.custom)||!!sp.drawn); /* dessin fait à la main (liste de base, ou tête dessinée pour une espèce relevée) */
+function drawSVG(sp,uid,force){if(!force&&sp.img&&!sp.drawn) return `<img class="spimg" src="${esc(imgUrl(sp.img))}" alt="" loading="lazy" decoding="async">`;const k=sp.h&&sp.h.k;let o=k==='m'?mammalSVG(sp,uid):k==='h'?herpSVG(sp,uid):k==='i'?insectSVG(sp,uid):headSVG(sp,uid);
   if(sp.custom) o=o.replace(/<\/svg>$/,'<circle cx="82" cy="82" r="13" fill="#e8c33a" stroke="rgba(0,0,0,.25)"/><text x="82" y="88" text-anchor="middle" font-size="17" font-weight="700" font-family="sans-serif" fill="#1d1d1f">?</text></svg>');
   return o}
 
@@ -1722,18 +1723,20 @@ function filtered(){
 }
 /* Vignette : en mode Photos, la photo Wikipédia de toute espèce qui en a une (relevée, ou chargée pour la liste de base) ; sinon le dessin, ou la photo quand il n'y a pas de dessin. */
 const LS_WIMG='duel-camargue-wikiimg';const WIKI_IMG=readLS(LS_WIMG)||{};
-function imgFor(sp){if(disp.photos) return sp.img||WIKI_IMG[sp.id]||'';return sp.drawn?'':(sp.img||'')}
-function headHTML(sp,uid){const im=imgFor(sp);return im?`<img class="spimg" src="${esc(imgUrl(im))}" alt="" loading="lazy" decoding="async" data-sp="${esc(sp.id)}" data-uid="${esc(uid||'')}">`:drawSVG(sp,uid)}
-/* Photo qui ne charge pas (réseau, limite de Wikimedia) : le dessin reprend sa place quand il existe, sinon un fond neutre ; la bannière de la fiche s'efface. */
+/* Vignette d'une espèce — mode Dessins : mon dessin s'il existe, sinon la photo en ligne, sinon le dessin générique de son type ;
+   mode Photos : la photo en ligne, sinon mon dessin, sinon le dessin générique. Une photo qui ne charge pas (réseau, limite de
+   Wikimedia) retombe de la même façon : mon dessin, sinon le générique — jamais une case vide. */
+function imgFor(sp){const photo=sp.img||WIKI_IMG[sp.id]||'';if(disp.photos) return photo;return hasDrawing(sp)?'':photo}
+function headHTML(sp,uid){const im=imgFor(sp);return im?`<img class="spimg" src="${esc(imgUrl(im))}" alt="" loading="lazy" decoding="async" data-sp="${esc(sp.id)}" data-uid="${esc(uid||'')}">`:drawSVG(sp,uid,true)}
 document.addEventListener('error',e=>{const img=e.target;if(!(img instanceof HTMLImageElement)) return;
-  if(img.classList.contains('spimg')){const sp=spOf(img.dataset.sp);if(sp&&(!sp.disc||sp.drawn)){const t=document.createElement('template');t.innerHTML=drawSVG(sp,img.dataset.uid||('e-'+sp.id));img.replaceWith(t.content)}else img.classList.add('broken');return}
+  if(img.classList.contains('spimg')){const sp=spOf(img.dataset.sp);if(sp){const t=document.createElement('template');t.innerHTML=drawSVG(sp,img.dataset.uid||('e-'+sp.id),true);img.replaceWith(t.content)}else img.remove();return}
   const b=img.closest('.sheet-photo');if(b) b.remove()},true);
 async function fetchOnePhoto(sp){ /* photo Wikipédia d'une espèce ouverte dans la fiche, à la demande */
   try{const r=await wikiBatch([canon(sp.l)]);const w=r[canon(sp.l)];WIKI_IMG[sp.id]=(w&&w.img)||'';writeLS(LS_WIMG,WIKI_IMG);if(sheetSid===sp.id) renderSheet(sp.id)}catch(e){}
 }
 let wikiLoading=false;
-async function loadWikiPhotos(){ /* photos Wikipédia des espèces dessinées (liste de base, hors liste, relevées avec dessin), une fois, gardées dans le téléphone */
-  if(wikiLoading) return;const todo=allSpecies().filter(sp=>!sp.img&&sp.l&&WIKI_IMG[sp.id]===undefined);if(!todo.length) return;
+async function loadWikiPhotos(all){ /* photos Wikipédia, une fois, gardées dans le téléphone : toutes les espèces en mode Photos, seulement celles sans dessin sinon */
+  if(wikiLoading) return;const todo=allSpecies().filter(sp=>!sp.img&&sp.l&&WIKI_IMG[sp.id]===undefined&&(all||!hasDrawing(sp)));if(!todo.length) return;
   wikiLoading=true;const msg=$('#img-msg');let done=0,found=0;
   try{const chunks=[];for(let i=0;i<todo.length;i+=50) chunks.push(todo.slice(i,i+50));
     for(const ch of chunks){msg.textContent=`Photos Wikipédia… ${done}/${todo.length}`;const r=await wikiBatch(ch.map(sp=>canon(sp.l)));
@@ -2571,13 +2574,14 @@ $('#end-duel').addEventListener('click',e=>{if(e.target.dataset.armed){add({k:'e
 
 $('#cols-seg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b) return;disp.cols=b.dataset.v;applyDisplay()});
 $('#skin-seg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b) return;disp.skin=b.dataset.v;applyDisplay();if(ui.tab==='stats') renderStats()});
-$('#img-seg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b) return;disp.photos=b.dataset.v==='photo';applyDisplay();renderAll();if(disp.photos) loadWikiPhotos()});
+$('#img-seg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b) return;disp.photos=b.dataset.v==='photo';applyDisplay();renderAll();loadWikiPhotos(disp.photos)});
 $('#zoom-minus').addEventListener('click',()=>{disp.zoom=Math.max(70,disp.zoom-10);applyDisplay()});
 $('#zoom-plus').addEventListener('click',()=>{disp.zoom=Math.min(160,disp.zoom+10);applyDisplay()});
 $('#zoom-reset').addEventListener('click',()=>{disp.zoom=100;applyDisplay()});
 applyDisplay();
 restoreFilters();
 renderAll();
+setTimeout(()=>loadWikiPhotos(disp.photos),1500); /* photos manquantes : toutes en mode Photos, seulement celles des espèces sans dessin sinon */
 renderDevicePicker();
 initPhotos();
 initDb();
