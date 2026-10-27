@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-3Gi1l0nX+HcoMecGN/xbjnIsiKBP1xkJRmA2/ghJ7ZM=' 'sha256-rWrLJb8Lx2c7Huu3yQLLSREoC3T8QdrCGk4nCrXi/xE=' 'sha256-nz0UQi7XMlPcIxC+4SqEpyPKY3cgL1fqMOy1pBFH8oY=' 'sha256-VEUmgCtCn+ynt5SI+e6rsKSG9e8t9F2a4QxoVC4kimE=' 'sha256-S18pspuvVFoUWB+b5SPn6mwrCLSbkDQFw6mtGARB3N4='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://upload.wikimedia.org; connect-src 'self' https: wss: http://127.0.0.1:* ws://127.0.0.1:* http://localhost:* ws://localhost:*; font-src 'self' data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; media-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-3Gi1l0nX+HcoMecGN/xbjnIsiKBP1xkJRmA2/ghJ7ZM=' 'sha256-cw+6ilAM60MNTfPBbw3LmMUZ5QWpg9awT2A8de4PD+0=' 'sha256-nz0UQi7XMlPcIxC+4SqEpyPKY3cgL1fqMOy1pBFH8oY=' 'sha256-DpGDegqE0kKSOquS+bK7dUhbjbCdTbLi2/+Q2bZa9ic=' 'sha256-S18pspuvVFoUWB+b5SPn6mwrCLSbkDQFw6mtGARB3N4='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.wikimedia.org https://*.wikipedia.org; connect-src 'self' https: wss: http://127.0.0.1:* ws://127.0.0.1:* http://localhost:* ws://localhost:*; font-src 'self' data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; media-src 'none'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0e5c6b">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -520,6 +520,8 @@ table.tbl th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:
     <h2>Remise à zéro</h2>
     <p class="hint">Efface toutes les prises, bonus et notes des deux joueurs. Les points par espèce et le barème sont conservés.</p>
     <div class="row"><button class="btn danger" type="button" id="reset-all">Tout effacer</button></div>
+    <p class="hint" style="margin-top:14px">Repartir de zéro sur ce téléphone : efface ici les parties, le pokédex, les photos de cette version et l’identité (le relais et l’ancienne appli ne bougent pas) ; au prochain lancement, « Qui es-tu ? ».</p>
+    <div class="row"><button class="btn danger" type="button" id="reset-local">Repartir de zéro sur ce téléphone</button></div>
   </div>
 </section>
 </main>
@@ -1066,8 +1068,8 @@ const knownSpecies=sid=>!!SPECIES_BY[sid]||isCustomId(sid)||isDiscId(sid);
 function allSpecies(){return SPECIES.concat(Object.values(CUSTOM),Object.values(DISC))}
 const WIKI_THUMB='https://upload.wikimedia.org/wikipedia/commons/thumb/';
 function imgUrl(img){return /^https?:\/\//.test(img)?img:WIKI_THUMB+img}
-/* Seules les images de Wikimedia Commons sont acceptées (chemin relatif au dépôt de vignettes, ou adresse complète sur upload.wikimedia.org) : une entrée forgée ne peut pas faire charger une image d'ailleurs. */
-const isWikiImg=v=>typeof v==='string'&&v.length<=300&&!/[\s<>"'\\]/.test(v)&&(/^[0-9a-f]\/[0-9a-f]{2}\/[^?#]+$/.test(v)||/^https:\/\/upload\.wikimedia\.org\/[^?#]+$/.test(v));
+/* Seules les images de Wikimedia / Wikipédia sont acceptées (chemin relatif au dépôt de vignettes, ou adresse complète sur un hôte *.wikimedia.org / *.wikipedia.org) : une entrée forgée ne peut pas faire charger une image d'ailleurs. */
+const isWikiImg=v=>typeof v==='string'&&v.length<=300&&!/[\s<>"'\\]/.test(v)&&(/^[0-9a-f]\/[0-9a-f]{2}\/[^?#]+$/.test(v)||/^https:\/\/[a-z0-9.-]+\.(wikimedia|wikipedia)\.org\/[^?#]+$/.test(v));
 /* Têtes dessinées pour les espèces emblématiques de France absentes de la liste de Camargue (clé : nom latin GBIF). Une espèce relevée qui a son dessin l'affiche ; sinon la photo Wikipédia. */
 const EXTRA_HEADS={
   'Strix aluco':{s:'owl',c:'#8a6a4a',dk:'#c9b193',sp:'#5a4030',bl:{t:'owl',c:'#d8d0b0'},ey:{i:K}},
@@ -1596,7 +1598,15 @@ const RELAY_DEFAULT='https://naturadex-api.helazior.com',LEGACY_GAME='duel-camar
 const isGameId=g=>/^[a-z0-9][a-z0-9-]{1,39}$/.test(String(g||''));
 let gameId=readLS(LS_GAME)||LEGACY_GAME;if(!isGameId(gameId)) gameId=LEGACY_GAME;
 const gameKey=g=>'naturadex-log:'+g; /* nouvelles clés : l'ancienne appli garde les siennes intactes (lecture seule au premier lancement) */
-let log=normalizeLog(readLS(gameKey(gameId))||(gameId===LEGACY_GAME?(readLS(LS_LOG)||readLS(LS_V1)):null)||[]);
+const LS_LEGACY_SEEN='naturadex-legacy-seen',LS_EPOCH='naturadex-epoch';
+/* Journal de l'ancienne appli (même origine) : importé dans la partie Camargue la première fois, puis seulement s'il a changé
+   depuis (empreinte) — une remise à zéro ne ramène donc pas ce qui a déjà été importé. */
+const legacyFp=raw=>{const l=raw&&(Array.isArray(raw.log)?raw.log:Array.isArray(raw)?raw:null);return l?l.length+':'+(l.length?String(l[l.length-1].id||l[l.length-1].at||''):''):'v1:'+JSON.stringify(raw||'').length};
+let legacyImported=false;
+let log=(()=>{const own=readLS(gameKey(gameId));if(own) return normalizeLog(own);
+  const legacy=gameId===LEGACY_GAME?(readLS(LS_LOG)||readLS(LS_V1)):null;if(!legacy||legacyFp(legacy)===readLS(LS_LEGACY_SEEN)) return [];
+  writeLS(LS_LEGACY_SEEN,legacyFp(legacy));legacyImported=true;return normalizeLog(legacy)})();
+if(legacyImported) writeLS(gameKey(gameId),{v:3,log}); /* écrit tout de suite : l'import n'a lieu qu'une fois */
 let view=fold(log);
 const legacyId=v=>LEGACY_SLOTS[v]||v;
 const ui={tab:'birds',q:'',site:readLS(LS_SITE)||'all',like:'all',group:'all',sort:'group',dir:-1,taken:'all',ico:false,fav:false,boardShare:'all',boardSort:'pts',device:readLS(LS_DEV)||legacyId(readLS(LS_DEV_OLD)||''),me:readLS(LS_ME)||legacyId(readLS(LS_ME_OLD)||''),lieu:readLS(LS_LIEU)||'pg'};
@@ -2110,12 +2120,26 @@ async function syncNow(){
   if(!relayOk()) return false;if(sync.busy){sync.again=true;return false}if(isOffline()){renderSyncState();return false}
   sync.busy=true;
   try{let more=true,guard=0,fresh=[];
-    while(more&&guard++<50){const r=await relayFetch(`/games/${encodeURIComponent(gameId)}/entries?after=${sync.seq}`);learnClock(r.now);fresh=fresh.concat(absorb(r.entries));sync.seq=Math.max(sync.seq,Number(r.seq)||0);more=!!r.more}
+    while(more&&guard++<50){const r=await relayFetch(`/games/${encodeURIComponent(gameId)}/entries?after=${sync.seq}`);learnClock(r.now);checkEpoch(r.epoch);fresh=fresh.concat(absorb(r.entries));sync.seq=Math.max(sync.seq,Number(r.seq)||0);more=!!r.more}
     sync.err='';sync.last=Date.now();saveSyncState();announce(fresh)}
   catch(e){sync.err=e.message||'erreur'}
   finally{sync.busy=false;renderSyncState();if(sync.again){sync.again=false;setTimeout(syncNow,0)}else flush()}
   return !sync.err;
 }
+/* ---- Remise à zéro ----
+   Locale : efface sur ce téléphone tout ce qui vient du relais (journaux, curseurs, pokédex, références, joueurs connus),
+   garde l'adresse du relais et, si demandé, l'identité ; le journal de l'ancienne appli n'est pas réimporté.
+   Du relais : chaque lecture de partie et chaque arrivée sur le canal portent `epoch` ; s'il change, le relais a été remis
+   à zéro par l'administrateur et ce téléphone repart de zéro tout seul. */
+function localReset(opt){opt=opt||{};liveClose();
+  const keep=new Set([LS_RELAY,LS_EPOCH,LS_LEGACY_SEEN].concat(opt.keepIdentity?[LS_DEV,LS_ME,LS_KNOWN]:[]));
+  const legacy=readLS(LS_LOG)||readLS(LS_V1);if(legacy) writeLS(LS_LEGACY_SEEN,legacyFp(legacy));
+  for(const k of Object.keys(localStorage)) if(k.startsWith('naturadex-')&&!keep.has(k)) localStorage.removeItem(k);
+  const done=()=>location.reload();
+  if(opt.photos&&idb){idbAll().then(all=>Promise.all(Object.keys(all).filter(k=>!/^p\d\|/.test(k)).map(idbDel))).then(done,done)} else done()}
+function checkEpoch(ep){ep=Number(ep);if(!Number.isFinite(ep)||ep<=0) return;const seen=readLS(LS_EPOCH);
+  if(!seen||seen.url!==relayUrl){writeLS(LS_EPOCH,{url:relayUrl,ep});return}
+  if(ep!==seen.ep){writeLS(LS_EPOCH,{url:relayUrl,ep});toast('Le relais a été remis à zéro : ce téléphone repart de zéro aussi');setTimeout(()=>localReset({keepIdentity:true}),1500)}}
 /* Canal WebSocket : connexion par partie, battement de cœur, reconnexion avec attente croissante (0,5 s → 30 s) */
 function liveUrl(){return relayUrl.replace(/\/+$/,'').replace(/^http/i,'ws')+'/games/'+encodeURIComponent(gameId)+'/ws?me='+encodeURIComponent(ui.device||'')}
 function liveSend(m){if(!live.ws||live.ws.readyState!==1) return false;try{live.ws.send(typeof m==='string'?m:JSON.stringify(m));return true}catch(e){return false}}
@@ -2151,7 +2175,7 @@ function liveOnAck(m){const f=live.inflight.get(m.rid);live.inflight.delete(m.ri
   if(f) for(const id of f.ids) sync.acked.add(id);noteRejected(m.rejected);applyRange(m.prev,m.last);sync.err='';sync.last=Date.now();saveSyncState();renderSyncState()}
 function noteRejected(ids){ /* entrées refusées par le schéma du relais (date, forme) : elles restent dans ce journal, ne repartent pas, et on le dit */
   const n=Array.isArray(ids)?ids.length:0;if(!n) return;for(const id of ids) sync.acked.add(id);toast(`${n} entrée${n>1?'s':''} refusée${n>1?'s':''} par le relais${clock.known&&Math.abs(clock.offset)>120000?' (heure du téléphone)':''}`)}
-function liveOnPresence(m){learnClock(m.now);live.online=Array.isArray(m.online)?m.online.filter(isPlayerId):[];live.n=Number(m.n)||0;renderPresence();renderSyncState()}
+function liveOnPresence(m){learnClock(m.now);if(m.epoch) checkEpoch(m.epoch);live.online=Array.isArray(m.online)?m.online.filter(isPlayerId):[];live.n=Number(m.n)||0;renderPresence();renderSyncState()}
 function renderPresence(){for(const b of document.querySelectorAll('#scoreboard .player[data-p]')) b.classList.toggle('online',live.state==='live'&&live.online.includes(b.dataset.p))}
 /* Pastille d'en-tête et ligne des réglages */
 function renderSyncState(){
@@ -2472,6 +2496,7 @@ $('#album-export').addEventListener('click',async()=>{const n=Object.keys(PHOTOS
 $('#journal-export').addEventListener('click',async()=>{const ok=await shareFile(`journal-${who()}-${new Date().toISOString().slice(0,10)}.txt`,await encodeCodeZ(log),'text/plain');$('#album-msg').textContent=ok?'Journal exporté : l\u2019autre le colle dans « Coller ici le code reçu » ou l\u2019importe comme album.':'Export indisponible ici.'});
 $('#album-import').addEventListener('change',async e=>{const f=e.target.files&&e.target.files[0];if(!f) return;try{const txt=await f.text();if(txt.trim().startsWith('DUEL')){await mergeFrom(txt);return}const n=await albumImport(txt);$('#album-msg').textContent=`${n} photo${n>1?'s':''} importée${n>1?'s':''}.`;toast(`${n} photo${n>1?'s':''} importée${n>1?'s':''}`)}catch(err){$('#album-msg').textContent='Fichier illisible.'}e.target.value=''});
 let resetArmed=null;
+let localArmed=null;$('#reset-local').addEventListener('click',e=>{if(localArmed){clearTimeout(localArmed);localReset({photos:true});return}localArmed=setTimeout(()=>{localArmed=null;e.target.textContent='Repartir de zéro sur ce téléphone'},4000);e.target.textContent='Confirmer : tout effacer ici ?'});
 $('#reset-all').addEventListener('click',e=>{if(resetArmed){clearTimeout(resetArmed);resetArmed=null;add({k:'reset'});afterChange();e.target.textContent='Tout effacer';toast('Tout est effacé (annulable dans l\u2019historique, onglet Stats)');return}
   e.target.textContent='Confirmer l’effacement ?';resetArmed=setTimeout(()=>{resetArmed=null;e.target.textContent='Tout effacer'},5000)});
 $('#tbl-toggle').addEventListener('click',e=>{const w=$('#tblwrap');const open=w.classList.toggle('hide');e.target.setAttribute('aria-expanded',String(!open));e.target.textContent=open?'Voir le tableau des prises':'Masquer le tableau';renderTable()});
@@ -2491,6 +2516,7 @@ renderAll();
 renderDevicePicker();
 initPhotos();
 initDb();
+if(ui.device&&isPlayerId(ui.device)&&!view.players.length){add({k:'player',p:ui.device,on:true,n:(knownPlayers()[ui.device]||displayName(ui.device)).slice(0,24)});registerPlayerRemote(ui.device);checkPlayers();setMe(ui.device);renderAll()} /* partie vide (après une remise à zéro) : ce téléphone la rejoint tout seul */
 loadSyncState();startSyncLoop();
 window.__naturadex={get sync(){return sync},get live(){return live},get clock(){return clock},syncNow,liveReconnect,pending:()=>pendingEntries().length}; /* poignée de diagnostic (console, tests) */
 })();
