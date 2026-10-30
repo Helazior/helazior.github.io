@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-3Gi1l0nX+HcoMecGN/xbjnIsiKBP1xkJRmA2/ghJ7ZM=' 'sha256-x2PhCtcLvwl6IizR0VlpAmztpiojMM/UgeW2Id1j6p8=' 'sha256-nz0UQi7XMlPcIxC+4SqEpyPKY3cgL1fqMOy1pBFH8oY=' 'sha256-LC7l6Mj44iWKQvNkjrqC2InrwyioWmZEVUF/H5V2oLk=' 'sha256-S18pspuvVFoUWB+b5SPn6mwrCLSbkDQFw6mtGARB3N4='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.wikimedia.org https://*.wikipedia.org; connect-src 'self' https: wss: http://127.0.0.1:* ws://127.0.0.1:* http://localhost:* ws://localhost:*; font-src 'self' data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; media-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-3Gi1l0nX+HcoMecGN/xbjnIsiKBP1xkJRmA2/ghJ7ZM=' 'sha256-DsXXWkemrGAL86HC8qy4gmqNu+mojkK2YDciabEZxp0=' 'sha256-nz0UQi7XMlPcIxC+4SqEpyPKY3cgL1fqMOy1pBFH8oY=' 'sha256-XSgUTyA5+lkna7TZ6Ru13vAfyYjrHRbSz9gixmCssLg=' 'sha256-S18pspuvVFoUWB+b5SPn6mwrCLSbkDQFw6mtGARB3N4='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.wikimedia.org https://*.wikipedia.org; connect-src 'self' https: wss: http://127.0.0.1:* ws://127.0.0.1:* http://localhost:* ws://localhost:*; font-src 'self' data:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; media-src 'none'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0e5c6b">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -37,7 +37,7 @@
 *{box-sizing:border-box}
 html,body{min-height:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:14.5px;line-height:1.45;font-weight:600;-webkit-font-smoothing:antialiased;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 40px;-webkit-text-size-adjust:100%}
+  padding-left:max(16px,env(safe-area-inset-left,0px),calc((100% - 1180px)/2));padding-right:max(16px,env(safe-area-inset-right,0px),calc((100% - 1180px)/2));padding-block:0 40px;-webkit-text-size-adjust:100%} /* sur grand écran : colonne centrée de 1180 px */
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
 button{font:inherit;color:inherit}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
@@ -229,7 +229,7 @@ body.cols-2 .card h3,body.cols-3 .card h3{font-size:15px}
 .sheet .hd .head{width:84px;height:84px;border-radius:50%;background:var(--surface);overflow:hidden;display:grid;place-items:center}
 .sheet .hd .head svg{width:84px;height:84px;display:block}
 .sheet-photo{margin:10px 0 0;border-radius:var(--radius-card);overflow:hidden;background:var(--surface);display:block}
-.sheet-photo img{display:block;width:100%;max-height:220px;object-fit:cover}
+.sheet-photo img{display:block;width:auto;max-width:100%;height:auto;max-height:min(46vh,360px);margin:0 auto;object-fit:contain} /* la photo entière, sans recadrage */
 .sheet-photo span{display:block;font-size:11.5px;color:var(--ink-2);padding:4px 10px}
 .sheet h2{margin:0;font-family:var(--font-display);font-size:20px;font-weight:800;line-height:1.2;letter-spacing:-.3px}
 .sheet .close{border:0;background:var(--surface-2);border-radius:50%;width:36px;height:36px;cursor:pointer;font-size:18px;line-height:1;align-self:start}
@@ -241,6 +241,28 @@ body.cols-2 .card h3,body.cols-3 .card h3{font-size:15px}
 .prow .when{font-size:12px;color:var(--ink-2);margin-top:4px}
 .sheet textarea{width:100%;min-height:64px;margin-top:6px;resize:vertical}
 .sheet label{font-size:13px;color:var(--ink-2);font-weight:600}
+/* Ordinateur et tablette : les feuilles deviennent des fenêtres centrées */
+@media (min-width:760px){
+  .sheet{left:50%;right:auto;top:50%;bottom:auto;transform:translate(-50%,-50%);width:min(780px,calc(100% - 48px));max-height:min(90vh,1000px);border-radius:var(--radius-sheet);padding:20px 24px 22px}
+  .sheet[role="alertdialog"],#devpick,#gamepick{width:min(560px,calc(100% - 48px))}
+  .sheet .grab{display:none}
+  .sheet-photo img{max-height:min(60vh,560px)}
+  .sheet .hd{grid-template-columns:96px minmax(0,1fr) auto} .sheet .hd .head,.sheet .hd .head svg{width:96px;height:96px}
+}
+/* Réglages sur deux colonnes quand la place le permet */
+@media (min-width:1000px){
+  #view-settings:not([hidden]){columns:2;column-gap:14px}
+  #view-settings>.panel{break-inside:avoid;margin:0 0 12px}
+  #view-settings>#app-version{column-span:all}
+}
+/* Souris : survols discrets */
+@media (hover:hover) and (pointer:fine){
+  .card{transition:box-shadow .15s ease}
+  .card:hover{box-shadow:var(--shadow-now)} .card.taken:hover{box-shadow:0 0 0 2px var(--good),var(--shadow-now)}
+  .card .head{cursor:zoom-in}
+  .chips .chip:not([aria-pressed="true"]):hover,.tabs button:not([aria-selected="true"]):hover{color:var(--ink);background:var(--line-soft)}
+  .btn:hover{filter:brightness(.96)} .favbtn:hover{opacity:1}
+}
 
 /* Stats */
 .tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:4px}
@@ -529,7 +551,7 @@ table.tbl th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:
     <p class="hint" style="margin-top:14px">Supprimer mon compte : efface définitivement ce nom, ses captures, favoris, notes, bonus et son pokédex, sur le relais et sur tous les téléphones. Les lieux et relevés qu’il a ajoutés restent, anonymisés.</p>
     <div class="row"><button class="btn danger" type="button" id="acct-erase">Supprimer mon compte…</button></div>
   </div>
-  <p class="hint" id="app-version" style="text-align:center;margin:16px 0 4px">Version du 28/10/2026 15:07</p>
+  <p class="hint" id="app-version" style="text-align:center;margin:16px 0 4px">Version du 30/10/2026 11:42</p>
 </section>
 </main>
 
@@ -1048,7 +1070,7 @@ function insectSVG(sp,uid){
   return o+'</svg>';
 }
 const hasDrawing=sp=>!!sp&&((!sp.disc&&!sp.custom)||!!sp.drawn); /* dessin fait à la main (liste de base, ou tête dessinée pour une espèce relevée) */
-function drawSVG(sp,uid,force){if(!force&&sp.img&&!sp.drawn) return `<img class="spimg" src="${esc(imgUrl(sp.img))}" alt="" loading="lazy" decoding="async">`;const k=sp.h&&sp.h.k;let o=k==='m'?mammalSVG(sp,uid):k==='h'?herpSVG(sp,uid):k==='i'?insectSVG(sp,uid):headSVG(sp,uid);
+function drawSVG(sp,uid,force){if(!force&&sp.img&&!sp.drawn) return `<img class="spimg" src="${esc(wikiSized(sp.img,330))}" alt="" loading="lazy" decoding="async">`;const k=sp.h&&sp.h.k;let o=k==='m'?mammalSVG(sp,uid):k==='h'?herpSVG(sp,uid):k==='i'?insectSVG(sp,uid):headSVG(sp,uid);
   if(sp.custom) o=o.replace(/<\/svg>$/,'<circle cx="82" cy="82" r="13" fill="#e8c33a" stroke="rgba(0,0,0,.25)"/><text x="82" y="88" text-anchor="middle" font-size="17" font-weight="700" font-family="sans-serif" fill="#1d1d1f">?</text></svg>');
   return o}
 
@@ -1085,6 +1107,9 @@ const knownSpecies=sid=>!!SPECIES_BY[sid]||isCustomId(sid)||isDiscId(sid);
 function allSpecies(){return SPECIES.concat(Object.values(CUSTOM),Object.values(DISC))}
 const WIKI_THUMB='https://upload.wikimedia.org/wikipedia/commons/thumb/';
 function imgUrl(img){return /^https?:\/\//.test(img)?img:WIKI_THUMB+img}
+/* Wikimedia ne sert sans limite que des largeurs standard (250, 330, 500, 960, 1280…) ; les autres (dont l'ancien 300 px)
+   sont limitées en débit (erreurs 429). Les vignettes sont donc demandées en 330 px, et la photo de la fiche en 500 / 960 px. */
+const wikiSized=(img,w)=>{const u=imgUrl(img);return /\/thumb\//.test(u)?u.replace(/\/\d+px-([^/]+)$/,'/'+w+'px-$1'):u};
 /* Seules les images de Wikimedia / Wikipédia sont acceptées (chemin relatif au dépôt de vignettes, ou adresse complète sur un hôte *.wikimedia.org / *.wikipedia.org) : une entrée forgée ne peut pas faire charger une image d'ailleurs. */
 const isWikiImg=v=>typeof v==='string'&&v.length<=300&&!/[\s<>"'\\]/.test(v)&&(/^[0-9a-f]\/[0-9a-f]{2}\/[^?#]+$/.test(v)||/^https:\/\/[a-z0-9.-]+\.(wikimedia|wikipedia)\.org\/[^?#]+$/.test(v));
 /* Têtes dessinées pour les espèces emblématiques de France absentes de la liste de Camargue (clé : nom latin GBIF). Une espèce relevée qui a son dessin l'affiche ; sinon la photo Wikipédia. */
@@ -1494,7 +1519,7 @@ async function gbifMatch(name){const r=await fetchJson(`https://api.gbif.org/v1/
   const key=r.speciesKey||r.acceptedUsageKey||r.usageKey;if(!key) return null;
   return {key,l:canon(r.species||r.canonicalName||name),order:r.order||'',family:r.family||'',cls:r['class']||''}}
 async function wikiBatch(names){ /* titres français et vignettes ≤ 300 px, 50 noms par appel */
-  const u=`https://fr.wikipedia.org/w/api.php?action=query&format=json&formatversion=2&origin=*&redirects=1&prop=pageimages&piprop=thumbnail&pithumbsize=300&titles=${names.map(encodeURIComponent).join('|')}`;
+  const u=`https://fr.wikipedia.org/w/api.php?action=query&format=json&formatversion=2&origin=*&redirects=1&prop=pageimages&piprop=thumbnail&pithumbsize=330&titles=${names.map(encodeURIComponent).join('|')}`;
   const j=await fetchJson(u,true);const q=(j&&j.query)||{};const norm={},red={},pages={};
   for(const n of q.normalized||[]) norm[n.from]=n.to;for(const r of q.redirects||[]) red[r.from]=r.to;for(const p of q.pages||[]) pages[p.title]=p;
   const out={};for(const n of names){let ti=norm[n]||n;for(let i=0;i<4&&red[ti];i++) ti=red[ti];const p=pages[ti];if(!p||p.missing){out[n]=null;continue}
@@ -1731,8 +1756,11 @@ const LS_WIMG='duel-camargue-wikiimg';const WIKI_IMG=readLS(LS_WIMG)||{};
    mode Photos : la photo en ligne, sinon mon dessin, sinon le dessin générique. Une photo qui ne charge pas (réseau, limite de
    Wikimedia) retombe de la même façon : mon dessin, sinon le générique — jamais une case vide. */
 function imgFor(sp){const photo=sp.img||WIKI_IMG[sp.id]||'';if(disp.photos) return photo;return hasDrawing(sp)?'':photo}
-function headHTML(sp,uid){const im=imgFor(sp);return im?`<img class="spimg" src="${esc(imgUrl(im))}" alt="" loading="lazy" decoding="async" data-sp="${esc(sp.id)}" data-uid="${esc(uid||'')}">`:drawSVG(sp,uid,true)}
+function headHTML(sp,uid){const im=imgFor(sp);if(!im) return drawSVG(sp,uid,true);const a=wikiSized(im,330),b=imgUrl(im);
+  return `<img class="spimg" src="${esc(a)}"${b!==a?` data-alt="${esc(b)}"`:''} alt="" loading="lazy" decoding="async" data-sp="${esc(sp.id)}" data-uid="${esc(uid||'')}">`}
 document.addEventListener('error',e=>{const img=e.target;if(!(img instanceof HTMLImageElement)) return;
+  if(img.dataset.alt){const l=img.dataset.alt.split('|').filter(Boolean);let next;do{next=l.shift()}while(next&&(next===img.currentSrc||next===img.getAttribute('src')&&!img.srcset));img.dataset.alt=l.join('|');
+    if(next){img.removeAttribute('srcset');img.src=next;return}} /* taille suivante avant d'abandonner */
   if(img.classList.contains('spimg')){const sp=spOf(img.dataset.sp);if(sp){const t=document.createElement('template');t.innerHTML=drawSVG(sp,img.dataset.uid||('e-'+sp.id),true);img.replaceWith(t.content)}else img.remove();return}
   const b=img.closest('.sheet-photo');if(b) b.remove()},true);
 async function fetchOnePhoto(sp){ /* photo Wikipédia d'une espèce ouverte dans la fiche, à la demande */
@@ -1903,7 +1931,7 @@ function renderSheet(sid){
   const listen=links+((!hasDraw&&im)?` <span class="muted" style="font-size:12px">Photo : Wikimedia Commons, via Wikipédia.</span>`:'');
   const note=view.notes[sid]?view.notes[sid].t:'';
   const wikiHref=sp.wk?`https://fr.wikipedia.org/wiki/${encodeURIComponent(sp.n.replace(/ /g,'_'))}`:'';
-  const photoBanner=im&&hasDraw?`<${wikiHref?'a':'div'} class="sheet-photo"${wikiHref?` href="${wikiHref}" target="_blank" rel="noopener"`:''}><img src="${esc(imgUrl(im))}" alt="Photo de ${esc(sp.n)}" loading="lazy"><span>Photo : Wikimedia Commons, via Wikipédia${wikiHref?' · ouvrir l\u2019article':''}</span></${wikiHref?'a':'div'}>`:'';
+  const photoBanner=im&&hasDraw?`<${wikiHref?'a':'div'} class="sheet-photo"${wikiHref?` href="${wikiHref}" target="_blank" rel="noopener"`:''}><img src="${esc(wikiSized(im,500))}" srcset="${esc(wikiSized(im,500))} 500w, ${esc(wikiSized(im,960))} 960w" sizes="(min-width:760px) 730px, 100vw" data-alt="${esc([wikiSized(im,500),wikiSized(im,330),imgUrl(im)].filter((u,i,a)=>a.indexOf(u)===i).join('|'))}" alt="Photo de ${esc(sp.n)}" decoding="async"><span>Photo : Wikimedia Commons, via Wikipédia${wikiHref?' · ouvrir l\u2019article':''}</span></${wikiHref?'a':'div'}>`:'';
   $('#sheet').innerHTML=`<div class="grab"></div><div class="hd"><div class="head">${hasDraw?drawSVG(sp,'s-'+sid):headHTML(sp,'s-'+sid)}</div><div><h2>${esc(sp.n)}</h2><p class="latin" style="margin:0;font-style:italic;color:var(--ink-2);font-size:13px">${esc(sp.l)}</p>
     <div class="tags">${tagsHTML(sp,true)}</div></div><button type="button" class="close" aria-label="Fermer">×</button></div>
     ${photoBanner}
@@ -1961,7 +1989,7 @@ function niceStep(span,target){const raw=span/target;const p=Math.pow(10,Math.fl
 function renderChart(){
   const wrap=$('#chart-wrap');const old=wrap.querySelector('svg');if(old) old.remove();
   const pts=curve(view);
-  const W=360,H=230,ml=40,mr=16,mt=14,mb=34,iw=W-ml-mr,ih=H-mt-mb;
+  const cw=wrap.clientWidth||360,W=Math.round(Math.max(360,Math.min(1180,cw))),H=W>=640?300:230,ml=40,mr=16,mt=14,mb=34,iw=W-ml-mr,ih=H-mt-mb; /* dessinée à la taille réelle : texte lisible sur grand écran */
   const svgNS='http://www.w3.org/2000/svg';
   if(!pts.length){
     wrap.insertAdjacentHTML('beforeend',`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Courbe vide"><rect x="${ml}" y="${mt}" width="${iw}" height="${ih}" fill="none" stroke="var(--line)"/><text x="${ml+iw/2}" y="${mt+ih/2}" text-anchor="middle" fill="var(--ink-2)" font-size="12">La courbe se dessinera dès la première photo cochée.</text></svg>`);
@@ -2511,7 +2539,10 @@ $('#list').addEventListener('click',e=>{
   const fb=e.target.closest('button[data-fav]');if(fb){toggleFav(ui.me,sid);return}
   if(e.target.closest('.head')||e.target.closest('.info')) openSheet(sid);
 });
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheetSid) closeSheet()});
+document.addEventListener('keydown',e=>{if(e.key!=='Escape') return;
+  for(const [id,close] of [['erasepick',closeErasePicker],['dexdelpick',closeDexDel],['gamepick',closeGamePicker]]){const el=document.getElementById(id);if(el&&!el.hidden){close();return}}
+  if(sheetSid) closeSheet()});
+let resizeT=null;addEventListener('resize',()=>{clearTimeout(resizeT);resizeT=setTimeout(()=>{if(ui.tab==='stats') renderChart()},150)});
 
 $('#players').addEventListener('change',e=>{const inp=e.target.closest('input[data-name]');if(!inp) return;const p=inp.dataset.name;add({k:'name',p,v:(inp.value.trim()||displayName(p)).slice(0,24)});rememberPlayer(p,nameOf(p));afterChange();toast('Nom enregistré : '+nameOf(p))});
 $('#players').addEventListener('click',e=>{const b=e.target.closest('button[data-pdel]');if(!b) return;const p=b.dataset.pdel;

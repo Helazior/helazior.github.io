@@ -1,4 +1,4 @@
-const CACHE='naturadex-v202610281507';
+const CACHE='naturadex-v202610301142';
 const ASSETS=['./','./index.html','./manifest.webmanifest','./icon.svg','./icon-192.png','./icon-512.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>Promise.allSettled(ASSETS.map(a=>c.add(new Request(a,{cache:'reload'}))))).then(()=>self.skipWaiting()))});
 const IMG='naturadex-img-v2'; /* photos Wikipédia : gardées après le premier affichage, pour le hors connexion. v2 : requête CORS pour voir le vrai statut, et seules les réponses réussies sont gardées (une 429 de Wikimedia restait en cache pour toujours) */
