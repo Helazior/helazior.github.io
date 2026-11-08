@@ -6,6 +6,7 @@
 //  - notificationclick / notificationclose : remontent à l'app (bouton Fait,
 //    Reporter, Étape faite ; toucher = ouvrir ; balayer = l'alerte est vue).
 var SEEN_CACHE = 'scheduler-notif-seen';
+var PENDING_CACHE = 'scheduler-notif-pending';
 
 self.addEventListener('install', function () { self.skipWaiting(); });
 self.addEventListener('activate', function (e) { e.waitUntil(self.clients.claim()); });
@@ -52,7 +53,13 @@ self.addEventListener('notificationclick', function (e) {
     var msg = { type: 'scheduler-notif', action: e.action || 'open', key: n.tag, data: n.data || {} };
     e.waitUntil(tell(msg).then(function (client) {
         if (client) return client.focus ? client.focus() : null;
-        return self.clients.openWindow(self.registration.scope + '#notif=' + encodeURIComponent(JSON.stringify(msg)));
+        // Aucun onglet : le message attend dans le cache du site (même origine
+        // seulement), la page le relit au chargement. JAMAIS dans l'adresse : un
+        // lien « …#notif=… » envoyé par n'importe qui aurait fait cocher ou reporter
+        // une tâche à la personne qui l'ouvre (falsification de requête).
+        return caches.open(PENDING_CACHE).then(function (c) {
+            return c.put('/pending/' + Date.now() + '-' + Math.random().toString(36).slice(2), new Response(JSON.stringify(msg)));
+        }).then(function () { return self.clients.openWindow(self.registration.scope); });
     }));
 });
 

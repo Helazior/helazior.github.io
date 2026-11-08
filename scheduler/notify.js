@@ -10,7 +10,9 @@
 //    Sans service worker (navigation privée, vieux navigateur) : `new Notification`.
 //  - Un bouton touché, une notification touchée ou balayée remontent à l'app par
 //    une FILE (`take()`), relue par l'app chaque seconde : un message du service
-//    worker ou une ouverture de page par `#notif=…` (l'app était fermée).
+//    worker, ou (l'app était fermée) un message laissé dans le cache du site.
+//  - Aucun texte n'est jamais inséré dans la page (pas d'innerHTML) : titres et
+//    textes ne vont qu'aux notifications du système, qui les affichent en texte brut.
 //  - L'abonnement PUSH (Web Push, clé VAPID publique) est demandé par l'app une
 //    fois la permission accordée ; `subscription()` en rend le JSON, que l'app
 //    enregistre sur le serveur (Supabase, table push_subscriptions).
@@ -38,14 +40,22 @@
             if (e.data && e.data.type === 'scheduler-notif') queue.push(JSON.stringify(e.data));
         });
     }
-    // Ouverte par un toucher sur une notification alors qu'aucun onglet n'existait.
-    try {
-        var m = location.hash.match(/notif=([^&]+)/);
-        if (m) {
-            queue.push(decodeURIComponent(m[1]));
-            history.replaceState(null, '', location.pathname + location.search);
-        }
-    } catch (e) { }
+    // Ouverte par un toucher sur une notification alors qu'aucun onglet n'existait :
+    // le service worker a laissé le message dans le cache du site (jamais dans
+    // l'adresse — voir sw.js), relu puis effacé ici. Rien d'autre que le service
+    // worker du site ne peut écrire dans ce cache.
+    if ('caches' in window) {
+        caches.open('scheduler-notif-pending').then(function (c) {
+            return c.keys().then(function (keys) {
+                return Promise.all(keys.map(function (k) {
+                    return c.match(k).then(function (r) { return r ? r.text() : ''; }).then(function (t) {
+                        if (t) queue.push(t);
+                        return c.delete(k);
+                    });
+                }));
+            });
+        }).catch(function () { });
+    }
 
     // Ce que l'app a montré elle-même : le service worker ne le remontre pas quand
     // le serveur envoie la même alerte (titre + texte identiques).
