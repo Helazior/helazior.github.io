@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scheduler</title>
+    <link type="text/css" rel="stylesheet" href="styles.css">
+</head>
+<body style="text-align: center; align-content: center">
+<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 50 50" role="presentation">
+    <circle cx="25" cy="25" r="20" stroke="#ccc" stroke-width="4" fill="none"/>
+    <circle cx="25" cy="25" r="20" stroke="#333" stroke-width="4" fill="none" stroke-linecap="round"
+            stroke-dasharray="90 125">
+        <animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="1s"
+                          repeatCount="indefinite"/>
+    </circle>
+</svg>
+<script type="application/javascript">
+    // Les raccourcis de zoom de l'APP (Ctrl + molette, Ctrl + / −) sont aussi ceux du
+    // navigateur : sans ceci, Firefox et Chrome agrandissaient la page EN MÊME TEMPS que
+    // le calendrier (vu : la fenêtre passait à 133 %). preventDefault laisse l'événement
+    // arriver à Compose, il ne retire que l'effet du navigateur. Rien d'autre n'est
+    // intercepté : les champs de texte gardent toutes leurs touches.
+    // LE CLAVIER DÈS L'OUVERTURE : Compose n'écoute les touches que sur son canevas
+    // (dans l'ombre du <body>), et personne ne lui donne le focus avant un premier
+    // clic — F1, « ? », les flèches restaient lettre morte jusque-là. Un focus posé
+    // une fois à sa naissance ne tenait pas (vérifié : relu nul 3 s plus tard) ; on
+    // le lui rend donc tant que RIEN dans la page ne l'a — et seulement si la page
+    // elle-même a le focus, pour ne jamais le voler à la barre d'adresse.
+    setInterval(function () {
+        if (!document.hasFocus()) return;
+        var root = document.body && document.body.shadowRoot;
+        if (!root || root.activeElement) return;
+        var canvas = root.querySelector('canvas');
+        if (canvas) canvas.focus();
+    }, 250);
+    // UN CHAMP QUI DISPARAÎT EMPORTE LE FOCUS : Compose crée un <textarea> caché pour
+    // la saisie et le retire à la fermeture de la pilule ou d'une page — plus rien
+    // n'a le focus, le canevas n'entend plus les touches (mesuré : activeElement nul
+    // après Échap). Le retrait d'un champ de l'ombre du <body> est OBSERVÉ (un élément
+    // retiré ne signale pas toujours qu'il perd le focus), et le canevas reprend le
+    // focus si plus rien ne l'a. Un clic dans la barre d'adresse ne retire rien.
+    (function () {
+        var observing = null;
+        function refocusIfOrphan(root) {
+            if (root.activeElement) return;
+            var canvas = root.querySelector('canvas');
+            if (canvas) canvas.focus();
+        }
+        function isField(node) {
+            return node && node.nodeType === 1 && (node.tagName === 'TEXTAREA' || node.tagName === 'INPUT' || (node.querySelector && node.querySelector('textarea,input')));
+        }
+        setInterval(function () {
+            var root = document.body && document.body.shadowRoot;
+            if (!root || observing === root) return;
+            observing = root;
+            new MutationObserver(function (mutations) {
+                for (var i = 0; i < mutations.length; i++) {
+                    var removed = mutations[i].removedNodes;
+                    for (var j = 0; j < removed.length; j++) {
+                        if (isField(removed[j])) { setTimeout(function () { refocusIfOrphan(root); }, 0); return; }
+                    }
+                }
+            }).observe(root, { childList: true, subtree: true });
+            root.addEventListener('focusout', function (e) {
+                var target = e.composedPath ? e.composedPath()[0] : e.target;
+                setTimeout(function () { if (target && !target.isConnected) refocusIfOrphan(root); }, 0);
+            }, true);
+        }, 200);
+    })();
+    window.addEventListener('wheel', function (e) {
+        if (e.ctrlKey || e.metaKey) e.preventDefault();
+    }, { passive: false, capture: true });
+    window.addEventListener('keydown', function (e) {
+        if ((e.ctrlKey || e.metaKey) && (e.key === '+' || e.key === '-' || e.key === '=' || e.key === '_' || e.key === 'k' || e.key === 'K' || e.key === 'f' || e.key === 'F')) e.preventDefault();
+    }, { capture: true });
+</script>
+<script type="application/javascript" src="composeApp.js"></script>
+</body>
+</html>
