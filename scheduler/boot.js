@@ -64,3 +64,30 @@ if (window.top !== window.self) {
     window.addEventListener('keydown', function (e) {
         if ((e.ctrlKey || e.metaKey) && (e.key === '+' || e.key === '-' || e.key === '=' || e.key === '_' || e.key === 'k' || e.key === 'K' || e.key === 'f' || e.key === 'F')) e.preventDefault();
     }, { capture: true });
+// LE RETOUR DU NAVIGATEUR RESTE DANS L'APP (09/11/2026 : « quand je fais retour
+// arrière dans un onglet, je veux que ça revienne en arrière et non que ça quitte
+// la page web »). Une entrée d'historique « piège » est posée au-dessus de la page :
+// le Retour la consomme (popstate), l'app reçoit un « Retour » (page, pilule, mois,
+// puis l'onglet d'avant), et le piège est reposé. Quand l'app n'a plus rien à
+// défaire (`canBack` faux, tenu à jour par l'app), le Retour quitte vraiment la
+// page. Aucune donnée ne passe par l'adresse : l'URL ne change pas.
+// Chrome ignore au Retour une entrée posée sans geste de l'utilisateur : le piège
+// est (re)posé au premier toucher, clic ou touche s'il manque.
+window.SchedulerBack = (function () {
+    var armed = false, canBack = false, pending = 0;
+    function arm() {
+        if (armed) return;
+        try { history.pushState({ schedulerTrap: true }, ''); armed = true; } catch (e) {}
+    }
+    window.addEventListener('pointerdown', arm, true);
+    window.addEventListener('keydown', arm, true);
+    window.addEventListener('popstate', function () {
+        armed = false;
+        if (canBack) { pending++; arm(); }
+        else { history.back(); }
+    });
+    return {
+        setCanBack: function (v) { canBack = !!v; },
+        take: function () { var n = pending; pending = 0; return n; }
+    };
+})();
