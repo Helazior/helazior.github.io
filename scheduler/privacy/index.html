@@ -29,14 +29,24 @@ footer { margin-top:48px; color:var(--muted); font-size:14px }
 <nav><a href="#fr">Français</a><a href="#en">English</a></nav>
 <section id="fr" lang="fr">
 <h1>Politique de confidentialité — Scheduler</h1>
-<p><em>Dernière mise à jour : 28 octobre 2026</em></p>
-<p><strong>En bref : Scheduler ne collecte aucune donnée. Tout reste sur votre appareil.</strong></p>
+<p><em>Dernière mise à jour : 9 novembre 2026</em></p>
+<p><strong>En bref : Scheduler ne collecte aucune donnée. Tout reste sur votre appareil — sauf si vous créez un compte (facultatif) pour synchroniser votre agenda entre vos appareils.</strong></p>
 <h2>Données collectées</h2>
-<p>Aucune. L'application fonctionne hors ligne (exceptions : le plugin météo, facultatif et éteint par défaut, et l'aperçu des lieux, allumé par défaut et désactivable — voir plus bas) : elle ne transmet, ne collecte et ne partage <strong>aucune donnée personnelle ni donnée d'usage</strong>. Elle ne contient ni publicité, ni outil d'analyse (analytics), ni SDK tiers de suivi, et ne requiert aucun compte.</p>
+<p>Aucune. L'application fonctionne hors ligne (exceptions : le plugin météo, facultatif et éteint par défaut, et l'aperçu des lieux, allumé par défaut et désactivable — voir plus bas) : elle ne transmet, ne collecte et ne partage <strong>aucune donnée personnelle ni donnée d'usage</strong>. Elle ne contient ni publicité, ni outil d'analyse (analytics), ni SDK tiers de suivi, et ne requiert aucun compte. Un compte est <strong>proposé, jamais imposé</strong> (« Utiliser hors ligne ») : voir « Compte et synchronisation ».</p>
 <h2>Données stockées localement</h2>
 <p>Les tâches, routines et préférences que vous créez sont enregistrées <strong>uniquement sur votre appareil</strong>. Elles ne sont accessibles qu'à vous. Elles ne sont sauvegardées sur aucun serveur.</p>
 <p>L'application tient aussi un <strong>journal technique local</strong> (utilisation des écrans, erreurs, plantages ; ni titres ni contenu de vos tâches) pour aider à corriger les bugs. Il ne quitte votre appareil que si <strong>vous</strong> choisissez de l'envoyer (Options → Aide → « Envoyer un rapport »).</p>
 <p>Les photos et fichiers que vous joignez à une note sont <strong>copiés dans l'espace privé de l'application</strong> sur votre appareil ; ils n'en sortent que si vous choisissez de partager la note.</p>
+<h2 id="compte">Compte et synchronisation (facultatif)</h2>
+<p>Si vous choisissez « Se connecter », votre agenda est synchronisé entre vos appareils (application et site web) par l'intermédiaire de <strong>Supabase</strong> (hébergement dans l'Union européenne). Ce que cela implique :</p>
+<ul>
+<li><strong>Identifiant</strong> : votre adresse e-mail, uniquement pour vous envoyer un code de connexion à usage unique. Aucun mot de passe n'est stocké.</li>
+<li><strong>Données synchronisées</strong> : vos tâches, notes, listes et leurs réglages (noms, couleurs, créneaux). Les <strong>photos et fichiers joints ne sont pas envoyés</strong> et restent sur l'appareil. Le journal technique n'est jamais envoyé.</li>
+<li><strong>Protection</strong> : chaque compte ne peut lire et écrire que ses propres données, règle appliquée <strong>par la base de données elle-même</strong> (Row Level Security) et non par l'application. Le transport est chiffré (TLS) ; les données sont stockées chiffrées au repos par l'hébergeur, mais <strong>pas chiffrées de bout en bout</strong> : nous l'indiquons franchement, c'est une évolution prévue.</li>
+<li><strong>Aucun usage secondaire</strong> : pas d'analyse, pas de publicité, pas de partage. Les données ne servent qu'à la synchronisation.</li>
+<li><strong>Sortie</strong> : « Se déconnecter » arrête la synchronisation et garde une copie locale. <strong>« Supprimer mon compte »</strong> (Options → Compte, dans l'application ou sur le site <a href="https://helazior.com/scheduler">helazior.com/scheduler</a>) demande un code envoyé à votre adresse, pour que personne d'autre ne puisse le faire. Le compte est alors déconnecté de tous les appareils, et le compte et toutes ses données sont <strong>définitivement effacés du serveur 30 jours plus tard</strong> — délai pendant lequel il suffit de vous reconnecter pour annuler. Les listes que vous partagez en tant que propriétaire disparaissent alors pour leurs membres. Vous pouvez aussi nous écrire (adresse ci-dessous).</li>
+<li><strong>Changer d'adresse</strong> : Options → Compte → « Changer mon adresse e-mail » ; un code est envoyé à l'ancienne et à la nouvelle adresse, les deux sont nécessaires.</li>
+</ul>
 <h2>Plugins facultatifs (météo, jour et nuit, aperçu des lieux)</h2>
 <p>Des ajouts d'affichage, dans Options → Plugins. La météo et « jour et nuit » sont <strong>éteints par défaut</strong>. Ils utilisent un <strong>lieu que vous choisissez vous-même en tapant le nom d'une ville</strong> : l'application ne demande ni n'utilise la localisation de votre appareil.</p>
 <ul>
@@ -57,8 +67,8 @@ footer { margin-top:48px; color:var(--muted); font-size:14px }
 </ul>
 <h2>Notifications</h2>
 <p>Les notifications (début de tâche, rappels) sont générées <strong>localement</strong> par l'application, sur votre appareil. Aucune information n'est envoyée à l'extérieur pour les produire. Vous pouvez les désactiver à tout moment dans les réglages Android.</p>
-<h2>Suppression des données</h2>
-<p>Vos données étant exclusivement locales, <strong>désinstaller l'application supprime définitivement l'ensemble de vos données</strong>.</p>
+<h2 id="suppression">Suppression des données</h2>
+<p>Sans compte, vos données sont exclusivement locales : <strong>désinstaller l'application supprime définitivement l'ensemble de vos données</strong>. Avec un compte, « Supprimer mon compte » efface le compte et ses données du serveur après un délai de 30 jours, annulable en se reconnectant (voir « Compte et synchronisation »).</p>
 <h2>Enfants</h2>
 <p>L'application ne collectant aucune donnée, elle ne collecte a fortiori aucune donnée concernant des mineurs.</p>
 <h2>Modifications</h2>
@@ -68,14 +78,24 @@ footer { margin-top:48px; color:var(--muted); font-size:14px }
 </section>
 <section id="en" lang="en">
 <h1>Privacy Policy — Scheduler</h1>
-<p><em>Last updated: October 28, 2026</em></p>
-<p><strong>In short: Scheduler collects no data. Everything stays on your device.</strong></p>
+<p><em>Last updated: November 9, 2026</em></p>
+<p><strong>In short: Scheduler collects no data. Everything stays on your device — unless you create an (optional) account to sync your agenda across your devices.</strong></p>
 <h2>Data we collect</h2>
-<p>None. The app works offline (exceptions: the weather plugin, optional and off by default, and place previews, on by default and can be turned off — see below): it does not transmit, collect, or share <strong>any personal data or usage data</strong>. It contains no ads, no analytics, no third-party tracking SDKs, and requires no account.</p>
+<p>None. The app works offline (exceptions: the weather plugin, optional and off by default, and place previews, on by default and can be turned off — see below): it does not transmit, collect, or share <strong>any personal data or usage data</strong>. It contains no ads, no analytics, no third-party tracking SDKs, and requires no account. An account is <strong>offered, never required</strong> (“Use offline”): see “Account and sync”.</p>
 <h2>Data stored locally</h2>
 <p>The tasks, routines, and preferences you create are stored <strong>only on your device</strong>. They are accessible to you alone and are not backed up to any server.</p>
 <p>The app also keeps a <strong>local technical log</strong> (screens used, errors, crashes; no task titles or content) to help fix bugs. It leaves your device only if <strong>you</strong> choose to send it (Options → Help → "Send a report").</p>
 <p>Photos and files you attach to a note are <strong>copied into the app's private storage</strong> on your device; they leave it only if you choose to share the note.</p>
+<h2 id="account">Account and sync (optional)</h2>
+<p>If you choose “Sign in”, your agenda is synced across your devices (app and website) through <strong>Supabase</strong> (hosted in the European Union). What this means:</p>
+<ul>
+<li><strong>Identifier</strong>: your email address, used only to send you a one-time sign-in code. No password is stored.</li>
+<li><strong>Synced data</strong>: your tasks, notes, lists and their settings (names, colors, time slots). <strong>Attached photos and files are not uploaded</strong> and stay on the device. The technical log is never uploaded.</li>
+<li><strong>Protection</strong>: each account can only read and write its own data, a rule enforced <strong>by the database itself</strong> (Row Level Security), not by the app. Transport is encrypted (TLS); data is encrypted at rest by the host, but <strong>not end-to-end encrypted</strong> — we say so plainly; it is a planned evolution.</li>
+<li><strong>No secondary use</strong>: no analytics, no ads, no sharing. The data is used for sync only.</li>
+<li><strong>Leaving</strong>: “Sign out” stops syncing and keeps a local copy. <strong>“Delete my account”</strong> (Settings → Account, in the app or on the website <a href="https://helazior.com/scheduler">helazior.com/scheduler</a>) asks for a code sent to your address, so that nobody else can do it. The account is then signed out of every device, and the account and all its data are <strong>permanently erased from the server 30 days later</strong> — during that period, simply signing in again cancels the deletion. Lists you share as their owner then disappear for their members. You can also write to us (address below).</li>
+<li><strong>Changing your address</strong>: Settings → Account → “Change my email address”; a code is sent to both the old and the new address, and both are required.</li>
+</ul>
 <h2>Optional plugins (weather, day and night, place previews)</h2>
 <p>Display add-ons, in Settings → Plugins. Weather and “day and night” are <strong>off by default</strong>. They use a <strong>place you choose yourself by typing a city name</strong>: the app never requests or uses your device's location.</p>
 <ul>
@@ -96,8 +116,8 @@ footer { margin-top:48px; color:var(--muted); font-size:14px }
 </ul>
 <h2>Notifications</h2>
 <p>Notifications (task start, reminders) are generated <strong>locally</strong> by the app, on your device. No information is sent anywhere to produce them. You can disable them at any time in Android settings.</p>
-<h2>Data deletion</h2>
-<p>Since your data is exclusively local, <strong>uninstalling the app permanently deletes all of your data</strong>.</p>
+<h2 id="deletion">Data deletion</h2>
+<p>Without an account your data is exclusively local: <strong>uninstalling the app permanently deletes all of your data</strong>. With an account, “Delete my account” erases the account and its server data after a 30-day delay, which signing in again cancels (see “Account and sync”).</p>
 <h2>Children</h2>
 <p>As the app collects no data at all, it collects no data from children either.</p>
 <h2>Changes</h2>
