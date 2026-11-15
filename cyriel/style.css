@@ -1,0 +1,234 @@
+/* ------------------------------------------------------------------
+   Pour Cyriel — feuille de style commune
+   Palette : papier lilas, encre violette, violet vif, nuit noire.
+   ------------------------------------------------------------------ */
+
+@font-face {
+  font-family: "DynaPuff";
+  src: url("polices/dynapuff-latin-wght-normal.woff2") format("woff2");
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --papier: #fbf8ff;
+  --encre: #1a1026;
+  --violet: #7a3cf0;
+  --violet-fonce: #4a1fa8;
+  --lilas: #c9a8ff;
+  --nuit: #000;
+
+  --police: "DynaPuff", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  --marge: 14px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  font-family: var(--police);
+  color: var(--encre);
+  background-color: var(--papier);
+  transition: background-color 1.1s ease;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+  overscroll-behavior: none;
+}
+
+body[data-fond="sombre"] {
+  color: #efe6ff;
+  background-color: var(--nuit);
+}
+
+#scene {
+  position: absolute;
+  inset: 0;
+}
+
+/* Calque des particules (cœurs, chauves-souris) : par-dessus tout, ne capte aucun clic. */
+#fx {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 30;
+}
+
+/* ---------------------------------------------------------------- Son */
+
+#son {
+  position: absolute;
+  top: max(10px, env(safe-area-inset-top));
+  right: max(10px, env(safe-area-inset-right));
+  z-index: 40;
+  width: 44px;
+  height: 44px;
+  padding: 10px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  opacity: 0.45;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+#son:hover, #son:focus-visible { opacity: 1; }
+#son svg { display: block; width: 100%; height: 100%; }
+#son .hp { fill: currentColor; }
+#son .ondes, #son .croix {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+#son .croix { display: none; }
+#son[aria-pressed="true"] .ondes { display: none; }
+#son[aria-pressed="true"] .croix { display: block; }
+
+:focus-visible {
+  outline: 3px solid var(--lilas);
+  outline-offset: 3px;
+}
+
+.sans-js {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 24px;
+  text-align: center;
+}
+
+/* ----------------------------------------------------------- Étape 1 */
+
+.e1 {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.e1 button {
+  font-family: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+/* Le gros bouton : sa taille de police est pilotée par le JavaScript,
+   tout le reste (marges, arrondi, relief) en découle via les « em ». */
+.e1-oui {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.12em;
+  width: max-content;
+  max-width: calc(100% - 2 * var(--marge));
+  margin: 0;
+  padding: 0.5em 0.7em 0.55em;
+  border: 0;
+  border-radius: min(0.7em, 44px);
+  background: var(--violet);
+  color: #fff;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.04;
+  text-align: center;
+  box-shadow: 0 min(0.16em, 12px) 0 var(--violet-fonce);
+}
+
+.e1-petit {
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: #e7dbff;
+  white-space: nowrap;
+}
+
+.e1-gros {
+  display: block;
+  text-wrap: balance;
+}
+
+.e1-non {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  max-width: calc(100% - 2 * var(--marge));
+  margin: 0;
+  padding: 10px 16px 11px;
+  border: 2px solid var(--encre);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--encre);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+  box-shadow: 0 3px 0 var(--encre);
+  will-change: transform;
+}
+
+.e1-non.glisse { transition: transform 0.28s cubic-bezier(0.3, 1.4, 0.5, 1); }
+
+/* ----------------------------------------------------------- Étape 2 */
+
+.e2 {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  touch-action: none;
+  cursor: pointer;
+}
+
+/* ------------------------------------------------- Étapes à venir */
+
+.a-venir {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 18px;
+  padding: 24px;
+  text-align: center;
+}
+.a-venir p {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+}
+.a-venir button {
+  padding: 10px 18px 11px;
+  border: 2px solid var(--encre);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--encre);
+  font: 500 15px/1.2 var(--police);
+  box-shadow: 0 3px 0 var(--encre);
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body { transition-duration: 0.4s; }
+  .e1-non.glisse { transition-duration: 0.01s; }
+}

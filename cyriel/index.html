@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- Page privée : ne pas indexer, ne pas suivre les liens. -->
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="theme-color" content="#fbf8ff">
+  <title>Pour Cyriel</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%237a3cf0' d='M16 28C4 19 2 13 5 8c3-4 8-3 11 1 3-4 8-5 11-1 3 5 1 11-11 20z'/%3E%3C/svg%3E">
+  <link rel="preload" href="polices/dynapuff-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-fond="clair">
+  <main id="scene"></main>
+  <canvas id="fx" aria-hidden="true"></canvas>
+
+  <button id="son" type="button" aria-pressed="false" aria-label="Couper le son">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path class="hp" d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z"/>
+      <path class="ondes" d="M15.2 9.2a4 4 0 0 1 0 5.6M17.8 6.6a7.6 7.6 0 0 1 0 10.8"/>
+      <path class="croix" d="M15.5 9.5l5 5m0-5l-5 5"/>
+    </svg>
+  </button>
+
+  <noscript><p class="sans-js">Ce jeu a besoin de JavaScript pour fonctionner.</p></noscript>
+  <script type="module" src="js/jeu.js"></script>
+</body>
+</html>
