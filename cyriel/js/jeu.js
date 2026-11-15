@@ -13,9 +13,10 @@ import * as son from './son.js';
 import * as fx from './fx.js';
 import etape1 from './etapes/etape1.js';
 import etape2 from './etapes/etape2.js';
+import etape3 from './etapes/etape3.js';
 import aVenir from './etapes/a-venir.js';
 
-const ETAPES = [etape1, etape2, aVenir];   // étape n° = position + 1
+const ETAPES = [etape1, etape2, etape3, aVenir];   // étape n° = position + 1
 
 const CLE_ETAPE = 'cyriel.etape';
 const scene = document.getElementById('scene');

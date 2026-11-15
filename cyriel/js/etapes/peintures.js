@@ -9,7 +9,7 @@
 import { CHIFFRE } from './grotte.js';
 
 const NOIR = '#17120f';
-const OCRE_ROUGE = '#a13c22';
+export const OCRE_ROUGE = '#a13c22';
 const OCRE_JAUNE = '#c98a3c';
 const VIOLET = '#9a45ff';
 
@@ -37,7 +37,7 @@ function courbe(ctx, pts) {
 }
 
 // Un trait « au charbon » : trois passages légèrement décalés.
-function trait(ctx, pts, couleur, largeur = 3) {
+export function trait(ctx, pts, couleur, largeur = 3) {
   ctx.save();
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
@@ -123,7 +123,7 @@ function cheval(ctx) {
 }
 
 // Mammouth (boîte 220 × 175, tourné vers la gauche).
-function mammouth(ctx, couleur = NOIR) {
+export function mammouth(ctx, couleur = NOIR) {
   trait(ctx, [[40, 64], [46, 46], [58, 34], [74, 32], [86, 40], [92, 50], [104, 40], [122, 34],
     [142, 38], [164, 54], [184, 80], [194, 108], [196, 128]], couleur, 3.4);                  // crâne, bosse, dos
   trait(ctx, [[40, 64], [30, 84], [25, 108], [27, 132], [34, 148], [42, 153]], couleur, 3);    // trompe
