@@ -170,20 +170,23 @@ const ombreSol = (rx = 10) => `<ellipse cx="0" cy="0" rx="${rx}" ry="3.6" fill="
 
 /* --------------------------------------------------------- Les dessins */
 
-/** Tous les deux en spéléo : combinaison, baudrier, casque et frontale. */
-export function duoSpeleo({ lueur = false } = {}) {
+/** Clément en spéléo (origine aux pieds) : combinaison, casque et frontale. */
+export function speleoClement({ lueur = false } = {}) {
   const halo = lueur ? '<circle cx="0" cy="-42" r="13" fill="#fff4c2" opacity=".22"/>' : '';
   return `
-  <g transform="translate(-10 0)">
     ${ombreSol()}
     <g transform="rotate(3 0 -10) scale(1.1)">
       ${combinaison({ ouverte: true })}
       ${teteClement({ couvert: true })}
       ${casque('#d8434b')}
       ${halo}
-    </g>
-  </g>
-  <g transform="translate(10 0)">
+    </g>`;
+}
+
+/** Cyriel en spéléo (origine aux pieds). */
+export function speleoCyriel({ lueur = false } = {}) {
+  const halo = lueur ? '<circle cx="0" cy="-42" r="13" fill="#fff4c2" opacity=".22"/>' : '';
+  return `
     ${ombreSol()}
     <g transform="rotate(-3 0 -10)">
       ${combinaison()}
@@ -191,8 +194,14 @@ export function duoSpeleo({ lueur = false } = {}) {
       ${visageCyriel({ expression: 'sourire' })}
       ${casque('#f3f1ea')}
       ${halo}
-    </g>
-  </g>`;
+    </g>`;
+}
+
+/** Tous les deux en spéléo : combinaison, baudrier, casque et frontale. */
+export function duoSpeleo(options = {}) {
+  return `
+  <g transform="translate(-10 0)">${speleoClement(options)}</g>
+  <g transform="translate(10 0)">${speleoCyriel(options)}</g>`;
 }
 
 /** Cyriel avec son bob à fleurs et sa chemise violette à feuilles blanches. */

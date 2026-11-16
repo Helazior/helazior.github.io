@@ -424,6 +424,6 @@ function demarrer({ scene, son, memoire, suivante, debug }) {
 
 export default {
   fond: 'sombre',
-  ambiance: 'sons/etape-3.mp3',
+  ambiance: 'sons/etape-2.mp3',   // la même que la grotte
   demarrer,
 };

@@ -5,9 +5,9 @@ d'étape. Il suffit de déposer ici un fichier portant le bon nom :
 
 | Étape | Fichier attendu |
 | --- | --- |
-| 1 — les deux boutons | `etape-1.mp3` |
+| 1 — les deux boutons | pas de musique |
 | 2 — la grotte | `etape-2.mp3` (déjà là) |
-| 3 — la peinture | `etape-3.mp3` |
+| 3 — la peinture | `etape-2.mp3`, la même que la grotte |
 | 4 — la zone humide | `etape-4.mp3` (déjà là) |
 | 5 — le café (la salle) | `cafe-salle.mp3` (déjà là) |
 | 5 — le café (le marché) | `cafe-marche.mp3` (déjà là) |

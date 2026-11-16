@@ -14,7 +14,7 @@
 import { chauveSouris, yeux } from '../dessin.js';
 import { creerGrotte, MONDE, DEPART, SORTIE, CHIFFRE, MOUSTIQUES } from './grotte.js';
 import { peindreParois } from './peintures.js';
-import { duoSpeleo } from './clins-doeil.js';
+import { speleoClement, speleoCyriel } from './clins-doeil.js';
 
 const TAU = Math.PI * 2;
 
@@ -122,26 +122,32 @@ async function construire() {
   m.scale(q, q);
   m.drawImage(cFond, 0, 0);
   peindreParois(m);
-  await dessinerSvg(m, duoSpeleo(), 1204, 591, 1.5);   // clin d'œil : Cyriel et Clément en spéléo, salle des mammouths
   m.drawImage(cRoche, 0, 0);
   cFond.width = cFond.height = cRoche.width = cRoche.height = 1;   // libère la mémoire
 
-  return { grotte, monde, q };
+  // Clin d'œil : Cyriel et Clément en spéléo, dans la salle des mammouths.
+  // Ils sont dessinés à part, pour bouger un peu une fois découverts.
+  const speleos = (await Promise.all([speleoClement(), speleoCyriel()].map((d) => imageSvg(d, SPELEO.k * q * 2))));
+  return { grotte, monde, q, speleos };
 }
 
-// Dessine un morceau de SVG (origine aux pieds) sur la toile, à l'échelle k.
-async function dessinerSvg(ctx, dessin, x, y, k) {
+// Où se tiennent les deux spéléos (pieds au sol), et leur taille.
+const SPELEO = { x: 1204, y: 591, k: 1.5, ecart: 10 };
+
+// Un morceau de SVG (origine aux pieds, dans un cadre de 80 × 90) en image,
+// à l'échelle k ; null s'il ne se charge pas (la grotte reste sans eux).
+async function imageSvg(dessin, k) {
   const l = 80;
   const h = 90;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-40 -84 ${l} ${h}" width="${l * k * 2}" height="${h * k * 2}">${dessin}</svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-40 -84 ${l} ${h}" width="${Math.round(l * k)}" height="${Math.round(h * k)}">${dessin}</svg>`;
   const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
   try {
     const img = new Image();
     img.src = url;
     await img.decode();
-    ctx.drawImage(img, x - 40 * k, y - 84 * k, l * k, h * k);
+    return img;
   } catch {
-    // pas grave : la grotte reste sans le clin d'œil
+    return null;
   } finally {
     URL.revokeObjectURL(url);
   }
@@ -184,7 +190,7 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
 
   preparer().then((m) => { if (vivant) jouer(m); });
 
-  function jouer({ grotte, monde, q }) {
+  function jouer({ grotte, monde, q, speleos }) {
     // Ce qui a déjà été révélé : une image, et une grille grossière pour les tests.
     // On y dessine toujours en mode « éclaircir » : chaque pixel garde sa
     // valeur la plus claire, donc repasser au même endroit ne change rien et
@@ -536,6 +542,34 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
 
       // à partir d'ici, on dessine en coordonnées du monde
       c.setTransform(k, 0, 0, k, -cam.x * k, -cam.y * k);
+
+      // les deux spéléos, une fois découverts : ils se balancent, respirent,
+      // et leurs frontales tremblotent un peu dans le noir
+      if (estVu(SPELEO.x, SPELEO.y - 30) || debug === 'carte') {
+        speleos.forEach((img, i) => {
+          if (!img) return;
+          const sens = i ? 1 : -1;
+          const t = temps * (i ? 1.9 : 1.6) + i * 2.1;
+          const sautille = i ? Math.max(0, Math.sin(temps * 0.9)) ** 12 * 4 : 0;   // elle sautille de temps en temps
+          c.save();
+          c.translate(SPELEO.x + sens * SPELEO.ecart * SPELEO.k, SPELEO.y - Math.abs(Math.sin(t)) * 1.2 - sautille);
+          c.rotate(Math.sin(t * 0.8) * 0.06);
+          c.scale(1, 1 + Math.sin(t * 2) * 0.012);
+          c.globalAlpha = 0.82;
+          c.drawImage(img, -40 * SPELEO.k, -84 * SPELEO.k, 80 * SPELEO.k, 90 * SPELEO.k);
+          // la frontale
+          c.globalCompositeOperation = 'lighter';
+          c.globalAlpha = 0.16 + 0.06 * Math.sin(temps * 7 + i * 3);
+          const g = c.createRadialGradient(0, -44 * SPELEO.k, 0, 0, -44 * SPELEO.k, 16 * SPELEO.k);
+          g.addColorStop(0, '#fff4c2');
+          g.addColorStop(1, 'rgba(255, 244, 194, 0)');
+          c.fillStyle = g;
+          c.fillRect(-16 * SPELEO.k, -60 * SPELEO.k, 32 * SPELEO.k, 32 * SPELEO.k);
+          c.restore();
+        });
+        c.globalAlpha = 1;
+        c.globalCompositeOperation = 'source-over';
+      }
 
       // lumière de la sortie
       c.globalCompositeOperation = 'lighter';

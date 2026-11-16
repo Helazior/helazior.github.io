@@ -23,6 +23,7 @@
 import { CODE } from '../code.js';
 import { chauveSouris } from '../dessin.js';
 import * as M from './marais-dessins.js';
+import { course } from './course.js';
 
 /* ======================================================= Textes à modifier */
 
@@ -1555,6 +1556,9 @@ function demarrer({ scene, son, fx, suivante, debug }) {
       animer(zoom, [{ transform: 'scale(2.3)' }, { transform: 'scale(.7)' }], { duree: 1900, easing: 'ease-in' }),
       ...envols,
     ]);
+    // La petite course jusqu'au café, puis l'écran passe aux couleurs du café.
+    etat = 'course';
+    await course(racine, { son, fx, V, calme, debug });
     const voile = document.createElement('div');
     voile.className = 'e4-voile';
     racine.append(voile);

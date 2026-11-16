@@ -1882,3 +1882,59 @@ button.e5-case:disabled { opacity: .38; cursor: default; box-shadow: none; }
     linear-gradient(#efe4ff, #dccbff);
   opacity: 0;
 }
+
+/* La course entre le marais et le café */
+.cr {
+  position: absolute;
+  inset: 0;
+  z-index: 24;
+  background: #b5dc8f;
+  animation: cr-entre .45s ease-out;
+}
+@keyframes cr-entre { from { opacity: 0; } }
+.cr-sort { opacity: 0; transition: opacity .45s; }
+.cr-svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.cr-svg text { font-family: var(--police); }
+.cr-texte {
+  position: absolute;
+  top: max(16px, env(safe-area-inset-top));
+  left: 50%;
+  width: min(560px, calc(100% - 32px));
+  margin: 0;
+  padding: 10px 16px 12px;
+  border: 2px solid var(--encre);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 3px 0 var(--encre);
+  font-size: 17px;
+  line-height: 1.3;
+  text-align: center;
+  transform: translateX(-50%);
+}
+.cr-boutons {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  display: flex;
+  justify-content: space-between;
+  padding: 0 max(16px, env(safe-area-inset-left));
+  transition: opacity .3s;
+}
+.cr-cache { opacity: 0; pointer-events: none; }
+.cr-bouton {
+  width: min(42vw, 180px);
+  height: 96px;
+  border: 3px solid var(--encre);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, .88);
+  box-shadow: 0 4px 0 var(--encre);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.cr-bouton svg { width: 46px; height: 46px; fill: none; stroke: var(--violet); stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; }
+.cr-presse { animation: cr-presse .16s ease-out; }
+@keyframes cr-presse { 50% { transform: translateY(4px) scale(.96); box-shadow: 0 0 0 var(--encre); background: #efe4ff; } }
+.cr-bouton:focus { outline: none; }
+.cr-bouton:focus-visible { outline: 3px solid var(--lilas); outline-offset: 3px; }

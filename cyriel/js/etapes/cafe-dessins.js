@@ -1228,6 +1228,9 @@ function coiffure(c, couleur) {
 // Clément, d'après sa photo : cheveux brun foncé relevés devant, côtés
 // courts, sourcils marqués, yeux bleu-vert, grand sourire ; tenue de trail
 // (gilet d'hydratation et ses deux flasques, short, montre) sur ses abdos.
+/** Clément en tenue de trail, debout (origine aux pieds). */
+export const clementTrail = () => corpsClement(false);
+
 function corpsClement(coucou) {
   const peau = '#f2cbae';
   const ombre = '#d99c7c';

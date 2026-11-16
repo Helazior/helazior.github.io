@@ -24,7 +24,7 @@ const croise = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h &
 
 export default {
   fond: 'clair',
-  ambiance: 'sons/etape-1.mp3',
+  ambiance: null,
 
   demarrer({ scene, son, fx, fond, suivante }) {
     const racine = document.createElement('div');
