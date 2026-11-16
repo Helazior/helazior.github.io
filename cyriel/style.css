@@ -1616,6 +1616,153 @@ button.e5-case:disabled { opacity: .38; cursor: default; box-shadow: none; }
   .e4-ailes { animation-duration: 2.4s; }
 }
 
+/* Les femelles goûtent les plantes en tambourinant avec leurs pattes. */
+.e4-tambour { transform-box: fill-box; }
+.e4-tambourine { animation: e4-tambour .1s ease-in-out infinite alternate; }
+@keyframes e4-tambour { to { transform: translateY(3px); } }
+
+/* Dans la loupe */
+.e4-bulle, .e4-halo, .e4-flotte, .e4-zzz, .e4-odeur, .e4-bulles { pointer-events: none; }
+.e4-loupe .e4-touchable { cursor: pointer; }
+.e4-loupe [tabindex]:focus { outline: none; }
+.e4-loupe [tabindex]:focus-visible { filter: drop-shadow(0 0 5px #7a3cf0); }
+
+.e4-croissance {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transition: transform .28s cubic-bezier(.3, 1.6, .5, 1);
+}
+.e4-feuille { transform-box: fill-box; transform-origin: center; transition: transform .3s ease-out; }
+.e4-mangee { transform: scale(.55); }
+.e4-feuille-saison { transition: fill 1.2s; }
+.e4-automne .e4-feuille-saison { fill: #b98a45; }
+
+.e4-flotte { animation: e4-flotte .9s ease-out forwards; }
+@keyframes e4-flotte { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-26px); opacity: 0; } }
+
+.e4-silique, .e4-fiente { transform-box: fill-box; transform-origin: 50% 100%; }
+.e4-gigote { animation: e4-gigote .45s ease-in-out infinite alternate; }
+.e4-gigote-court { animation: e4-gigote .16s ease-in-out 4 alternate; }
+@keyframes e4-gigote { from { transform: rotate(-4deg); } to { transform: rotate(4deg); } }
+.e4-secoue-petit { animation: e4-secoue-petit .35s ease-in-out; }
+@keyframes e4-secoue-petit { 25% { transform: rotate(-7deg); } 75% { transform: rotate(7deg); } }
+
+.e4-flocon { animation: e4-neige 3s linear infinite; }
+@keyframes e4-neige { from { transform: translate(0, 0); } to { transform: translate(16px, 350px); } }
+.e4-zzz { animation: e4-zzz 1.8s ease-out infinite; }
+@keyframes e4-zzz { from { transform: translate(0, 0); opacity: 0; } 20% { opacity: 1; } to { transform: translate(8px, -22px); opacity: 0; } }
+.e4-odeur { opacity: 0; transform-box: fill-box; transform-origin: 50% 100%; animation: e4-odeur 1s ease-out forwards; }
+@keyframes e4-odeur { 0% { opacity: 0; transform: scale(.6); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateY(-14px) scale(1.2); } }
+.e4-bulle-eau { opacity: 0; animation: e4-bulle-eau 1.2s ease-out forwards; }
+@keyframes e4-bulle-eau { 0% { opacity: 0; transform: translateY(0); } 20% { opacity: 1; } 100% { opacity: 0; transform: translateY(-34px); } }
+
+.e4-vole .e4-aile-oiseau {
+  transform-box: fill-box;
+  transform-origin: 30% 60%;
+  animation: e4-aile-oiseau .14s ease-in-out infinite alternate;
+}
+@keyframes e4-aile-oiseau { from { transform: rotate(-30deg) scaleY(1.2); } to { transform: rotate(20deg) scaleY(.7); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .e4-gigote, .e4-flocon, .e4-zzz, .e4-tambourine { animation: none; }
+}
+
+/* Le carnet de terrain : le bouton en haut à gauche, puis les pages */
+.e4-hud-carnet {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  left: max(12px, env(safe-area-inset-left));
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px 5px 7px;
+  border: 2px solid var(--encre);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--encre);
+  font: 600 15px/1 var(--police);
+  box-shadow: 0 3px 0 var(--encre);
+  cursor: pointer;
+}
+.e4-hud-carnet[hidden] { display: none; }
+.e4-hud-carnet svg { width: 24px; height: 24px; }
+.e4-hud-carnet:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--encre); }
+.e4-hud-saute { animation: e4-hud-saute .6s cubic-bezier(.3, 1.6, .5, 1); }
+.e4-hud-complet { border-color: #b8860b; background: #fff6d6; box-shadow: 0 3px 0 #b8860b; }
+@keyframes e4-hud-saute { 30% { transform: scale(1.25) rotate(-6deg); } }
+
+.e4-carnet {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(26, 16, 38, .45);
+}
+.e4-carnet-boite { width: min(340px, 100%); }
+
+.e4-page {
+  position: relative;
+  padding: 14px 18px 50px 26px;
+  border: 2px solid #8a6a3f;
+  border-radius: 6px 16px 16px 6px;
+  background:
+    linear-gradient(90deg, rgba(138, 106, 63, .2) 0 10px, transparent 10px),
+    repeating-linear-gradient(0deg, transparent 0 21px, rgba(84, 128, 84, .14) 21px 22px),
+    repeating-linear-gradient(90deg, transparent 0 21px, rgba(84, 128, 84, .14) 21px 22px),
+    #fbf5e4;
+  box-shadow: 0 4px 0 #8a6a3f, 0 16px 34px rgba(26, 16, 38, .28);
+  color: var(--encre);
+  overflow: hidden;
+}
+.e4-page-tete {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12.5px;
+  color: #8a6a3f;
+}
+.e4-page-dessin { display: block; width: 150px; height: 114px; margin: 6px auto 0; }
+.e4-page .e4-ailes { animation: none; }
+.e4-page-nom { margin: 0; font-size: 22px; line-height: 1.15; text-align: center; }
+.e4-page-latin { margin: 2px 0 12px; font-style: italic; text-align: center; color: #5b4a6e; }
+.e4-page-hote { margin: 0 0 6px; font-size: 14.5px; line-height: 1.35; }
+.e4-page-fait { margin: 0; font-size: 15px; line-height: 1.4; text-wrap: pretty; }
+
+.e4-tampon {
+  position: absolute;
+  right: 16px;
+  bottom: 12px;
+  padding: 4px 10px;
+  border: 3px double #7a3cf0;
+  border-radius: 8px;
+  color: #7a3cf0;
+  font-size: 15px;
+  font-weight: 700;
+  transform: rotate(-14deg);
+  opacity: .85;
+}
+.e4-tampon-frappe { animation: e4-tampon .42s cubic-bezier(.5, 0, .3, 1.4) .22s backwards; }
+@keyframes e4-tampon { from { transform: rotate(-14deg) scale(2.4); opacity: 0; } }
+
+.e4-carnet-boutons { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
+.e4-carnet-boutons button {
+  padding: 9px 18px 10px;
+  border: 2px solid var(--violet-fonce);
+  border-radius: 999px;
+  background: var(--violet);
+  color: #fff;
+  font: 600 15px/1.2 var(--police);
+  box-shadow: 0 3px 0 var(--violet-fonce);
+  cursor: pointer;
+}
+.e4-carnet-boutons button:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--violet-fonce); }
+.e4-carnet-boutons .e4-principal { margin-left: auto; }
+.e4-carnet-boutons .e4-fleche { width: 44px; padding: 6px 0 8px; background: #fff; color: var(--violet-fonce); font-size: 20px; }
+.e4-carnet-boutons .e4-fleche:disabled { opacity: .35; cursor: default; }
+.e4-carnet-boutons [hidden] { display: none; }
+
 .e4-voile {
   position: absolute;
   inset: 0;

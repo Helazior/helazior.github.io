@@ -219,6 +219,25 @@ export function bip(nom, p = 0) {
         ton({ de: f, duree: 2.0, volume: 0.1, attaque: 0.5, retard: i * 0.09 });
       });
       break;
+    case 'ocelles':
+      // les ailes s'ouvrent d'un coup
+      bruit({ duree: 0.2, volume: 0.24, filtre: 'bandpass', de: 900, a: 2800, q: 0.7 });
+      ton({ type: 'triangle', de: 320, a: 980, duree: 0.18, volume: 0.12 });
+      break;
+    case 'tampon':
+      ton({ de: 150, a: 70, duree: 0.14, volume: 0.38 });
+      bruit({ duree: 0.06, volume: 0.2, filtre: 'lowpass', de: 900 });
+      break;
+    case 'pschitt':
+      bruit({ duree: 0.4, volume: 0.2, filtre: 'highpass', de: 3200, a: 1400 });
+      ton({ type: 'sawtooth', de: 240, a: 180, duree: 0.25, volume: 0.04 });
+      break;
+    case 'bulles':
+      for (let i = 0; i < 4; i++) {
+        const f = 480 + Math.random() * 380;
+        ton({ de: f, a: f * 1.8, duree: 0.07, volume: 0.09, retard: i * 0.1 });
+      }
+      break;
     case 'allume':
       bruit({ duree: 0.12, volume: 0.14, filtre: 'highpass', de: 2600 });
       ton({ de: 1760, a: 2400, duree: 0.12, volume: 0.05 });
