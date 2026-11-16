@@ -29,11 +29,12 @@ Le volume général de l'ambiance se règle dans `js/son.js`
 
 ## Sources
 
-- `etape-4.mp3` : « Forêt de nuit après la pluie » (AMBForst, ID 0555), La Sonothèque
-  (lasonotheque.fr). Original coupé 6 s avant la fin (29,4 s → 23,4 s), puis
-  fin et début fondus l'un dans l'autre sur 1,5 s pour que la boucle ne
-  s'entende pas (durée finale : 21,9 s). Licence à vérifier avant toute mise en
-  ligne publique.
+- `etape-4.mp3` : « Forêt de nuit après la pluie » (AMBForst, ID 0555) et
+  « Forêt » (AMBForst, ID 0100), La Sonothèque (lasonotheque.fr). La pluie
+  (boucle de 21,9 s : original coupé 6 s avant la fin, fin et début fondus sur
+  1,5 s) est jouée deux fois ; les oiseaux sont fondus fin dans début sur 2,5 s
+  pour boucler sur la même durée. Mélange : oiseaux à 90 %, pluie à 70 % (les
+  oiseaux environ 7 dB au-dessus). Durée finale : 43,8 s, 128 kbit/s.
 - `etape-2.mp3` : « Grotte 2 » (AMBUndr, ID 2136), La Sonothèque. Original de
   71,4 s recoupé à 43 s, fin et début fondus sur 1,5 s, ré-encodé en
   128 kbit/s (durée finale : 41,5 s, 650 Ko au lieu de 2,8 Mo).
