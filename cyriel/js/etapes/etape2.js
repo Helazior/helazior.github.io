@@ -458,10 +458,30 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
 
     /* ----------------------------------------------------------- Boucle */
 
+    let eclatSpeleo = 0;
+    // les spéléos, assombris une fois pour toutes : ils restent dans le fond
+    const ombres = speleos.map((img) => {
+      if (!img) return null;
+      const t = toile(img.width, img.height);
+      const tc = t.getContext('2d');
+      tc.drawImage(img, 0, 0);
+      tc.globalCompositeOperation = 'source-atop';
+      tc.fillStyle = 'rgba(20, 10, 36, .5)';
+      tc.fillRect(0, 0, t.width, t.height);
+      return t;
+    });
+
     function avancer(dt) {
       temps += dt;
 
       for (const o of ondes) avancerOnde(o, dt);
+      // les spéléos s'éclairent quand une onde passe sur eux, puis retournent
+      // doucement dans l'ombre au bout de quelques secondes
+      eclatSpeleo *= Math.exp(-dt / 1.8);
+      for (const o of ondes) {
+        const dS = Math.hypot(o.x - SPELEO.x, o.y - (SPELEO.y - 30));
+        if (dS > o.rAvant && dS <= o.r && o.r < PORTEE) eclatSpeleo = 1;
+      }
       for (let i = ondes.length - 1; i >= 0; i--) {
         if (ondes[i].r >= PORTEE + PENETRATION) { finirOnde(ondes[i]); ondes.splice(i, 1); }
       }
@@ -546,7 +566,8 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
       // les deux spéléos, une fois découverts : ils se balancent, respirent,
       // et leurs frontales tremblotent un peu dans le noir
       if (estVu(SPELEO.x, SPELEO.y - 30) || debug === 'carte') {
-        speleos.forEach((img, i) => {
+        const lum = 0.32 + 0.4 * eclatSpeleo;
+        ombres.forEach((img, i) => {
           if (!img) return;
           const sens = i ? 1 : -1;
           const t = temps * (i ? 1.9 : 1.6) + i * 2.1;
@@ -555,11 +576,11 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
           c.translate(SPELEO.x + sens * SPELEO.ecart * SPELEO.k, SPELEO.y - Math.abs(Math.sin(t)) * 1.2 - sautille);
           c.rotate(Math.sin(t * 0.8) * 0.06);
           c.scale(1, 1 + Math.sin(t * 2) * 0.012);
-          c.globalAlpha = 0.82;
+          c.globalAlpha = lum;
           c.drawImage(img, -40 * SPELEO.k, -84 * SPELEO.k, 80 * SPELEO.k, 90 * SPELEO.k);
           // la frontale
           c.globalCompositeOperation = 'lighter';
-          c.globalAlpha = 0.16 + 0.06 * Math.sin(temps * 7 + i * 3);
+          c.globalAlpha = (0.08 + 0.04 * Math.sin(temps * 7 + i * 3)) * (0.6 + eclatSpeleo);
           const g = c.createRadialGradient(0, -44 * SPELEO.k, 0, 0, -44 * SPELEO.k, 16 * SPELEO.k);
           g.addColorStop(0, '#fff4c2');
           g.addColorStop(1, 'rgba(255, 244, 194, 0)');
