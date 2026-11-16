@@ -336,6 +336,7 @@ body[data-fond="sombre"] {
 
 .e5-nom {
   flex: 1;
+  min-width: 0;
   margin: 0;
   color: var(--violet-fonce);
   font-size: 19px;
@@ -442,34 +443,6 @@ body[data-fond="sombre"] {
   box-shadow: 0 1px 0 var(--encre);
 }
 
-.e5-liste {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 8px;
-}
-.e5-liste[hidden] { display: none; }
-
-.e5-puce {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 9px 3px 4px;
-  border: 1.5px solid #d9c8f5;
-  border-radius: 999px;
-  background: #faf6ff;
-  font-size: 13px;
-  line-height: 1.2;
-  transition: background-color .25s, border-color .25s, color .25s;
-}
-.e5-puce svg { width: 22px; height: 22px; flex: none; }
-.e5-puce.e5-ok {
-  border-color: var(--violet);
-  background: #e7dbff;
-  color: #5b4a75;
-  text-decoration: line-through;
-  text-decoration-color: var(--violet);
-}
 
 .e5-envol {
   position: absolute;
@@ -571,17 +544,16 @@ body[data-fond="sombre"] {
 .e5-bf-barre { transform-box: fill-box; transform-origin: 0% 50%; }
 
 .e5-touchable,
-.e5-article,
+.e5-etal,
+.e5-vers-cafe,
+.e5-bavard,
+.e5-svg [data-e5="frigo"],
 .e5-pieces-table,
 .e5-svg [data-e5="enveloppe"],
 .e5-svg [data-e5="cadeau"] { cursor: pointer; }
 .e5-svg [tabindex]:focus { outline: none; }
 .e5-svg [tabindex]:focus-visible { outline: 3px solid var(--lilas); outline-offset: 2px; }
 
-.e5-article-icone { transform-box: fill-box; transform-origin: 50% 100%; transition: opacity .3s; }
-.e5-achete .e5-article-icone { opacity: .5; }
-.e5-coche { opacity: 0; transition: opacity .25s; }
-.e5-achete .e5-coche { opacity: 1; }
 
 .e5-brille {
   transform-box: fill-box;
@@ -745,6 +717,400 @@ body[data-fond="sombre"] {
   .e5-titre { font-size: 34px; }
 }
 
+/* Boutons du haut : livre de recettes et frigo */
+
+.e5-outils { display: flex; flex: none; gap: 6px; }
+.e5-outils[hidden] { display: none; }
+.e5-outil {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 11px 4px 6px;
+  border: 2px solid var(--encre);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--encre);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  box-shadow: 0 2px 0 var(--encre);
+}
+.e5-outil svg { width: 22px; height: 22px; display: block; }
+.e5-outil:active { transform: translateY(2px); box-shadow: 0 0 0 var(--encre); }
+.e5-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border: 2px solid #fff;
+  border-radius: 10px;
+  background: #f06fa4;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.e5-badge[hidden] { display: none; }
+@media (max-width: 600px) {
+  .e5-nom { display: none; }
+  .e5-outils { margin-left: auto; }
+}
+
+/* Fenêtres de jeu (vitrines, frigo, livre) */
+
+.e5-fenetre {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 12px;
+  background: rgba(42, 23, 69, .32);
+}
+.e5-cadre {
+  display: flex;
+  flex-direction: column;
+  width: min(420px, 100%);
+  max-height: 100%;
+  border: 2px solid var(--encre);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 5px 0 var(--encre);
+  overflow: hidden;
+}
+.e5-cadre:focus { outline: none; }
+.e5-cadre-tete {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 6px 8px 6px 16px;
+  border-bottom: 2px solid var(--encre);
+  background: var(--couleur);
+  color: #fff;
+}
+.e5-cadre-tete h2 {
+  flex: 1;
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.1;
+  text-shadow: 0 2px 0 rgba(26, 16, 38, .35);
+}
+.e5-croix {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 2px solid var(--encre);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--encre);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 2px 0 var(--encre);
+}
+.e5-croix:active { transform: translateY(2px); box-shadow: none; }
+.e5-cadre-corps {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 12px 14px 14px;
+}
+.e5-cadre-pied {
+  flex: none;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border-top: 2px solid #efe6ff;
+  background: #faf6ff;
+}
+.e5-bouton {
+  padding: 9px 15px 10px;
+  border: 2px solid var(--encre);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--encre);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.2;
+  box-shadow: 0 3px 0 var(--encre);
+}
+.e5-bouton.e5-principal {
+  border-color: var(--violet-fonce);
+  background: var(--violet);
+  color: #fff;
+  box-shadow: 0 3px 0 var(--violet-fonce);
+}
+.e5-bouton:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--encre); }
+.e5-clignote { animation: e5-clignote 1s ease-in-out infinite; }
+@keyframes e5-clignote { 50% { background: #ffe1ef; box-shadow: 0 3px 0 var(--encre), 0 0 0 5px rgba(240, 111, 164, .35); } }
+
+.e5-note { margin: 0; color: #6b5a88; font-size: 13px; line-height: 1.35; }
+.e5-vide { margin: 8px 0; color: #6b5a88; font-size: 15px; text-align: center; }
+.e5-section + .e5-section,
+.e5-demande + .e5-section { margin-top: 14px; }
+.e5-section h3 {
+  margin: 0 0 8px;
+  color: var(--violet-fonce);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* Les vitrines du marché : un auvent rayé en guise de titre */
+.e5-boutique .e5-cadre-tete {
+  background: repeating-linear-gradient(90deg, var(--couleur) 0 26px, color-mix(in srgb, var(--couleur) 70%, #fff) 26px 52px);
+}
+.e5-produits {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 10px;
+}
+.e5-produit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 6px;
+  border: 2px solid #e8dcff;
+  border-radius: 14px;
+  background: #faf6ff;
+  text-align: center;
+}
+.e5-produit > svg { width: 52px; height: 52px; display: block; overflow: visible; }
+.e5-produit-nom { margin: 2px 0 0; font-size: 13.5px; font-weight: 700; line-height: 1.15; min-height: 2.3em; display: flex; align-items: center; }
+.e5-prix { display: inline-flex; align-items: center; gap: 4px; margin: 0; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.e5-prix svg { width: 17px; height: 17px; display: block; }
+.e5-stock { margin: 0 0 4px; color: #6b5a88; font-size: 12px; }
+.e5-acheter {
+  width: 100%;
+  padding: 6px 4px 7px;
+  border: 2px solid var(--violet-fonce);
+  border-radius: 999px;
+  background: var(--violet);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 3px 0 var(--violet-fonce);
+}
+.e5-acheter:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--violet-fonce); }
+
+/* Grille du frigo */
+.e5-grille {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(66px, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+.e5-case {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 6px 3px 5px;
+  border: 2px solid #d6e8f6;
+  border-radius: 12px;
+  background: #f3f9fe;
+  color: var(--encre);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.1;
+  text-align: center;
+}
+button.e5-case { box-shadow: 0 2px 0 #b7d3ea; }
+button.e5-case:active { transform: translateY(2px); box-shadow: none; }
+button.e5-case:disabled { opacity: .38; cursor: default; box-shadow: none; }
+.e5-case svg { width: 38px; height: 38px; display: block; overflow: visible; }
+.e5-case b {
+  position: absolute;
+  top: 3px;
+  right: 4px;
+  min-width: 18px;
+  padding: 1px 4px;
+  border-radius: 9px;
+  background: var(--encre);
+  color: #fff;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Le livre de recettes : reliure en cuir et pages crème */
+.e5-livre .e5-cadre-tete { box-shadow: inset 0 0 0 4px var(--couleur), inset 0 0 0 5.5px rgba(255, 255, 255, .45); }
+.e5-livre .e5-cadre-corps { background: #fffaf2; }
+
+.e5-ings { display: flex; flex-wrap: wrap; gap: 5px; }
+.e5-ing {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 9px 2px 3px;
+  border: 1.5px solid #d9c8f5;
+  border-radius: 999px;
+  background: #faf6ff;
+  color: var(--encre);
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+.e5-ing svg { width: 22px; height: 22px; flex: none; overflow: visible; }
+.e5-ing b { color: var(--violet-fonce); }
+
+.e5-recettes { display: grid; gap: 8px; }
+.e5-recette {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 2px solid #ecdcc4;
+  border-radius: 14px;
+  background: #fff;
+}
+.e5-recette h4 { margin: 0 0 5px; font-size: 15px; line-height: 1.15; }
+.e5-recette .e5-note { margin-top: 5px; }
+.e5-plat { flex: none; width: 54px; height: 54px; overflow: visible; }
+.e5-secrete { border-style: dashed; background: #faf6ff; }
+
+.e5-demande {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px;
+  border: 2px solid #ecdcc4;
+  border-radius: 14px;
+  background: #fff;
+}
+.e5-demande + .e5-demande { margin-top: 8px; }
+.e5-visage {
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border: 2px solid var(--encre);
+  border-radius: 50%;
+  background: #efe6ff;
+}
+.e5-demande-texte { flex: 1; min-width: 0; }
+.e5-qui { margin: 0; color: var(--violet-fonce); font-size: 13px; font-weight: 700; }
+.e5-citation { margin: 2px 0 0; font-size: 15px; line-height: 1.35; text-wrap: pretty; }
+.e5-ligne-recette { margin-top: 8px; }
+.e5-etiquette { display: block; margin-bottom: 4px; color: #6b5a88; font-size: 12.5px; }
+.e5-aide {
+  margin-top: 8px;
+  padding: 7px 8px;
+  border: 2px dashed #e3b04b;
+  border-radius: 12px;
+  background: #fff4c2;
+}
+.e5-aide > span { display: block; margin-bottom: 4px; font-size: 13px; font-weight: 700; }
+
+.e5-onglets {
+  display: flex;
+  gap: 6px;
+  margin: -2px -14px 10px;
+  padding: 0 14px 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.e5-onglet {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 11px 3px 3px;
+  border: 2px solid #d9c8f5;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--encre);
+  font-size: 13px;
+  font-weight: 600;
+}
+.e5-onglet[aria-selected="true"] { border-color: var(--violet); background: #efe6ff; box-shadow: 0 2px 0 var(--violet-fonce); }
+.e5-mini { width: 30px; height: 30px; border-radius: 50%; background: #efe6ff; }
+
+.e5-pot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 56px;
+  margin-top: 10px;
+  padding: 6px 10px;
+  border: 2px dashed #b9b3cb;
+  border-radius: 14px;
+  background: #f4f2f9;
+}
+.e5-pot-icone { flex: none; width: 54px; height: 34px; overflow: visible; }
+.e5-pot-contenu { display: flex; flex-wrap: wrap; gap: 5px; }
+.e5-dans { border-color: #b9b3cb; background: #fff; box-shadow: 0 2px 0 #cfc8de; }
+.e5-dans::after { content: '×'; margin-left: 3px; color: #8f7bb3; font-size: 14px; }
+.e5-dans:active { transform: translateY(2px); box-shadow: none; }
+
+.e5-cuisine .e5-cadre-corps { padding-bottom: 0; }
+.e5-plan-travail {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  margin: 12px -14px 0;
+  padding: 8px 14px 12px;
+  border-top: 2px solid #ecdcc4;
+  background: #fffaf2;
+  box-shadow: 0 -8px 12px -10px rgba(42, 23, 69, .35);
+}
+.e5-plan-travail .e5-pot { margin-top: 0; }
+.e5-alerte {
+  margin: 0 0 8px;
+  padding: 7px 10px;
+  border-radius: 12px;
+  background: #ffe8ef;
+  color: #a3174a;
+  font-size: 14px;
+  line-height: 1.35;
+}
+.e5-alerte:empty { display: none; }
+
+/* Le marché */
+.e5-etal { transform-box: fill-box; transform-origin: 50% 85%; }
+.e5-jets path { stroke-dasharray: 6 5; animation: e5-eau .5s linear infinite; }
+@keyframes e5-eau { to { stroke-dashoffset: -11; } }
+.e5-ronds ellipse { transform-box: fill-box; transform-origin: center; animation: e5-rond 2.2s ease-out infinite; }
+@keyframes e5-rond { from { transform: scale(.3); opacity: .9; } to { transform: scale(1.3); opacity: 0; } }
+.e5-respire { transform-box: fill-box; transform-origin: 50% 100%; animation: e5-respire 1.3s ease-in-out infinite alternate; }
+@keyframes e5-respire { to { transform: translateY(-1.2px); } }
+.e5-flane { animation: e5-flane 16s ease-in-out infinite; }
+@keyframes e5-flane {
+  0%, 10% { transform: translate(0, 0); }
+  45%, 60% { transform: translate(-56px, -28px); }
+  95%, 100% { transform: translate(0, 0); }
+}
+.e5-coucou { transform-box: fill-box; transform-origin: 0% 100%; animation: e5-coucou .5s ease-in-out infinite alternate; }
+@keyframes e5-coucou { from { transform: rotate(-14deg); } to { transform: rotate(16deg); } }
+.e5-petit-coeur { transform-box: fill-box; transform-origin: center; animation: e5-petit-coeur 2.6s ease-out infinite; }
+@keyframes e5-petit-coeur {
+  0% { transform: translateY(4px) scale(.5); opacity: 0; }
+  25% { opacity: 1; }
+  100% { transform: translateY(-12px) scale(1.15); opacity: 0; }
+}
+.e5-vol-papillon { animation: e5-vol-papillon 7s ease-in-out infinite; }
+@keyframes e5-vol-papillon {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(22px, -14px); }
+  50% { transform: translate(6px, -30px); }
+  75% { transform: translate(-18px, -12px); }
+}
+.e5-battement { transform-box: fill-box; transform-origin: 50% 50%; animation: e5-papillon .35s ease-in-out infinite; }
+.e5-crepe-volante { transform-box: fill-box; transform-origin: center; }
+
 /* Le mot et le cadeau */
 
 .e5-finale {
@@ -800,6 +1166,7 @@ body[data-fond="sombre"] {
 
 @media (prefers-reduced-motion: reduce) {
   .e5-pluie line, .e5-vapeur path, .e5-flamme, .e5-brille { animation: none; }
+  .e5-jets path, .e5-ronds ellipse, .e5-flane, .e5-respire, .e5-coucou, .e5-petit-coeur, .e5-vol-papillon, .e5-clignote { animation: none; }
   .e5 .e5-aile, .e5-ailes-machaon, .e5-flotte { animation-duration: 2.4s; }
   .e5-marche, .e5-content { animation: none; }
 }
@@ -811,17 +1178,6 @@ body[data-fond="sombre"] {
 }
 @keyframes e5-beurk { from { transform: rotate(-5deg); } to { transform: rotate(5deg); } }
 
-.e5-puce.e5-extra {
-  border-style: dashed;
-  border-color: #8fcf9a;
-  background: #eef8ef;
-}
-.e5-puce.e5-extra::before {
-  content: '+';
-  margin-left: 3px;
-  color: #3f8a4c;
-  font-weight: 700;
-}
 
 /* ----------------------------------------------------------- Étape 4 */
 
