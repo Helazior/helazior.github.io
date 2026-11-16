@@ -12,19 +12,6 @@ import { duoSpeleo, cyrielChapeau, cyrielClin, cyrielNatte } from './clins-doeil
 export const LARGEUR = 400;
 export const HAUTEUR = 560;
 
-export const LIEUX = {
-  tables: [92, 208, 324],      // centre des trois tables
-  assis: 418,                  // pieds d'un client assis (cachés par la table)
-  couloir: 332,                // allée entre le comptoir et les tables
-  porte: { x: 365, y: 238 },
-  perchoir: 372,               // le machaon se pose sur le dossier de la chaise
-  pipi: { x: 250, y: 186 },    // Pipistrelle au repos
-  plateau: { x: 150, y: 225 }, // plats posés sur le comptoir
-  fourneau: { x: 126, y: 182, r: 58 },
-  casserole: { x: 106, y: 126 },
-  bulleFour: { x: 126, y: 62 },
-  frigo: { x: 44, y: 156 },
-};
 
 const ENCRE = '#1a1026';
 
@@ -686,220 +673,315 @@ function plante(x, y, s = 1) {
   </g>`;
 }
 
-function decorLointain() {
-  return `
-  <g transform="translate(-86 92)">
-    <rect x="-36" y="-32" width="72" height="60" rx="3" fill="#9a6438"/>
-    ${portrait(duoSpeleo({ lueur: true }), -30, -26, 60, 48, '-30 -54 60 48', '#2a2140')}
-  </g>
-  <g transform="translate(-196 112) rotate(3)">
-    <rect x="-22" y="-28" width="44" height="54" rx="2" fill="#fffaf2" stroke="#d9c8a8" stroke-width="1.5"/>
-    ${portrait(cyrielChapeau(), -18, -24, 36, 40, '-17 -52 34 38', '#cfe7f5')}
-  </g>
-  ${plante(-70, 340, 1.15)}
-  <g transform="translate(476 120)">
-    <rect x="-2" y="0" width="4" height="110" fill="#86552e"/>
-    <path d="M-14 7 Q0 -4 14 7" stroke="#86552e" stroke-width="3" fill="none"/>
-    <path d="M-12 9 Q-17 40 -8 60 L-2 60 Q-6 30 -6 9 Z" fill="#8f5cf7"/>
-    <ellipse cx="0" cy="110" rx="14" ry="3" fill="#86552e"/>
-  </g>
-  ${plante(540, 340, 1.15)}`;
-}
-
 // Un portrait recadré (clin d'œil) dans une fenêtre l × h.
 function portrait(dessin, x, y, l, h, boite, fond = '#e9dcff') {
   return `<svg x="${x}" y="${y}" width="${l}" height="${h}" viewBox="${boite}" preserveAspectRatio="xMidYMid slice"><rect x="-200" y="-200" width="400" height="400" fill="${fond}"/>${dessin}</svg>`;
 }
 
-function frigo() {
+/* ===================================================== Le café, en isométrique */
+
+// La salle vue de trois quarts comme dans le jeu d'origine : murs bleus,
+// parquet, coin cuisine carrelé avec la rangée de fourneaux le long du mur
+// de gauche, le comptoir bleu et blanc où attendent les plats, et les tables
+// blanches côté salle. Repère : i le long du mur de droite, j le long du mur
+// de gauche, z vers le haut ; (0, 0) est le coin du fond.
+
+const CA = { x: 200, y: 190, a: 15, b: 7.5, n: 12, h: 112 };
+const qx = (i, j) => CA.x + (i - j) * CA.a;
+const qy = (i, j, z = 0) => CA.y + (i + j) * CA.b - z;
+const Q = (i, j, z = 0) => `${qx(i, j).toFixed(1)} ${qy(i, j, z).toFixed(1)}`;
+const qf = (pts, fill, extra = '') => `<path d="M${pts.map((p) => Q(...p)).join(' L')} Z" fill="${fill}"${extra}/>`;
+const pt = (i, j, z = 0) => ({ x: +qx(i, j).toFixed(1), y: +qy(i, j, z).toFixed(1) });
+// Plan du mur de gauche (i constant) ou de droite (j constant) : on dessine à
+// plat (u vers la droite, v vers le bas, en pixels) puis on incline.
+const murGauche = (i = 0) => `matrix(1 -.5 0 1 ${qx(i, 0)} ${qy(i, 0)})`;   // u = -15 j, v = -z
+const murDroit = (j = 0) => `matrix(1 .5 0 1 ${qx(0, j)} ${qy(0, j)})`;     // u = 15 i, v = -z
+
+function qboite(i0, j0, I, J, z0, H, c) {
+  const z1 = z0 + H;
+  return qf([[i0, j0 + J, z0], [i0 + I, j0 + J, z0], [i0 + I, j0 + J, z1], [i0, j0 + J, z1]], c.devant)
+    + qf([[i0 + I, j0, z0], [i0 + I, j0 + J, z0], [i0 + I, j0 + J, z1], [i0 + I, j0, z1]], c.cote)
+    + qf([[i0, j0, z1], [i0 + I, j0, z1], [i0 + I, j0 + J, z1], [i0, j0 + J, z1]], c.dessus);
+}
+const qpied = (i, j, h, couleur, l = 2.4) => `<path d="M${Q(i, j, 0)} L${Q(i, j, h)}" stroke="${couleur}" stroke-width="${l}" stroke-linecap="round"/>`;
+
+const TABLES_J = [3.4, 7.0, 10.6];
+const TABLE_I = 8.6;
+const SIEGE_I = 7.2;
+const HAUT_TABLE = 16;
+
+// Le cadre de la vue du café : la salle entière, toujours visible.
+export const CADRE_CAFE = { x: 4, y: 64, l: 392, h: 352 };
+
+export const LIEUX = {
+  echelle: 0.72,                                   // taille des personnages dans la salle
+  tables: TABLES_J.map((j) => pt(TABLE_I, j)),     // centre de chaque table, au sol
+  dessus: HAUT_TABLE,                              // hauteur du plateau des tables
+  sieges: TABLES_J.map((j) => pt(SIEGE_I, j)),     // pieds d'un client assis (cachés par la table)
+  chemins: TABLES_J.map((j) => [pt(0.6, 11.4), pt(6, 11.4), pt(6, j), pt(SIEGE_I, j)]),
+  porte: pt(0.5, 11.4),
+  perchoir: pt(SIEGE_I - 0.3, TABLES_J[1], 26),    // le machaon se pose sur le dossier
+  pipi: pt(5.4, 1.6, 46),                          // Pipistrelle au repos
+  comptoir: [pt(4.2, 6, 14), pt(4.2, 4, 14), pt(4.2, 8, 14)],   // places des plats prêts
+  fourneau: { ...pt(1, 5.5, 10), r: 56 },
+  casserole: pt(0.95, 4.7, 15),
+  four: pt(1.9, 4.7, 8),
+  bulleFour: { x: 140, y: 136 },
+  frigo: pt(1.6, 1.05, 26),
+};
+
+function rue() {
+  const ligne = (a, b) => `<path d="M${Q(...a)} L${Q(...b)}" stroke="#c3beb5" stroke-width="2.4" stroke-linecap="round"/>`;
+  const tirets = [-9, -6, -3, 0, 3, 6, 9, 12, 15, 18].map((i) => `<path d="M${Q(i, -6.5)} L${Q(i + 1.4, -6.5)}" stroke="#f4f2ee" stroke-width="3"/>`).join('')
+    + [-9, -6, -3, 0, 3, 6, 9, 12, 15, 18].map((j) => `<path d="M${Q(-6.5, j)} L${Q(-6.5, j + 1.4)}" stroke="#f4f2ee" stroke-width="3"/>`).join('');
   return `
-  <g data-e5="frigo">
-    <rect x="12" y="84" width="64" height="146" rx="9" fill="#e9e3d8"/>
-    <rect x="16" y="88" width="56" height="138" rx="6" fill="#fdfaf1"/>
-    <path d="M16 124 H72 M16 160 H72 M16 196 H72" stroke="#e3dccd" stroke-width="2"/>
-    <g transform="translate(30 113) scale(.45)">${lait()}</g>
-    <g transform="translate(54 115) scale(.42)">${oeufs()}</g>
-    <g transform="translate(36 150) scale(.42)">${marron()}</g>
-    <g transform="translate(52 186) scale(.42)">${pomme()}</g>
-    <g class="e5-porte-frigo" data-e5="frigo-porte">
-      <rect x="12" y="84" width="64" height="146" rx="9" fill="#f6f3ee" stroke="#d8d2c8" stroke-width="2"/>
-      <path d="M12 132 H76" stroke="#d8d2c8" stroke-width="2"/>
-      <rect x="64" y="98" width="4.5" height="24" rx="2.2" fill="#b9b2a6"/>
-      <rect x="64" y="142" width="4.5" height="38" rx="2.2" fill="#b9b2a6"/>
-      <path d="M28 108 C24 104.5 23.4 102.2 25.4 101.4 C26.6 100.9 27.6 101.6 28 102.3 C28.4 101.6 29.4 100.9 30.6 101.4 C32.6 102.2 32 104.5 28 108 Z" fill="#8f5cf7"/>
-      <g transform="translate(36 156) rotate(-6)">
-        <rect x="-11" y="-12" width="22" height="25" fill="#fff" stroke="#e3dccd"/>
-        ${portrait(cyrielClin(), -8.5, -9.5, 17, 15, '-13 -49 26 23', '#ffe3ef')}
+  <rect x="-1400" y="-1400" width="3200" height="3400" fill="#c9c5bd"/>
+  ${qf([[-3.2, -3.2], [40, -3.2], [40, 40], [-3.2, 40]], '#dcd8d0')}
+  ${tirets}
+  ${qf([[14.5, -3.2], [40, -3.2], [40, 40], [14.5, 40]], '#bfe07e')}
+  ${qf([[-3.2, 14.5], [14.5, 14.5], [14.5, 40], [-3.2, 40]], '#bfe07e')}
+  ${ligne([14.5, -3.2], [14.5, 14.5])}${ligne([-3.2, 14.5], [14.5, 14.5])}
+  ${ligne([-3.2, -3.2], [40, -3.2])}${ligne([-3.2, -3.2], [-3.2, 40])}`;
+}
+
+function sol() {
+  const n = CA.n;
+  const lattes = Array.from({ length: 20 }, (_, k) => {
+    const j = 0.6 * (k + 1);
+    return `<path d="M${Q(5.4, j)} L${Q(n, j)}" stroke="#c38a54" stroke-width=".9"/>`;
+  }).join('') + Array.from({ length: 20 }, (_, k) => {
+    const j = 0.6 * k + 0.05;
+    const i = 5.4 + ((k * 2.3) % 6);
+    return `<path d="M${Q(i, j)} L${Q(i, j + 0.6)}" stroke="#c38a54" stroke-width=".8"/>`;
+  }).join('');
+  const carreaux = Array.from({ length: 6 }, (_, k) => `<path d="M${Q(0.9 * (k + 1), 0)} L${Q(0.9 * (k + 1), 9.9)}" stroke="#868691" stroke-width=".8"/>`).join('')
+    + Array.from({ length: 11 }, (_, k) => `<path d="M${Q(0, 0.9 * (k + 1))} L${Q(5.4, 0.9 * (k + 1))}" stroke="#868691" stroke-width=".8"/>`).join('');
+  return `
+  ${qf([[0, 0], [n, 0], [n, n], [0, n]], '#d7a26c')}
+  ${lattes}
+  ${qf([[0, 0], [5.4, 0], [5.4, 9.9], [0, 9.9]], '#a2a2ad')}
+  ${carreaux}
+  ${qf([[0, 0], [n, 0], [n, 0.5], [0, 0.5]], '#1a1026', ' opacity=".08"')}
+  ${qf([[0, 0], [0.5, 0], [0.5, n], [0, n]], '#1a1026', ' opacity=".06"')}`;
+}
+
+function murs() {
+  const { n, h } = CA;
+  return `
+  ${qf([[0, n, 0], [0, 0, 0], [0, 0, h], [0, n, h]], '#86b9da')}
+  ${qf([[0, 0, 0], [n, 0, 0], [n, 0, h], [0, 0, h]], '#72a7cb')}
+  ${qf([[0, n, 0], [0, 0, 0], [0, 0, 6], [0, n, 6]], '#eef3f8')}
+  ${qf([[0, 0, 0], [n, 0, 0], [n, 0, 6], [0, 0, 6]], '#e2eaf1')}
+  ${qf([[-0.5, n, h], [-0.5, -0.5, h], [0, 0, h], [0, n, h]], '#eaf0f5')}
+  ${qf([[-0.5, -0.5, h], [n, -0.5, h], [n, 0, h], [0, 0, h]], '#dfe7ee')}
+  ${qf([[-0.5, n, 0], [0, n, 0], [0, n, h], [-0.5, n, h]], '#b5c6d2')}
+  ${qf([[n, -0.5, 0], [n, 0, 0], [n, 0, h], [n, -0.5, h]], '#a6bccb')}`;
+}
+
+// Le mur de droite : l'ardoise du soir et deux fenêtres sous la pluie.
+function murDroitDecor() {
+  const gouttes = (u0) => Array.from({ length: 9 }, (_, k) => {
+    const x = u0 + 3 + ((k * 17) % 22);
+    const y = -88 + ((k * 23) % 40);
+    const duree = (0.55 + ((k * 7) % 5) * 0.08).toFixed(2);
+    return `<line x1="${x}" y1="${y}" x2="${x - 2}" y2="${y + 8}" style="animation-duration:${duree}s;animation-delay:-${((k * 13) % 10) / 10}s"/>`;
+  }).join('');
+  const fenetre = (u0, id) => `
+    <clipPath id="${id}"><rect x="${u0}" y="-92" width="27" height="50"/></clipPath>
+    <rect x="${u0 - 3}" y="-95" width="33" height="56" rx="2" fill="#fbfdff"/>
+    <rect x="${u0}" y="-92" width="27" height="50" fill="url(#e5-nuit)"/>
+    <g clip-path="url(#${id})"><g class="e5-pluie" stroke="#a9bdf0" stroke-width="1.1" stroke-linecap="round" opacity=".85">${gouttes(u0)}</g></g>
+    <path d="M${u0 + 13.5} -92 V-42 M${u0} -67 H${u0 + 27}" stroke="#fbfdff" stroke-width="2.4"/>
+    <rect x="${u0 - 5}" y="-40" width="37" height="4" rx="1.5" fill="#e9eef3"/>`;
+  return `
+  <g transform="${murDroit()}">
+    <rect x="22" y="-108" width="50" height="62" rx="3" fill="#8a5a3b"/>
+    <rect x="26" y="-104" width="42" height="54" rx="2" fill="#2f2c38"/>
+    <text x="47" y="-92" text-anchor="middle" font-size="8.5" font-weight="600" fill="#f3f0ff">Ce soir</text>
+    <path d="M31 -88 H63" stroke="#f3f0ff" stroke-opacity=".4" stroke-width=".8" stroke-dasharray="2 2"/>
+    <g transform="translate(35 -77) scale(.42)">${tasse({ vapeur: false })}</g>
+    <g transform="translate(47 -77) scale(.42)">${tarte()}</g>
+    <g transform="translate(59 -77) scale(.42)">${crepes()}</g>
+    <text x="47" y="-58" text-anchor="middle" font-size="6" fill="#f3f0ff" fill-opacity=".8">+ une surprise</text>
+    ${fenetre(88, 'e5-vitre-1')}
+    ${fenetre(134, 'e5-vitre-2')}
+  </g>`;
+}
+
+// Le mur de gauche : ustensiles, deux photos (clins d'œil) et la porte.
+function murGaucheDecor() {
+  return `
+  <g transform="${murGauche()}">
+    <rect x="-64" y="-78" width="30" height="2.4" rx="1" fill="#8b8b98"/>
+    <path d="M-60 -76 V-62 M-60 -62 a3 3 0 1 0 0.1 0" stroke="#9aa3ad" stroke-width="1.4" fill="none"/>
+    <path d="M-51 -76 V-66" stroke="#9aa3ad" stroke-width="1.4"/><ellipse cx="-51" cy="-62" rx="2.6" ry="4.4" fill="none" stroke="#9aa3ad" stroke-width="1.1"/>
+    <path d="M-42 -76 V-72" stroke="#9aa3ad" stroke-width="1.2"/><path d="M-46 -72 h8 v9 q0 4 -4 4 q-4 0 -4 -4 Z" fill="#f2a0c0"/>
+    <rect x="-112" y="-98" width="38" height="30" rx="2" fill="#8a5a3b"/>
+    ${portrait(duoSpeleo(), -109, -95, 32, 24, '-30 -54 60 45', '#2a2140')}
+    <g transform="rotate(-4 -130 -84)">
+      <rect x="-142" y="-100" width="24" height="29" fill="#fffaf2" stroke="#d9c8a8" stroke-width=".8"/>
+      ${portrait(cyrielChapeau(), -140, -98, 20, 21, '-15 -52 30 31', '#cfe7f5')}
+    </g>
+    <rect x="-180" y="-63" width="30" height="63" fill="#fbfdff"/>
+    <rect x="-177" y="-60" width="24" height="60" fill="#1d1530"/>
+    <g class="e5-porte" data-e5="porte">
+      <rect x="-177" y="-60" width="24" height="60" fill="#9a6438"/>
+      <rect x="-174" y="-56" width="18" height="20" rx="1.5" fill="url(#e5-nuit)"/>
+      <rect x="-174" y="-26" width="18" height="22" rx="1.5" fill="none" stroke="#86552e" stroke-width="1.2"/>
+      <circle cx="-156.5" cy="-30" r="1.5" fill="#e3b04b"/>
+      <g class="e5-pancarte">
+        <rect x="-176" y="-35" width="22" height="8" rx="2" fill="#fffaf2" stroke="#e3b04b" stroke-width=".7"/>
+        <text data-e5="pancarte" x="-165" y="-29.2" text-anchor="middle" font-size="5.4" font-weight="600" fill="#7a3cf0">Fermé</text>
       </g>
     </g>
   </g>`;
 }
 
-function etagere() {
+function frigoIso() {
+  const I = 1.6;
+  const j0 = 0.15;
+  const J = 1.85;
+  const H = 56;
+  // Façade (plan i = 1.6) : à plat, u = -15 j, v = -z.
+  const u0 = -15 * (j0 + J);
+  const u1 = -15 * j0;
   return `
-  <rect x="80" y="97" width="92" height="47" fill="url(#e5-faience)"/>
-  <rect x="78" y="92" width="96" height="5" rx="2" fill="#9a6438"/>
-  <g transform="translate(95 92)">
-    <rect x="-7" y="-17" width="14" height="17" rx="3" fill="#f3e9dc" stroke="#d9c8a8"/>
-    <rect x="-7.5" y="-20" width="15" height="4" rx="1.5" fill="#8f5cf7"/>
-    <rect x="-5" y="-9" width="10" height="7" rx="1" fill="#f07aa0"/>
-  </g>
-  <g transform="translate(126 92)">
-    <ellipse cx="-6" cy="-19" rx="4" ry="9" transform="rotate(-25 -6 -19)" fill="#5bb36a"/>
-    <ellipse cx="5" cy="-20" rx="4" ry="9" transform="rotate(22 5 -20)" fill="#4f9a5a"/>
-    <ellipse cx="0" cy="-23" rx="4" ry="10" fill="#6cc27a"/>
-    <path d="M-7 -11 L7 -11 L5.5 0 L-5.5 0 Z" fill="#c9774a"/>
-  </g>
-  <g transform="translate(156 92)">
-    <rect x="-8" y="-15" width="16" height="15" rx="4" fill="#fff" stroke="#d9c8a8"/>
-    <path d="M-4 -15 V-19 H4 V-15" fill="none" stroke="#d9c8a8"/>
-    <circle cx="0" cy="-7" r="3" fill="#7b4a2d"/>
+  <g data-e5="frigo">
+    ${qf([[0, j0, 0], [I, j0, 0], [I, j0 + J, 0], [0, j0 + J, 0]], '#1a1026', ' opacity=".12"')}
+    ${qboite(0, j0, I, J, 0, H, { devant: '#dcd8d2', cote: '#efebe6', dessus: '#fbfaf8' })}
+    <g transform="${murGauche(I)}">
+      <rect x="${u0}" y="${-H}" width="${u1 - u0}" height="${H}" fill="#fdfaf1"/>
+      <path d="M${u0} -40 H${u1} M${u0} -24 H${u1}" stroke="#e3dccd" stroke-width="1.4"/>
+      <g transform="translate(${u0 + 7} -45) scale(.3)">${lait()}</g>
+      <g transform="translate(${u0 + 18} -45) scale(.28)">${oeufs()}</g>
+      <g transform="translate(${u0 + 10} -29) scale(.28)">${marron()}</g>
+      <g transform="translate(${u0 + 19} -13) scale(.28)">${pomme()}</g>
+      <g class="e5-porte-frigo" data-e5="frigo-porte">
+        <rect x="${u0}" y="${-H}" width="${u1 - u0}" height="${H}" rx="2" fill="#f7f5f1" stroke="#d6d0c6" stroke-width="1.2"/>
+        <path d="M${u0} -36 H${u1}" stroke="#d6d0c6" stroke-width="1.2"/>
+        <rect x="${u1 - 5}" y="-50" width="2.4" height="10" rx="1.2" fill="#b9b2a6"/>
+        <rect x="${u1 - 5}" y="-31" width="2.4" height="16" rx="1.2" fill="#b9b2a6"/>
+        <path d="M${u0 + 8} -47 c-2.4 -2 -2.8 -3.4 -1.6 -3.9 c.7 -.3 1.3 .1 1.6 .5 c.3 -.4 .9 -.8 1.6 -.5 c1.2 .5 .8 1.9 -1.6 3.9 Z" fill="#8f5cf7"/>
+        <g transform="translate(${u0 + 10} -24) rotate(-6)">
+          <rect x="-6.5" y="-7.5" width="13" height="15" fill="#fff" stroke="#e3dccd" stroke-width=".6"/>
+          ${portrait(cyrielClin(), -5, -6, 10, 9, '-13 -49 26 23', '#ffe3ef')}
+        </g>
+      </g>
+    </g>
   </g>`;
 }
 
-function fourneau() {
-  const flammes = [96, 101, 106, 111, 116].map((x, i) => `
-      <path class="e5-flamme" d="M${x - 2.4} 142 Q${x} 132 ${x + 2.4} 142 Z" fill="${i % 2 ? '#ffd36b' : '#ff8a2a'}" style="animation-delay:-${(i * 0.07).toFixed(2)}s"/>`).join('');
+function fourneauxIso() {
+  const blanc = { devant: '#d9dbe1', cote: '#f5f6f8', dessus: '#3b3b45' };
+  const fourneaux = [0, 1, 2, 3].map((k) => {
+    const j0 = 2.2 + k * 1.7;
+    const J = 1.6;
+    const u0 = -15 * (j0 + J);
+    const u1 = -15 * j0;
+    const actif = k === 1;
+    const brule = (i, j) => `<ellipse cx="${qx(i, j).toFixed(1)}" cy="${qy(i, j, 15).toFixed(1)}" rx="5.4" ry="2.7" fill="none" stroke="#5a5a66" stroke-width="1.4"/>`;
+    const poele = (i, j, plein) => `<g transform="translate(${qx(i, j).toFixed(1)} ${qy(i, j, 15).toFixed(1)})">
+      <ellipse cx="0" cy="-1" rx="6.6" ry="3.3" fill="#c9cdd6"/><ellipse cx="0" cy="-2.2" rx="5.6" ry="2.6" fill="${plein ? '#f2cf5a' : '#aeb3bd'}"/>
+      <path d="M5 -1.6 L11 1.4" stroke="#7d8696" stroke-width="2" stroke-linecap="round"/></g>`;
+    return `
+      ${qboite(0, j0, 1.9, J, 0, 15, blanc)}
+      ${brule(0.55, j0 + 0.45)}${brule(1.3, j0 + 1.15)}
+      ${actif ? '' : poele(0.55, j0 + 0.45, k !== 2) + poele(1.3, j0 + 1.15, k === 3)}
+      <g transform="${murGauche(1.9)}">
+        <rect x="${u0 + 2.5}" y="-12" width="${u1 - u0 - 5}" height="9" rx="1.5" fill="#e7e9ee" stroke="#c4c8d1" stroke-width=".7"/>
+        <rect ${actif ? 'data-e5="four-vitre"' : ''} x="${u0 + 5}" y="-10.5" width="${u1 - u0 - 10}" height="6" rx="1" fill="#3a3a46"/>
+        <rect x="${u0 + 5}" y="-14" width="${u1 - u0 - 10}" height="1.4" rx=".7" fill="#9aa3ad"/>
+        <circle cx="${u0 + 6}" cy="-1.8" r="1" fill="#9aa3ad"/><circle cx="${u1 - 6}" cy="-1.8" r="1" fill="#9aa3ad"/>
+      </g>`;
+  }).join('');
+  const c = LIEUX.casserole;
+  const flammes = [-6, -3, 0, 3, 6].map((dx, k) => `
+      <path class="e5-flamme" d="M${(c.x + dx - 1.8).toFixed(1)} ${(c.y + 4).toFixed(1)} Q${(c.x + dx).toFixed(1)} ${(c.y - 3).toFixed(1)} ${(c.x + dx + 1.8).toFixed(1)} ${(c.y + 4).toFixed(1)} Z" fill="${k % 2 ? '#ffd36b' : '#ff8a2a'}" style="animation-delay:-${(k * 0.07).toFixed(2)}s"/>`).join('');
   return `
   <g data-e5="fourneau" role="button" tabindex="0" aria-label="Fourneau">
-    <rect x="76" y="86" width="100" height="146" fill="transparent"/>
-    <rect x="84" y="150" width="84" height="80" rx="6" fill="#3b2a52"/>
-    <rect x="80" y="143" width="92" height="10" rx="3" fill="#2a1d3c"/>
-    <ellipse cx="106" cy="143" rx="12" ry="3" fill="#1c1428"/>
-    <ellipse cx="146" cy="143" rx="12" ry="3" fill="#1c1428"/>
+    <path d="M${Q(0, 2, 0)} L${Q(2.2, 2, 0)} L${Q(2.2, 9.2, 0)} L${Q(0, 9.2, 0)} L${Q(0, 9.2, 46)} L${Q(0, 2, 46)} Z" fill="transparent"/>
+    ${fourneaux}
     <g class="e5-flammes">${flammes}</g>
-    ${[96, 108, 144, 156].map((x) => `<circle cx="${x}" cy="159" r="2.7" fill="#e3b04b"/>`).join('')}
-    <rect x="94" y="168" width="64" height="46" rx="5" fill="#2a1d3c" stroke="#e3b04b" stroke-width="2"/>
-    <rect data-e5="four-vitre" x="102" y="177" width="48" height="25" rx="4" fill="#1c1428"/>
-    <rect x="100" y="164" width="52" height="3" rx="1.5" fill="#e3b04b"/>
-    <rect x="88" y="228" width="8" height="4" fill="#2a1d3c"/><rect x="156" y="228" width="8" height="4" fill="#2a1d3c"/>
     <g data-e5="casserole" class="e5-casserole">
-      <rect x="91" y="124" width="30" height="19" rx="4" fill="#cfcadd"/>
-      <rect x="89" y="122" width="34" height="4" rx="2" fill="#b9b3cb"/>
-      <path d="M123 128 H134" stroke="#9e98b3" stroke-width="3" stroke-linecap="round"/>
-      <path d="M95 131 V138" stroke="#fff" stroke-opacity=".6" stroke-width="2" stroke-linecap="round"/>
+      <rect x="${c.x - 10}" y="${c.y - 12}" width="20" height="12" rx="3" fill="#cfcadd"/>
+      <rect x="${c.x - 11.5}" y="${c.y - 13.5}" width="23" height="3" rx="1.5" fill="#b9b3cb"/>
+      <path d="M${c.x + 11.5} ${c.y - 9} H${c.x + 18}" stroke="#9e98b3" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M${c.x - 6} ${c.y - 9} V${c.y - 4}" stroke="#fff" stroke-opacity=".6" stroke-width="1.6" stroke-linecap="round"/>
     </g>
-    <g class="e5-vapeur-four e5-vapeur" stroke="#ffffff" stroke-width="2.4" fill="none" stroke-linecap="round">
-      <path d="M100 119 q-3 -4 0 -8 q3 -4 0 -8"/>
-      <path d="M108 117 q-3 -4 0 -8 q3 -4 0 -8" style="animation-delay:-.6s"/>
-      <path d="M115 119 q-3 -4 0 -8 q3 -4 0 -8" style="animation-delay:-1.2s"/>
+    <g class="e5-vapeur-four e5-vapeur" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round">
+      <path d="M${c.x - 5} ${c.y - 16} q-3 -4 0 -8 q3 -4 0 -8"/>
+      <path d="M${c.x + 1} ${c.y - 18} q-3 -4 0 -8 q3 -4 0 -8" style="animation-delay:-.6s"/>
+      <path d="M${c.x + 7} ${c.y - 16} q-3 -4 0 -8 q3 -4 0 -8" style="animation-delay:-1.2s"/>
     </g>
   </g>`;
 }
 
-function ardoise() {
+function comptoirIso() {
+  const bleu = { devant: '#5a8fc6', cote: '#4a7fb8', dessus: '#4a7fb8' };
+  const plateau = { devant: '#e9eef4', cote: '#f7f9fc', dessus: '#ffffff' };
   return `
-  <rect x="180" y="30" width="86" height="96" rx="5" fill="#9a6438"/>
-  <rect x="185" y="35" width="76" height="86" rx="3" fill="#2f2c38"/>
-  <text x="223" y="54" text-anchor="middle" font-size="12" font-weight="600" fill="#f3f0ff">Ce soir</text>
-  <path d="M195 61 H251" stroke="#f3f0ff" stroke-opacity=".45" stroke-width="1" stroke-dasharray="3 3"/>
-  <g transform="translate(200 80) scale(.7)">${tasse({ vapeur: false })}</g>
-  <g transform="translate(224 80) scale(.7)">${tarte()}</g>
-  <g transform="translate(248 80) scale(.7)">${crepes()}</g>
-  <path d="M202 97 H244" stroke="#f3f0ff" stroke-opacity=".35" stroke-width="1" stroke-dasharray="2 3"/>
-  <text x="223" y="113" text-anchor="middle" font-size="8" fill="#f3f0ff" fill-opacity=".8">+ une surprise</text>`;
-}
-
-function fenetre() {
-  const gouttes = Array.from({ length: 16 }, (_, i) => {
-    const x = 277 + ((i * 29) % 50);
-    const y = 50 + ((i * 47) % 84);
-    const duree = (0.55 + ((i * 7) % 5) * 0.08).toFixed(2);
-    const delai = (((i * 13) % 10) / 10).toFixed(2);
-    return `<line x1="${x}" y1="${y}" x2="${x - 2}" y2="${y + 9}" style="animation-duration:${duree}s;animation-delay:-${delai}s"/>`;
-  }).join('');
-  return `
-  <rect x="262" y="40" width="76" height="5" rx="2" fill="#9a6438"/>
-  <rect x="270" y="48" width="60" height="94" rx="5" fill="#fffaf2"/>
-  <rect x="274" y="52" width="52" height="86" rx="3" fill="url(#e5-nuit)"/>
-  <g clip-path="url(#e5-vitre)"><g class="e5-pluie" stroke="#a9bdf0" stroke-width="1.2" stroke-linecap="round" opacity=".85">${gouttes}</g></g>
-  <path d="M300 52 V138 M274 95 H326" stroke="#fffaf2" stroke-width="3"/>
-  <path d="M265 44 Q276 84 269 148 L262 148 L262 44 Z" fill="#b48cff"/>
-  <path d="M335 44 Q324 84 331 148 L338 148 L338 44 Z" fill="#b48cff"/>
-  <rect x="266" y="142" width="68" height="6" rx="2" fill="#efe6d8"/>`;
-}
-
-function porte() {
-  return `
-  <rect x="334" y="92" width="62" height="140" rx="4" fill="#fffaf2"/>
-  <rect x="339" y="97" width="52" height="133" fill="#1d1530"/>
-  <g class="e5-porte" data-e5="porte">
-    <rect x="339" y="97" width="52" height="133" rx="2" fill="#9a6438"/>
-    <rect x="346" y="104" width="38" height="44" rx="3" fill="url(#e5-nuit)"/>
-    <path d="M365 104 V148 M346 126 H384" stroke="#9a6438" stroke-width="2.5"/>
-    <rect x="346" y="166" width="38" height="56" rx="3" fill="none" stroke="#86552e" stroke-width="2"/>
-    <circle cx="384" cy="174" r="3" fill="#e3b04b"/>
-    <path d="M357 151 L365 145 L373 151" stroke="#e3b04b" fill="none" stroke-width="1"/>
-    <g class="e5-pancarte">
-      <rect x="349" y="151" width="32" height="13" rx="3" fill="#fffaf2" stroke="#e3b04b" stroke-width="1"/>
-      <text data-e5="pancarte" x="365" y="160.5" text-anchor="middle" font-size="8" font-weight="600" fill="#7a3cf0">Fermé</text>
-    </g>
-  </g>
-  <rect x="340" y="231" width="50" height="6" rx="3" fill="#7a3cf0" opacity=".75"/>`;
-}
-
-function comptoir() {
-  return `
-  <ellipse cx="110" cy="291" rx="104" ry="7" fill="#2a1745" opacity=".16"/>
-  <rect x="14" y="241" width="192" height="48" rx="3" fill="#7a3cf0"/>
-  ${[22, 83, 144].map((x) => `<rect x="${x}" y="250" width="54" height="31" rx="5" fill="none" stroke="#9b6bff" stroke-width="2"/>`).join('')}
-  <rect x="9" y="231" width="202" height="11" rx="3" fill="#f4ead8" stroke="#d9c8a8" stroke-width="1.5"/>
-  <path d="M13 234.5 H207" stroke="#fff" stroke-opacity=".8" stroke-width="1.2"/>
-  <g transform="translate(36 232)">
-    <rect x="-11" y="-22" width="22" height="22" rx="6" fill="#ffffff" fill-opacity=".6" stroke="#c9b8ef" stroke-width="1.5"/>
-    <rect x="-12" y="-26" width="24" height="5" rx="2.5" fill="#8f5cf7"/>
-    <circle cx="-4" cy="-7" r="4" fill="#d9a441"/><circle cx="4" cy="-12" r="4" fill="#c98d3a"/><circle cx="3.5" cy="-4" r="3.6" fill="#d9a441"/>
-  </g>
-  <g transform="translate(70 232)">
-    <rect x="-8" y="-2.5" width="16" height="2.5" rx="1" fill="#c9932a"/>
-    <path d="M-6 -2.5 A6 6 0 0 1 6 -2.5 Z" fill="#f2c14e"/>
-    <circle cx="0" cy="-9.5" r="1.4" fill="#c9932a"/>
+  ${qf([[3.4, 2.6], [5.0, 2.6], [5.0, 9.0], [3.4, 9.0]], '#1a1026', ' opacity=".12"')}
+  ${qboite(3.6, 2.8, 1.2, 6, 0, 11, bleu)}
+  <path d="M${Q(4.8, 2.8, 5.5)} L${Q(4.8, 8.8, 5.5)} M${Q(3.6, 8.8, 5.5)} L${Q(4.8, 8.8, 5.5)}" stroke="#d6e6f6" stroke-width="2.2"/>
+  ${qboite(3.5, 2.7, 1.4, 6.2, 11, 3, plateau)}
+  <g transform="translate(${qx(4.2, 3.3).toFixed(1)} ${qy(4.2, 3.3, 14).toFixed(1)})">
+    <rect x="-7" y="-14" width="14" height="14" rx="4" fill="#ffffff" fill-opacity=".6" stroke="#c9b8ef" stroke-width="1.2"/>
+    <rect x="-7.6" y="-16.6" width="15.2" height="3.4" rx="1.7" fill="#8f5cf7"/>
+    <circle cx="-2.4" cy="-4.4" r="2.6" fill="#d9a441"/><circle cx="2.4" cy="-7.6" r="2.6" fill="#c98d3a"/>
   </g>`;
 }
 
-function chaise(x) {
+function chaiseIso(j) {
+  const i0 = SIEGE_I - 0.35;
+  const blanc = { devant: '#e4e7ec', cote: '#f6f7f9', dessus: '#ffffff' };
   return `
-  <g>
-    <path d="M${x - 13} 404 V422 M${x + 13} 404 V422" stroke="#86552e" stroke-width="3"/>
-    <rect x="${x - 15}" y="370" width="30" height="36" rx="7" fill="#9a6438"/>
-    <rect x="${x - 10}" y="375" width="20" height="26" rx="5" fill="#b48cff"/>
+  ${qf([[i0, j - 0.4], [i0 + 0.8, j - 0.4], [i0 + 0.8, j + 0.4], [i0, j + 0.4]], '#1a1026', ' opacity=".1"')}
+  ${qpied(i0 + 0.1, j - 0.3, 8, '#c9ccd3', 1.6)}${qpied(i0 + 0.7, j - 0.3, 8, '#c9ccd3', 1.6)}
+  ${qpied(i0 + 0.1, j + 0.3, 8, '#c9ccd3', 1.6)}${qpied(i0 + 0.7, j + 0.3, 8, '#c9ccd3', 1.6)}
+  ${qboite(i0, j - 0.35, 0.18, 0.7, 8, 18, blanc)}
+  ${qboite(i0, j - 0.35, 0.8, 0.7, 8, 2, blanc)}`;
+}
+
+function plantePot(i, j, s = 1) {
+  return `<g transform="translate(${qx(i, j).toFixed(1)} ${qy(i, j).toFixed(1)}) scale(${s})">
+    <ellipse cx="0" cy="1" rx="11" ry="4.4" fill="#1a1026" opacity=".14"/>
+    <path d="M-8 -14 L8 -14 L6 0 L-6 0 Z" fill="#c9774a"/><rect x="-9" y="-16" width="18" height="4" rx="1.6" fill="#b5653d"/>
+    <ellipse cx="-7" cy="-26" rx="4.4" ry="10" transform="rotate(-28 -7 -26)" fill="#5bb36a"/>
+    <ellipse cx="7" cy="-27" rx="4.4" ry="10" transform="rotate(26 7 -27)" fill="#4f9a5a"/>
+    <ellipse cx="0" cy="-31" rx="4.6" ry="12" fill="#6cc27a"/>
   </g>`;
 }
 
 export function fondCafe() {
   return `
-  <rect x="-1200" y="-1200" width="2800" height="1430" fill="url(#e5-papier)"/>
-  <rect x="-1200" y="170" width="2800" height="60" fill="#8a63d6"/>
-  <rect x="-1200" y="166" width="2800" height="7" rx="2" fill="#6f47c0"/>
-  <rect x="-1200" y="230" width="2800" height="1400" fill="url(#e5-parquet)"/>
-  <rect x="-1200" y="230" width="2800" height="150" fill="url(#e5-ombre-sol)"/>
-  <rect x="-1200" y="226" width="2800" height="6" fill="#5a3a8f"/>
-  ${decorLointain()}
-  ${frigo()}
-  ${etagere()}
-  ${fourneau()}
-  ${ardoise()}
-  ${fenetre()}
-  ${porte()}
-  ${comptoir()}
-  <ellipse cx="208" cy="452" rx="196" ry="46" fill="#dccafb" opacity=".6"/>
-  <ellipse cx="208" cy="452" rx="184" ry="39" fill="none" stroke="#c3a9f5" stroke-width="2" stroke-dasharray="6 5" opacity=".8"/>
-  ${LIEUX.tables.map(chaise).join('')}`;
+  ${rue()}
+  ${sol()}
+  ${murs()}
+  ${murDroitDecor()}
+  ${murGaucheDecor()}
+  ${frigoIso()}
+  ${fourneauxIso()}
+  ${comptoirIso()}
+  ${TABLES_J.map(chaiseIso).join('')}`;
 }
 
 export function tables() {
-  return LIEUX.tables.map((x) => `
+  const blanc = { devant: '#e3e6eb', cote: '#f3f5f8', dessus: '#ffffff' };
+  return TABLES_J.map((j) => {
+    const i0 = TABLE_I - 0.85;
+    const j0 = j - 1.35;
+    return `
   <g>
-    <ellipse cx="${x}" cy="477" rx="34" ry="6" fill="#2a1745" opacity=".16"/>
-    <rect x="${x - 4}" y="430" width="8" height="45" fill="#6b4a8f"/>
-    <ellipse cx="${x}" cy="475" rx="15" ry="4" fill="#5a3a8f"/>
-    <path d="M${x - 40} 420 L${x - 39} 434 Q${x - 30} 441 ${x - 20} 437 Q${x - 10} 442 ${x} 438 Q${x + 10} 442 ${x + 20} 437 Q${x + 30} 441 ${x + 39} 434 L${x + 40} 420 A40 12.5 0 0 1 ${x - 40} 420 Z" fill="#b48cff"/>
-    <ellipse cx="${x}" cy="420" rx="40" ry="12.5" fill="#fffaf2" stroke="#e3d6c2" stroke-width="1.5"/>
-  </g>`).join('');
+    ${qf([[i0 - 0.2, j0 - 0.2], [i0 + 1.9, j0 - 0.2], [i0 + 1.9, j0 + 2.9], [i0 - 0.2, j0 + 2.9]], '#1a1026', ' opacity=".12"')}
+    ${qpied(i0 + 0.15, j0 + 0.15, 14, '#7b4a2d')}${qpied(i0 + 1.55, j0 + 0.15, 14, '#7b4a2d')}
+    ${qpied(i0 + 0.15, j0 + 2.55, 14, '#7b4a2d')}${qpied(i0 + 1.55, j0 + 2.55, 14, '#7b4a2d')}
+    ${qboite(i0, j0, 1.7, 2.7, 13.5, 2.5, blanc)}
+  </g>`;
+  }).join('');
 }
 
 export function decorAvant() {
-  return `${plante(16, 560, 1.05)}${plante(386, 562, 1.1)}`;
+  return `${plantePot(11.2, 0.9, 0.9)}${plantePot(1.2, 11.2, 0.85)}`;
 }
 
 /* ================================================================ Marché */

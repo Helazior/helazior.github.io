@@ -1121,6 +1121,260 @@ button.e5-case:disabled { opacity: .38; cursor: default; box-shadow: none; }
 .e5-battement { transform-box: fill-box; transform-origin: 50% 50%; animation: e5-papillon .35s ease-in-out infinite; }
 .e5-crepe-volante { transform-box: fill-box; transform-origin: center; }
 
+/* Fenêtres à la manière du jeu d'origine : cadre en bois, en-tête en
+   parchemin, cartes crème ; le livre de recettes s'ouvre en double page. */
+
+.e5-fenetre .e5-titres { flex: 1; min-width: 0; }
+.e5-sous-titre { margin: 2px 0 0; font-size: 12.5px; font-weight: 600; opacity: .85; }
+
+.e5-boutique .e5-cadre {
+  width: min(440px, 100%);
+  padding: 8px;
+  border: 3px solid #5e3a1d;
+  border-radius: 18px;
+  background:
+    repeating-linear-gradient(90deg, rgba(0,0,0,.06) 0 2px, transparent 2px 46px),
+    linear-gradient(#d9a066, #c98f55);
+  box-shadow: 0 5px 0 #3d2410, inset 0 0 0 2px #e8bb84;
+}
+.e5-boutique .e5-cadre-tete {
+  min-height: 54px;
+  margin-bottom: 8px;
+  padding: 6px 8px 6px 14px;
+  border: 2px solid #8a5a33;
+  border-radius: 12px;
+  background: linear-gradient(#fbf1d8, #f1e0b8);
+  color: #5e3a1d;
+  box-shadow: 0 3px 0 rgba(61,36,16,.35);
+}
+.e5-boutique .e5-cadre-tete::before {
+  content: '';
+  flex: none;
+  width: 8px;
+  align-self: stretch;
+  border-radius: 4px;
+  background: repeating-linear-gradient(180deg, var(--couleur) 0 8px, #fffaf2 8px 16px);
+}
+.e5-boutique .e5-cadre-tete h2 { color: #5e3a1d; font-size: 22px; text-shadow: none; }
+.e5-boutique .e5-cadre-corps { padding: 4px 2px 6px; background: none; }
+.e5-boutique .e5-croix, .e5-livre .e5-croix {
+  border: 2px solid #8a2f3a;
+  border-radius: 9px;
+  background: linear-gradient(#f7a7a0, #e4746c);
+  color: #fff;
+  box-shadow: 0 2px 0 #8a2f3a;
+  text-shadow: 0 1px 0 rgba(0,0,0,.25);
+}
+
+.e5-boutique .e5-produits { grid-template-columns: repeat(auto-fill, minmax(98px, 1fr)); gap: 9px; }
+.e5-boutique .e5-produit {
+  gap: 4px;
+  padding: 0 0 7px;
+  border: 2px solid #8a5a33;
+  border-radius: 12px;
+  background: #fbf1d8;
+  box-shadow: 0 3px 0 rgba(61,36,16,.35);
+  overflow: hidden;
+}
+.e5-boutique .e5-produit-nom {
+  align-self: stretch;
+  justify-content: center;
+  min-height: 0;
+  margin: 0;
+  padding: 4px 4px 3px;
+  background: linear-gradient(#f3dfb2, #ead09a);
+  border-bottom: 1.5px solid #c9a46c;
+  color: #4a2c14;
+  font-size: 12.5px;
+}
+.e5-assiette {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 46px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 45%, #fff 0 55%, #e9e3d8 56% 62%, #fff 63%);
+  box-shadow: 0 2px 0 rgba(61,36,16,.18);
+}
+.e5-assiette svg { width: 46px; height: 46px; overflow: visible; }
+.e5-boutique .e5-produit > .e5-assiette > svg { width: 44px; height: 44px; }
+.e5-boutique .e5-stock {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  align-self: flex-end;
+  margin: 0 6px 0 0;
+  padding: 1px 3px 1px 7px;
+  border: 1.5px solid #d4c7ae;
+  border-radius: 6px;
+  background: #fff;
+  color: #4a2c14;
+  font-size: 12px;
+}
+.e5-boutique .e5-stock svg { width: 15px; height: 15px; }
+.e5-achat { display: flex; align-items: center; justify-content: space-between; align-self: stretch; padding: 0 6px; gap: 4px; }
+.e5-boutique .e5-prix { color: #4a2c14; font-size: 15px; }
+.e5-boutique .e5-acheter {
+  width: 38px;
+  height: 30px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 2px solid #3f7a1f;
+  border-radius: 8px;
+  background: linear-gradient(#9ad65a, #6db43a);
+  box-shadow: 0 3px 0 #3f7a1f;
+}
+.e5-boutique .e5-acheter svg { width: 22px; height: 22px; }
+.e5-boutique .e5-acheter:active { box-shadow: 0 1px 0 #3f7a1f; }
+
+.e5-fen-frigo .e5-case { border-color: #c9a46c; background: #fbf1d8; color: #4a2c14; }
+.e5-fen-frigo .e5-vide { color: #fbf1d8; text-shadow: 0 1px 0 #5e3a1d; }
+
+/* Le livre de recettes */
+.e5-livre .e5-cadre {
+  position: relative;
+  width: min(620px, 100%);
+  padding: 10px 10px 8px;
+  border: 3px solid #5c1f17;
+  border-radius: 16px;
+  background: linear-gradient(#c0463a, #a3382d);
+  box-shadow: 0 5px 0 #3b120c, inset 0 0 0 3px #d9675a;
+}
+.e5-livre .e5-cadre-tete {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  z-index: 3;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+.e5-livre .e5-cadre-tete .e5-titres {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+.e5-livre .e5-cadre-corps { display: flex; flex-direction: column; gap: 8px; padding: 0; overflow: hidden; background: none; }
+.e5-pages {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-radius: 10px;
+  background: #f6e9cc;
+  box-shadow: inset 0 0 0 2px #e2cfa4;
+  overflow: hidden;
+}
+.e5-page {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 10px 9px 12px;
+  background: linear-gradient(90deg, #f8eed6, #f1e2bf);
+}
+.e5-page-g { background: linear-gradient(90deg, #f8eed6 0, #f4e6c6 88%, #dcc595 100%); }
+.e5-page-d { background: linear-gradient(90deg, #d8c191 0, #f2e3c2 12%, #f8eed6 100%); }
+.e5-page > * + * { margin-top: 9px; }
+.e5-titre-page { margin: 0 0 6px; color: #7a2a22; font-size: 14px; font-weight: 700; text-align: center; }
+
+.e5-livre .e5-recette {
+  display: block;
+  padding: 0 0 7px;
+  border: 1.5px solid #b98a55;
+  border-radius: 8px;
+  background: #fbf3df;
+  overflow: hidden;
+}
+.e5-livre .e5-recette h4 {
+  margin: 0;
+  padding: 4px 6px 3px;
+  border-bottom: 1.5px solid #d3b17b;
+  background: linear-gradient(#f3dfb2, #ead09a);
+  color: #4a2c14;
+  font-size: 12.5px;
+  text-align: center;
+}
+.e5-recette-haut { display: flex; align-items: center; gap: 6px; padding: 6px 6px 4px; }
+.e5-livre .e5-assiette { flex: none; width: 54px; height: 40px; }
+.e5-livre .e5-assiette svg { width: 40px; height: 40px; }
+.e5-infos { margin: 0; padding: 0; list-style: none; color: #4a2c14; font-size: 11px; line-height: 1.35; }
+.e5-infos .e5-note { font-size: 10.5px; color: #8a6a48; }
+.e5-par-portion { display: inline-flex; align-items: center; gap: 3px; font-weight: 700; }
+.e5-par-portion svg { width: 13px; height: 13px; }
+.e5-emplacements { display: grid; grid-template-columns: repeat(auto-fill, minmax(34px, 1fr)); gap: 4px; padding: 0 6px; }
+.e5-empl {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 30px;
+  border: 1.5px solid #d4c3a1;
+  border-radius: 6px;
+  background: #efe6d2;
+  color: #b59a73;
+  font-size: 13px;
+  font-weight: 700;
+}
+.e5-empl svg { width: 24px; height: 24px; overflow: visible; }
+.e5-empl b { position: absolute; right: 1px; bottom: -1px; color: #4a2c14; font-size: 10px; }
+.e5-empl-vide { background: #f3ecdc; }
+.e5-livre .e5-secrete { border-style: dashed; }
+
+.e5-livre .e5-demande { padding: 7px; border-color: #d3b17b; background: #fffaf0; }
+.e5-livre .e5-visage { width: 38px; height: 38px; }
+.e5-livre .e5-citation { font-size: 12.5px; }
+.e5-livre .e5-qui { font-size: 12px; }
+.e5-livre .e5-onglets { margin: 0 0 6px; padding: 0; flex-wrap: wrap; overflow: visible; }
+.e5-livre .e5-onglet { padding: 2px; border-color: #d3b17b; }
+.e5-livre .e5-onglet span { display: none; }
+.e5-livre .e5-onglet[aria-selected="true"] { border-color: #7a2a22; background: #fff; box-shadow: 0 2px 0 #7a2a22; }
+.e5-livre .e5-grille { grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); gap: 5px; }
+.e5-livre .e5-case { border-color: #d4c3a1; background: #fbf3df; box-shadow: 0 2px 0 #d4c3a1; font-size: 9.5px; }
+.e5-livre .e5-case svg { width: 30px; height: 30px; }
+.e5-livre .e5-plan-travail {
+  position: sticky;
+  bottom: -12px;
+  margin: 10px -9px -12px;
+  padding: 7px 9px 10px;
+  border-top: 1.5px solid #d3b17b;
+  background: #f4e7c8;
+  box-shadow: 0 -6px 10px -8px rgba(61,36,16,.4);
+}
+.e5-livre .e5-pot { min-height: 46px; padding: 5px 7px; border-color: #c9b48a; background: #fbf3df; }
+.e5-livre .e5-pot-icone { width: 40px; height: 26px; }
+.e5-livre .e5-ing { font-size: 11px; }
+.e5-livre .e5-note { font-size: 11px; color: #7a5a38; }
+.e5-livre .e5-cadre-pied { padding: 0; border: 0; background: none; }
+.e5-livre .e5-bouton { border-color: #3b120c; box-shadow: 0 3px 0 #3b120c; }
+.e5-livre .e5-bouton.e5-principal { border-color: #3f7a1f; background: linear-gradient(#9ad65a, #6db43a); box-shadow: 0 3px 0 #3f7a1f; }
+.e5-pense-bete {
+  flex: none;
+  max-height: 32%;
+  overflow-y: auto;
+  padding: 8px;
+  border-radius: 6px;
+  background: #fff4b8;
+  box-shadow: 0 2px 0 rgba(0,0,0,.2);
+  transform: rotate(-.6deg);
+}
+.e5-pense-bete h3 { margin: 0 0 6px; color: #7a2a22; font-size: 13px; }
+.e5-pense-bete .e5-demande { padding: 5px; background: #fffbe0; }
+.e5-pense-bete .e5-visage { width: 32px; height: 32px; }
+.e5-pense-bete .e5-citation { font-size: 12px; }
+@media (max-width: 420px) {
+  .e5-page { padding: 8px 6px 10px; }
+  .e5-livre .e5-plan-travail { margin: 10px -6px -10px; bottom: -10px; }
+  .e5-infos { font-size: 10px; }
+  .e5-livre .e5-assiette { width: 44px; height: 34px; }
+  .e5-livre .e5-assiette svg { width: 34px; height: 34px; }
+  .e5-emplacements { grid-template-columns: repeat(auto-fill, minmax(30px, 1fr)); }
+  .e5-empl { height: 27px; }
+  .e5-empl svg { width: 21px; height: 21px; }
+}
+
 /* La fête d'anniversaire */
 .e5-gateau-fete { transform-box: fill-box; transform-origin: 50% 100%; cursor: pointer; }
 .e5-gateau-fete:focus { outline: none; }

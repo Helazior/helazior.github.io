@@ -150,7 +150,12 @@ const TEXTES = {
     recettes: 'Les recettes',
     secretTitre: 'Spécialité de la maison',
     secret: 'Recette réservée à un client très spécial…',
-    cuisson: (min) => `Cuisson : ${min} min`,
+    portions: 'Portions : 1',
+    pret: (min) => `Prête en : ${min} min`,
+    parPortion: (n) => `${n} par portion`,
+    inconnu: 'Prête en : ???',
+    commande: 'La commande',
+    totalFrigo: (n) => `Au frigo : <b>${n}</b>`,
     reste: (n) => `${n} au frigo`,
   },
   frigo: { titre: 'Frigo', vide: 'Le frigo est vide. Les courses se font au marché !' },
@@ -249,6 +254,8 @@ const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 const recette = (cle) => ({ ...RECETTES[cle], ...TEXTES.recettes[cle] });
 const icone = (k) => `<svg viewBox="-24 -24 48 48" aria-hidden="true">${D.ARTICLES[k].dessin()}</svg>`;
 const ICONE_PIECE = `<svg viewBox="-12 -12 24 24" aria-hidden="true">${D.pieceSeule()}</svg>`;
+const ICONE_FRIGO = `<svg viewBox="-12 -12 24 24" aria-hidden="true">${D.iconeFrigo()}</svg>`;
+const ICONE_PANIER = `<svg viewBox="-12 -12 24 24" aria-hidden="true"><path d="M-9 -6 H-6 L-3.6 4 H6.4 L8.6 -3.4 H-5" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="-2" cy="7.6" r="1.8" fill="#fff"/><circle cx="5" cy="7.6" r="1.8" fill="#fff"/></svg>`;
 
 // « du beurre, du sucre et de la rhubarbe »
 function listeNoms(cles) {
@@ -495,14 +502,19 @@ function demarrer({ scene, son, fx, memoire, debug }) {
   /* ---------------------------------------------------- Cadrage de la scène */
 
   const zone = $('.e5-scene');
+  // Chaque vue a son cadre (la salle du café, la place du marché) : il tient
+  // toujours en entier à l'écran, le décor déborde autour.
+  const CADRES = { cafe: D.CADRE_CAFE, marche: { x: 0, y: 0, l: D.LARGEUR, h: D.HAUTEUR } };
+  let cadreCourant = CADRES.cafe;
   function cadrer() {
     const l = zone.clientWidth;
     const h = zone.clientHeight;
     if (!l || !h) return;
-    const k = Math.min(l / D.LARGEUR, h / D.HAUTEUR);
+    const c = cadreCourant;
+    const k = Math.min(l / c.l, h / c.h);
     const vl = l / k;
     const vh = h / k;
-    svg.setAttribute('viewBox', `${((D.LARGEUR - vl) / 2).toFixed(1)} ${((D.HAUTEUR - vh) / 2).toFixed(1)} ${vl.toFixed(1)} ${vh.toFixed(1)}`);
+    svg.setAttribute('viewBox', `${(c.x + (c.l - vl) / 2).toFixed(1)} ${(c.y + (c.h - vh) / 2).toFixed(1)} ${vl.toFixed(1)} ${vh.toFixed(1)}`);
   }
   const observateur = new ResizeObserver(cadrer);
   observateur.observe(zone);
@@ -575,7 +587,7 @@ function demarrer({ scene, son, fx, memoire, debug }) {
   }
 
   const pipi = svgEl('g', { class: 'e5-pipi' }, calques.volants);
-  pipi.innerHTML = `<g class="e5-flotte">${D.pipistrelle()}</g>`;
+  pipi.innerHTML = `<g class="e5-flotte"><g transform="scale(.78)">${D.pipistrelle()}</g></g>`;
   placer(pipi, L.pipi.x, L.pipi.y);
   const pipiPlat = pipi.querySelector('.e5-pipi-plat');
   let pipiLibre = Promise.resolve();
@@ -593,6 +605,8 @@ function demarrer({ scene, son, fx, memoire, debug }) {
     enTransition = true;
     await animer(voile, [{ opacity: 0 }, { opacity: 1 }], { duree: 260 });
     for (const [k, v] of Object.entries(vues)) v.style.visibility = k === nom ? '' : 'hidden';
+    cadreCourant = CADRES[nom];
+    cadrer();
     vue = nom;
     titre.textContent = nom === 'marche' ? TEXTES.nomMarche : TEXTES.nomCafe;
     await animer(voile, [{ opacity: 1 }, { opacity: 0 }], { duree: 320 });
@@ -619,13 +633,13 @@ function demarrer({ scene, son, fx, memoire, debug }) {
   /* ------------------------------------------------------------ Fenêtres */
 
   let fenetreCourante = null;
-  function fenetre({ titre: t, couleur, genre, classe = '', corps = '', pied = '' }) {
+  function fenetre({ titre: t, couleur, genre, classe = '', corps = '', pied = '', sousTitre = '' }) {
     fermerFenetre();
     const f = document.createElement('div');
     f.className = `e5-fenetre ${classe}`;
     f.innerHTML = `
       <div class="e5-cadre" role="dialog" aria-modal="true" aria-label="${esc(t)}" style="--couleur:${couleur}" tabindex="-1">
-        <header class="e5-cadre-tete"><h2>${esc(t)}</h2><button type="button" class="e5-croix" aria-label="${esc(TEXTES.boutons.fermer)}">×</button></header>
+        <header class="e5-cadre-tete"><div class="e5-titres"><h2>${esc(t)}</h2>${sousTitre ? `<p class="e5-sous-titre">${sousTitre}</p>` : ''}</div><button type="button" class="e5-croix" aria-label="${esc(TEXTES.boutons.fermer)}">×</button></header>
         <div class="e5-cadre-corps">${corps}</div>
         ${pied ? `<footer class="e5-cadre-pied">${pied}</footer>` : ''}
       </div>`;
@@ -665,7 +679,8 @@ function demarrer({ scene, son, fx, memoire, debug }) {
       ? `<div class="e5-grille">${presents.map((k) => `
           <div class="e5-case" role="img" aria-label="${esc(D.ARTICLES[k].nom)} : ${nb(k)}">${icone(k)}<b>${nb(k)}</b><span>${esc(D.ARTICLES[k].nom)}</span></div>`).join('')}</div>`
       : `<p class="e5-vide">${esc(TEXTES.frigo.vide)}</p>`;
-    return fenetre({ titre: TEXTES.frigo.titre, couleur: '#4aa3df', genre: 'frigo', classe: 'e5-fen-frigo', corps });
+    const total = presents.reduce((x, k) => x + nb(k), 0);
+    return fenetre({ titre: TEXTES.frigo.titre, couleur: '#4aa3df', genre: 'frigo', classe: 'e5-boutique e5-fen-frigo', corps, sousTitre: TEXTES.livreTexte.totalFrigo(total) });
   }
 
   // Les boutons du haut (livre et frigo) : consultables à tout moment, sauf
@@ -694,7 +709,6 @@ function demarrer({ scene, son, fx, memoire, debug }) {
   const nomClient = (cmd) => (cmd.special ? D.MACHAON.nom : D.PERSONNAGES[cmd.sorte].nom);
 
   function demandeHtml(cmd, { avecRecette = false } = {}) {
-    const r = recette(cmd.recette);
     const aide = avecRecette && cmd.erreurs >= 2
       ? `<div class="e5-aide"><span>${esc(TEXTES.verif.aide)}</span><div class="e5-ings">${puces(besoins(cmd), { toujours: true })}</div></div>` : '';
     return `
@@ -703,44 +717,52 @@ function demarrer({ scene, son, fx, memoire, debug }) {
         <div class="e5-demande-texte">
           <p class="e5-qui">${esc(nomClient(cmd))}</p>
           <p class="e5-citation">« ${esc(TEXTES.commandes[cmd.sorte])} »</p>
-          ${avecRecette ? `
-          <div class="e5-ligne-recette">
-            <span class="e5-etiquette">${esc(TEXTES.livreTexte.recette)} · ${esc(r.nom)}</span>
-            <div class="e5-ings">${puces(new Map(Object.entries(r.ingredients)))}</div>
-          </div>` : ''}
           ${aide}
         </div>
       </section>`;
   }
 
+  // Une recette comme dans le livre du jeu : titre, plat, portions, temps,
+  // prix, et les ingrédients dans leurs cases.
+  function emplacements(map, { min = 4 } = {}) {
+    const cases = [...map].map(([k, n]) => `<span class="e5-empl" title="${esc(D.ARTICLES[k].nom)}">${icone(k)}<b>×${n}</b></span>`);
+    while (cases.length < min) cases.push('<span class="e5-empl e5-empl-vide"></span>');
+    return `<div class="e5-emplacements">${cases.join('')}</div>`;
+  }
+
   function recetteHtml(cle) {
     const r = recette(cle);
+    const T = TEXTES.livreTexte;
     if (r.secret && !secrets.has(cle)) {
       return `
       <article class="e5-recette e5-secrete">
-        <svg class="e5-plat" viewBox="-24 -24 48 48" aria-hidden="true"><path d="M-17 8 Q-17 -12 0 -12 Q17 -12 17 8 Z" fill="#d8ccef" stroke="#1a1026" stroke-width="1.6"/><circle cy="-14" r="2.6" fill="#b48cff" stroke="#1a1026" stroke-width="1.4"/><rect x="-21" y="7" width="42" height="4" rx="2" fill="#b48cff" stroke="#1a1026" stroke-width="1.4"/><text y="3" text-anchor="middle" font-size="14" font-weight="700" fill="#7a3cf0">?</text></svg>
-        <div><h4>${esc(TEXTES.livreTexte.secretTitre)}</h4><p class="e5-note">${esc(TEXTES.livreTexte.secret)}</p></div>
+        <h4>${esc(T.secretTitre)}</h4>
+        <div class="e5-recette-haut">
+          <div class="e5-assiette"><svg viewBox="-24 -24 48 48" aria-hidden="true"><path d="M-17 8 Q-17 -12 0 -12 Q17 -12 17 8 Z" fill="#d8ccef" stroke="#1a1026" stroke-width="1.6"/><circle cy="-14" r="2.6" fill="#b48cff" stroke="#1a1026" stroke-width="1.4"/><rect x="-21" y="7" width="42" height="4" rx="2" fill="#b48cff" stroke="#1a1026" stroke-width="1.4"/><text y="3" text-anchor="middle" font-size="14" font-weight="700" fill="#7a3cf0">?</text></svg></div>
+          <ul class="e5-infos"><li>${esc(T.portions)}</li><li>${esc(T.inconnu)}</li><li class="e5-note">${esc(T.secret)}</li></ul>
+        </div>
+        <div class="e5-emplacements">${'<span class="e5-empl e5-empl-vide">?</span>'.repeat(4)}</div>
       </article>`;
     }
     return `
       <article class="e5-recette">
-        <svg class="e5-plat" viewBox="-24 -24 48 48" aria-hidden="true">${D.PLATS[r.plat]({ vapeur: false })}</svg>
-        <div>
-          <h4>${esc(r.nom)}</h4>
-          <div class="e5-ings">${puces(new Map(Object.entries(r.ingredients)))}</div>
-          <p class="e5-note">${esc(TEXTES.livreTexte.cuisson(r.cuisson))}</p>
+        <h4>${esc(r.nom)}</h4>
+        <div class="e5-recette-haut">
+          <div class="e5-assiette"><svg viewBox="-24 -24 48 48" aria-hidden="true">${D.PLATS[r.plat]({ vapeur: false })}</svg></div>
+          <ul class="e5-infos"><li>${esc(T.portions)}</li><li>${esc(T.pret(r.cuisson))}</li><li class="e5-par-portion">${ICONE_PIECE}<span>${esc(T.parPortion(PAIEMENT))}</span></li></ul>
         </div>
+        ${emplacements(new Map(Object.entries(r.ingredients)))}
       </article>`;
   }
+
+  const livreHtml = (gauche, droite) => `<div class="e5-pages"><div class="e5-page e5-page-g">${gauche}</div><div class="e5-page e5-page-d">${droite}</div></div>`;
 
   // Le livre en lecture : commandes en cours et toutes les recettes.
   function livreConsultation() {
     const enCours = commandes.filter((c) => c.etat === 'assise');
-    const corps = `
-      ${enCours.length ? `<section class="e5-section"><h3>${esc(TEXTES.livreTexte.commandes)}</h3>${enCours.map((c) => demandeHtml(c)).join('')}</section>` : ''}
-      <section class="e5-section"><h3>${esc(TEXTES.livreTexte.recettes)}</h3>
-        <div class="e5-recettes">${Object.keys(RECETTES).map(recetteHtml).join('')}</div>
-      </section>`;
+    const [a, b, c2, d] = Object.keys(RECETTES).map(recetteHtml);
+    const corps = `${livreHtml(a + b, c2 + d)}
+      ${enCours.length ? `<section class="e5-pense-bete"><h3>${esc(TEXTES.livreTexte.commandes)}</h3>${enCours.map((c) => demandeHtml(c)).join('')}</section>` : ''}`;
     return fenetre({ titre: TEXTES.livreTexte.titre, couleur: '#a86f3f', genre: 'livre', classe: 'e5-livre', corps }).resultat;
   }
 
@@ -761,16 +783,19 @@ function demarrer({ scene, son, fx, memoire, debug }) {
     });
 
     function rendre() {
-      const haut = f.corps.scrollTop;
+      const hauts = [...f.corps.querySelectorAll('.e5-page')].map((p) => p.scrollTop);
       const dispo = ORDRE.filter((k) => nb(k) > 0);
-      f.corps.innerHTML = `
+      const gauche = `
+        <h3 class="e5-titre-page">${esc(TEXTES.livreTexte.commande)}</h3>
         ${pretes.length > 1 ? `
         <div class="e5-onglets" role="tablist" aria-label="${esc(TEXTES.livreTexte.pourQui)}">
           ${pretes.map((c, i) => `<button type="button" role="tab" class="e5-onglet" data-i="${i}" data-e5="onglet-${c.sorte}" aria-selected="${c === cmd}">${visageSvg(c.sorte, 'e5-mini')}<span>${esc(recette(c.recette).nom)}</span></button>`).join('')}
         </div>` : ''}
         ${demandeHtml(cmd, { avecRecette: true })}
+        ${recetteHtml(cmd.recette)}`;
+      const droite = `
         <section class="e5-section">
-          <h3>${esc(TEXTES.livreTexte.frigo)}</h3>
+          <h3 class="e5-titre-page">${esc(TEXTES.livreTexte.frigo)}</h3>
           ${dispo.length ? `<p class="e5-note">${esc(TEXTES.livreTexte.toucher)}</p>
           <div class="e5-grille">${dispo.map((k) => {
             const reste = nb(k) - (pot.get(k) || 0);
@@ -786,7 +811,8 @@ function demarrer({ scene, son, fx, memoire, debug }) {
               : `<p class="e5-note">${esc(TEXTES.livreTexte.casseroleVide)}</p>`}</div>
           </section>
         </div>`;
-      f.corps.scrollTop = haut;
+      f.corps.innerHTML = livreHtml(gauche, droite);
+      f.corps.querySelectorAll('.e5-page').forEach((p, k) => { p.scrollTop = hauts[k] || 0; });
       f.el.querySelector('[data-e5="livre-marche"]').classList.toggle('e5-clignote', marcheConseille);
     }
     rendre();
@@ -870,13 +896,17 @@ function demarrer({ scene, son, fx, memoire, debug }) {
   function boutique(e) {
     const corps = `<div class="e5-produits">${e.articles.map((k) => `
       <div class="e5-produit" data-cle="${k}">
-        ${icone(k)}
         <p class="e5-produit-nom">${esc(D.ARTICLES[k].nom)}</p>
-        <p class="e5-prix">${ICONE_PIECE}<span>${PRIX[k]}</span></p>
-        <p class="e5-stock">${esc(TEXTES.boutique.auFrigo)} <b>${nb(k)}</b></p>
-        <button type="button" class="e5-acheter" data-e5="acheter-${k}" aria-label="${esc(TEXTES.boutique.acheter)} : ${esc(D.ARTICLES[k].nom)}">${esc(TEXTES.boutique.acheter)}</button>
+        <div class="e5-assiette">${icone(k)}</div>
+        <p class="e5-stock" title="${esc(TEXTES.boutique.auFrigo)}"><b>${nb(k)}</b>${ICONE_FRIGO}</p>
+        <div class="e5-achat">
+          <p class="e5-prix">${ICONE_PIECE}<span>${PRIX[k]}</span></p>
+          <button type="button" class="e5-acheter" data-e5="acheter-${k}" aria-label="${esc(TEXTES.boutique.acheter)} : ${esc(D.ARTICLES[k].nom)}" title="${esc(TEXTES.boutique.acheter)}">${ICONE_PANIER}</button>
+        </div>
       </div>`).join('')}</div>`;
-    const f = fenetre({ titre: e.nom, couleur: e.couleur, genre: 'boutique', classe: 'e5-boutique', corps });
+    const total = () => [...frigo.values()].reduce((x, y) => x + y, 0);
+    const f = fenetre({ titre: e.nom, couleur: e.couleur, genre: 'boutique', classe: 'e5-boutique', corps, sousTitre: TEXTES.livreTexte.totalFrigo(total()) });
+    f.majTotal = () => { const b = f.el.querySelector('.e5-sous-titre b'); if (b) b.textContent = String(total()); };
     f.corps.addEventListener('click', (ev) => {
       const b = ev.target.closest('.e5-acheter');
       if (b) acheter(b.closest('.e5-produit'));
@@ -894,6 +924,7 @@ function demarrer({ scene, son, fx, memoire, debug }) {
     majBadge();
     if (achats) achats.push(k);
     carte.querySelector('.e5-stock b').textContent = String(nb(k));
+    fenetreCourante?.majTotal?.();
     bip('piece');
     const icon = carte.querySelector('svg');
     rebondir(icon);
@@ -1119,21 +1150,24 @@ function demarrer({ scene, son, fx, memoire, debug }) {
   }
 
   // Le comptoir : chaque plat prêt attend Pipistrelle à sa place.
-  const placesComptoir = [L.plateau.x, L.plateau.x - 34, L.plateau.x + 34];
   const occupees = new Set();
+  const PLAT = 0.8;   // taille des plats dans la salle
 
   async function platVersComptoir(r, cmd) {
-    const x = placesComptoir.find((p) => !occupees.has(p)) ?? L.plateau.x;
-    occupees.add(x);
+    let n = L.comptoir.findIndex((_, k) => !occupees.has(k));
+    if (n < 0) n = 0;
+    occupees.add(n);
+    const place = L.comptoir[n];
     const g = svgEl('g', {}, calques.volants);
-    g.innerHTML = D.PLATS[r.plat]({ vapeur: false });
-    if (r.four) placer(g, 126, 188); else placer(g, L.casserole.x, L.casserole.y - 6);
-    await voler(g, x, L.plateau.y, 650, { hauteur: 36 });
+    g.innerHTML = `<g transform="scale(${PLAT})">${D.PLATS[r.plat]({ vapeur: false })}</g>`;
+    const de = r.four ? L.four : L.casserole;
+    placer(g, de.x, de.y - 6);
+    await voler(g, place.x, place.y - 7, 650, { hauteur: 30 });
     g.remove();
     bip('plouf');
-    const pose = svgEl('g', { transform: `translate(${x} ${L.plateau.y})` }, calques.plateau);
+    const pose = svgEl('g', { transform: `translate(${place.x} ${place.y - 7}) scale(${PLAT})` }, calques.plateau);
     pose.innerHTML = D.PLATS[r.plat]({ vapeur: 'blanc' });
-    cmd.surComptoir = { x, g: pose };
+    cmd.surComptoir = { n, x: place.x, y: place.y, g: pose };
   }
 
   let premiereCuisson = true;
@@ -1183,12 +1217,17 @@ function demarrer({ scene, son, fx, memoire, debug }) {
 
   function creerClient({ sorte, table }) {
     const perso = D.PERSONNAGES[sorte];
+    const k = L.echelle;
     const g = svgEl('g', { class: 'e5-client' }, calques.clients);
     g.style.opacity = '0';
     const corps = svgEl('g', { class: 'e5-corps' }, g);
-    corps.innerHTML = perso.dessin();
+    corps.innerHTML = `<g transform="scale(${k})">${perso.dessin()}</g>`;
     placer(g, L.porte.x, L.porte.y);
-    return { g, corps, x: L.tables[table], haut: perso.haut, tete: perso.tete, nom: perso.nom, bulle: null, assiette: null };
+    const siege = L.sieges[table];
+    return {
+      g, corps, x: siege.x, y: siege.y, table: L.tables[table], chemin: L.chemins[table],
+      haut: perso.haut * k, tete: perso.tete * k, nom: perso.nom, bulle: null, assiette: null,
+    };
   }
 
   async function marcher(c, points) {
@@ -1229,8 +1268,8 @@ function demarrer({ scene, son, fx, memoire, debug }) {
     ouvrirPorte();
     bip('sonnette');
     animer(c.g, [{ opacity: 0 }, { opacity: 1 }], { duree: 350 });
-    await marcher(c, [[L.porte.x, L.couloir], [c.x, L.couloir], [c.x, L.assis]]);
-    c.bulle = bulleDeCommande(c.x, L.assis + c.haut - 4, RECETTES[cmd.recette].plat);
+    await marcher(c, c.chemin.map((p) => [p.x, p.y]));
+    c.bulle = bulleDeCommande(c.x, c.y + c.haut - 4, RECETTES[cmd.recette].plat);
     rendreBavard(cmd, c.g, c.bulle);
     bip('clic', 0.5);
   }
@@ -1245,17 +1284,17 @@ function demarrer({ scene, son, fx, memoire, debug }) {
     pipiLibre = pipiLibre.then(async () => {
       direUnInstant(TEXTES.service, 1800);
       pipi.classList.add('e5-vole');
-      const { x, g } = cmd.surComptoir;
-      await voler(pipi, x, L.plateau.y - 34, 650, { hauteur: 16 });
+      const { n, x, y, g } = cmd.surComptoir;
+      await voler(pipi, x, y - 30, 650, { hauteur: 16 });
       g.remove();
-      occupees.delete(x);
+      occupees.delete(n);
       pipiPlat.innerHTML = D.PLATS[plat]({ vapeur: false });
       bip('clic', 0.7);
-      await voler(pipi, c.x + 26, L.assis - 44, 900, { hauteur: 34 });
+      await voler(pipi, c.table.x + 20, c.table.y - L.dessus - 34, 900, { hauteur: 34 });
       pipiPlat.replaceChildren();
       const a = svgEl('g', {}, calques.tables);
-      a.innerHTML = `<g class="e5-pose e5-pop">${D.PLATS[plat]()}</g>`;
-      placer(a, c.x + 2, L.assis - 9);
+      a.innerHTML = `<g class="e5-pose e5-pop"><g transform="scale(${PLAT})">${D.PLATS[plat]()}</g></g>`;
+      placer(a, c.table.x, c.table.y - L.dessus - 7);
       c.assiette = a;
       if (c.bulle) { c.bulle.remove(); c.bulle = null; }
       cmd.etat = 'servie';
@@ -1310,21 +1349,21 @@ function demarrer({ scene, son, fx, memoire, debug }) {
       await animer(c.assiette.firstElementChild, [{ transform: 'scale(1)' }, { transform: 'scale(.8)' }], { duree: 450 });
       const phrase = TEXTES.reaction[Math.min(rang, TEXTES.reaction.length - 1)];
       direUnInstant(phrase(c.nom, D.ARTICLES[extra].defini), 3800);
-      await degouter(c, L.assis, TEXTES.reactions[rang % TEXTES.reactions.length]);
+      await degouter(c, c.y, TEXTES.reactions[rang % TEXTES.reactions.length]);
       c.assiette.remove();
-      poserPieces(c.x - 24, L.assis - 5, PAIEMENT_BEURK);
+      poserPieces(c.table.x + 14, c.table.y - L.dessus - 4, PAIEMENT_BEURK);
     } else {
-      const p = versEcran(c.x, L.assis + c.haut + 8);
+      const p = versEcran(c.x, c.y + c.haut + 6);
       coeurs(p.x, p.y, 4);
       bip('miam');
       c.corps.classList.add('e5-content');
       await animer(c.assiette.firstElementChild, [{ transform: 'scale(1)' }, { transform: 'scale(0)' }], { duree: 2200, easing: 'ease-in' });
       c.assiette.remove();
       c.corps.classList.remove('e5-content');
-      poserPieces(c.x - 24, L.assis - 5, PAIEMENT);
+      poserPieces(c.table.x + 14, c.table.y - L.dessus - 4, PAIEMENT);
     }
     await dormir(400);
-    await marcher(c, [[c.x, L.couloir], [L.porte.x, L.couloir], [L.porte.x, L.porte.y]]);
+    await marcher(c, [...c.chemin].reverse().map((p) => [p.x, p.y]));
     ouvrirPorte();
     await animer(c.g, [{ opacity: 1 }, { opacity: 0 }], { duree: 320 });
     c.g.remove();
@@ -1401,17 +1440,18 @@ function demarrer({ scene, son, fx, memoire, debug }) {
     const g = svgEl('g', { class: 'e5-client' }, calques.clients);
     g.style.opacity = '0';
     const corps = svgEl('g', { class: 'e5-flotte' }, g);
-    corps.innerHTML = D.machaon();
+    corps.innerHTML = `<g transform="scale(${L.echelle})">${D.machaon()}</g>`;
     const ailes = corps.querySelector('.e5-ailes-machaon');
-    placer(g, L.porte.x, L.porte.y - 40);
+    placer(g, L.porte.x, L.porte.y - 30);
     ouvrirPorte();
     bip('sonnette');
     ailes.classList.add('e5-vite');
     animer(g, [{ opacity: 0 }, { opacity: 1 }], { duree: 400 });
-    await voler(g, L.tables[1], L.perchoir, 2800, { hauteur: 50, ondule: 12 });
+    await voler(g, L.perchoir.x, L.perchoir.y, 2800, { hauteur: 50, ondule: 12 });
     ailes.classList.remove('e5-vite');
-    const c = { g, corps, ailes, x: L.tables[1], haut: D.MACHAON.haut, tete: D.MACHAON.tete, nom: D.MACHAON.nom, bulle: null, assiette: null };
-    c.bulle = bulleDeCommande(c.x, L.perchoir - 52, 'gateau');
+    const k = L.echelle;
+    const c = { g, corps, ailes, x: L.perchoir.x, y: L.perchoir.y, haut: D.MACHAON.haut * k, tete: D.MACHAON.tete * k, nom: D.MACHAON.nom, bulle: null, assiette: null };
+    c.bulle = bulleDeCommande(c.x, c.y - 40, 'gateau');
     bip('clic', 0.8);
     return c;
   }
@@ -1432,7 +1472,7 @@ function demarrer({ scene, son, fx, memoire, debug }) {
     const T = TEXTES.fete;
     const sp = cmd.client;
     if (sp.bulle) { sp.bulle.remove(); sp.bulle = null; }
-    const C = { x: 200, y: 434 };   // pied du présentoir
+    const C = { x: 200, y: 370 };   // pied du présentoir
 
     const calque = svgEl('g', { class: 'e5-fete' }, vues.cafe);
     const nuit = svgEl('rect', { x: -1400, y: -1400, width: 3200, height: 3360, fill: '#140a24' }, calque);
@@ -1447,19 +1487,19 @@ function demarrer({ scene, son, fx, memoire, debug }) {
     for (const b of bougies) b.style.opacity = '0';
     const banniere = svgEl('g', { class: 'e5-banniere' }, calque);
     banniere.style.display = 'none';
-    banniere.innerHTML = T.banniere.map((l, i) => `<text x="${C.x}" y="${204 + i * 42}" text-anchor="middle" font-size="${i ? 38 : 26}" font-weight="700" fill="#fff4c2" stroke="#4a1fa8" stroke-width="6" stroke-linejoin="round" paint-order="stroke">${esc(l)}</text>`).join('');
+    banniere.innerHTML = T.banniere.map((l, i) => `<text x="${C.x}" y="${126 + i * 40}" text-anchor="middle" font-size="${i ? 38 : 26}" font-weight="700" fill="#fff4c2" stroke="#4a1fa8" stroke-width="6" stroke-linejoin="round" paint-order="stroke">${esc(l)}</text>`).join('');
     calque.append(sp.g, pipi);
 
     // Le gâteau sort du four et vient au centre, en grand.
     dire(T.attends);
-    placer(support, L.fourneau.x, 210);
+    placer(support, L.casserole.x, L.casserole.y);
     await Promise.all([
       animer(nuit, [{ opacity: 0 }, { opacity: 0.64 }], { duree: 1000 }),
       aller(support, C.x, C.y, 1200, 'cubic-bezier(.3,.8,.3,1)'),
       animer(gateau, [{ transform: 'scale(.18)' }, { transform: 'scale(1)' }], { duree: 1200, easing: 'cubic-bezier(.3,.8,.3,1)' }),
     ]);
     sp.ailes.classList.add('e5-vite');
-    await voler(sp.g, 342, 292, 1300, { hauteur: 30, ondule: 8 });
+    await voler(sp.g, 338, 226, 1300, { hauteur: 30, ondule: 8 });
     sp.ailes.classList.remove('e5-vite');
     await dire(T.surprise, [T.pourMoi]);
 
@@ -1481,12 +1521,12 @@ function demarrer({ scene, son, fx, memoire, debug }) {
       if (vivant) fx.etincelles(e.x, e.y, 8, '#ffd27a', 60);
       await dormir(200);
     }
-    await voler(pipi, 82, 262, 700, { hauteur: 20 });
+    await voler(pipi, 64, 214, 700, { hauteur: 20 });
     pipi.classList.remove('e5-vole');
     animer(lueur, [{ opacity: 0 }, { opacity: 1 }], { duree: 900 });
 
     // Les clients du soir reviennent pour la fête.
-    for (const [sorte, x, y] of [['herisson', 62, 512], ['grenouille', 124, 532], ['loutre', 338, 512]]) {
+    for (const [sorte, x, y] of [['herisson', 52, 398], ['grenouille', 96, 408], ['loutre', 346, 400]]) {
       const g = svgEl('g', {}, invites);
       g.innerHTML = `<g class="e5-invite">${D.PERSONNAGES[sorte].dessin()}</g>`;
       placer(g, x, y);
@@ -1546,7 +1586,7 @@ function demarrer({ scene, son, fx, memoire, debug }) {
     bip('chiffre');
     const q = versEcran(K.x, K.y - 8);
     if (vivant) fx.etincelles(q.x, q.y, 16, '#d7b3ff', 140);
-    await voler(sp.g, 342, 292, 1100, { hauteur: 30, ondule: 8 });
+    await voler(sp.g, 338, 226, 1100, { hauteur: 30, ondule: 8 });
     sp.ailes.classList.remove('e5-vite');
     calque.append(sp.g, pipi);
     return { enveloppe, cadeau, x: E.x, y: E.y };
