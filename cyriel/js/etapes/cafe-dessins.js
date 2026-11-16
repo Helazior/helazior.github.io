@@ -1097,7 +1097,7 @@ const LOOKS = [
   { clement: true },   // Clément, dessiné à part : corpsClement()
   { peau: '#f0c9a4', cheveux: '#e4e0ee', haut: '#f06fa4', bas: '#6b4a8f', coiffe: 'chignon' },
   { peau: '#c98d64', cheveux: '#2a1d3c', haut: '#3fae8c', bas: '#2f5a7a', coiffe: 'bonnet' },
-  { peau: '#f6d8bf', cheveux: '#e3a03a', haut: '#4aa3df', bas: '#f4ead8', coiffe: 'couettes' },
+  { estel: true },     // Estel, dessinée à part : corpsEstel()
   { peau: '#e8b48f', cheveux: '#8a1c34', haut: '#f5d33f', bas: '#3b3550', coiffe: 'courts' },
   { peau: '#8f5a3c', cheveux: '#1a1026', haut: '#e5484d', bas: '#4a7bd8', coiffe: 'chignon' },
 ];
@@ -1165,6 +1165,45 @@ function corpsClement(coucou) {
       <path d="M-1.8 -24.4 Q0 -25.4 1.8 -24.4" stroke="#e0607a" stroke-width="1.2" fill="none" stroke-linecap="round"/>`;
 }
 
+// Estel, d'après sa photo : cheveux blond vénitien aux épaules, raie sur le
+// côté, grand sourire, créoles et collier dorés, chemisier bleu à petits
+// motifs clairs.
+function corpsEstel(assis) {
+  const peau = '#f6d3bd';
+  const cheveux = '#e2a868';
+  const reflet = '#f3c992';
+  const bleu = '#3d5cb5';
+  const motif = '#b9d0f5';
+  const or = '#e0b44c';
+  const jambes = assis
+    ? `<ellipse cx="-4" cy="-8" rx="4.4" ry="3" fill="#2f3a5c"/><ellipse cx="4" cy="-8" rx="4.4" ry="3" fill="#2f3a5c"/><ellipse cx="-6" cy="-5" rx="3" ry="2" fill="#3b2a52"/><ellipse cx="6" cy="-5" rx="3" ry="2" fill="#3b2a52"/>`
+    : `<rect x="-5.5" y="-10" width="4.4" height="9" rx="2" fill="#2f3a5c"/><rect x="1.1" y="-10" width="4.4" height="9" rx="2" fill="#2f3a5c"/><ellipse cx="-3.4" cy="-1" rx="3.4" ry="2" fill="#3b2a52"/><ellipse cx="3.4" cy="-1" rx="3.4" ry="2" fill="#3b2a52"/>`;
+  const tirets = [[-6, -19.5], [-3.4, -14], [-6.2, -12], [4.6, -19], [2.4, -15.6], [5.6, -13], [-1, -11.2], [1.6, -20.4]]
+    .map(([x, y]) => `M${x} ${y} l1.4 -.9`).join(' ');
+  return `
+      <path d="M-12.6 -23.6 C-14.2 -32 -13 -42 -6 -45.4 C-1 -47.6 6 -46.8 10.6 -43 C14.2 -39.6 14 -31 12.8 -23.6 C11 -22.2 8.6 -22.4 7.6 -24 L-7.6 -24 C-8.6 -22.4 -11 -22.2 -12.6 -23.6 Z" fill="${cheveux}"/>
+      ${jambes}
+      <path d="M-8 -9 Q-9 -21 -6 -23 H6 Q9 -21 8 -9 Z" fill="${bleu}"/>
+      <path d="M-3.6 -23 L0 -17.4 L3.6 -23 Z" fill="${peau}"/>
+      <path d="M-3.1 -22.7 Q0 -18.6 3.1 -22.7" stroke="${or}" stroke-width=".6" fill="none"/><circle cx="0" cy="-19.1" r=".85" fill="${or}"/>
+      <path d="${tirets}" stroke="${motif}" stroke-width=".8" stroke-linecap="round"/>
+      <path d="M-7.5 -19 Q-10 -15 -9.5 -11" stroke="${bleu}" stroke-width="4.4" stroke-linecap="round" fill="none"/><circle cx="-9.4" cy="-10.4" r="2.4" fill="${peau}"/>
+      <path d="M7.5 -19 Q10 -15 9.5 -11" stroke="${bleu}" stroke-width="4.4" stroke-linecap="round" fill="none"/><circle cx="9.4" cy="-10.4" r="2.4" fill="${peau}"/>
+      <path d="M-8.6 -17.6 l1.2 -.8 M8 -14.6 l1.2 -.8" stroke="${motif}" stroke-width=".8" stroke-linecap="round"/>
+      <ellipse cx="0" cy="-33" rx="10.3" ry="11" fill="${peau}"/>
+      <path d="M-8 -40.6 C-5 -45.8 3 -46.8 8.6 -42.8 C10.6 -41 11 -38.2 10.5 -35.6 C8.6 -38.8 4.6 -40.9 -1 -40.6 C-3.6 -40.4 -5.9 -40.2 -8 -40.6 Z" fill="${cheveux}"/>
+      <path d="M-10.5 -38 C-11.2 -33 -10.8 -28 -9.3 -24.8 L-8.1 -25.2 C-8.9 -29 -9.1 -34 -8 -40.6 Z" fill="${cheveux}"/>
+      <path d="M10.5 -36 C11.1 -31 10.7 -27 9.5 -24.6 L8.3 -25 C9.1 -28.6 9.5 -32.6 9.7 -36.4 Z" fill="${cheveux}"/>
+      <path d="M-4 -43.6 C0 -45.4 5 -44.8 8 -42.4 M-9.6 -35 C-9.9 -31 -9.6 -28.4 -8.9 -26.4" stroke="${reflet}" stroke-width="1" fill="none" stroke-linecap="round"/>
+      <circle cx="-10.3" cy="-27.6" r="1.6" fill="none" stroke="${or}" stroke-width=".9"/><circle cx="10.3" cy="-27.6" r="1.6" fill="none" stroke="${or}" stroke-width=".9"/>
+      <path d="M-6.4 -37 Q-4.4 -38 -2.4 -37.3 M2.4 -37.3 Q4.4 -38 6.4 -37" stroke="#c98c55" stroke-width="1" fill="none" stroke-linecap="round"/>
+      <path d="M-5.8 -33.2 Q-4 -35.2 -2.2 -33.2 M2.2 -33.2 Q4 -35.2 5.8 -33.2" stroke="${ENCRE}" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      <path d="M0.2 -31.6 Q1.1 -30.2 0 -29.8" stroke="#e0a688" stroke-width=".8" fill="none" stroke-linecap="round"/>
+      <ellipse cx="-6.8" cy="-29.4" rx="2" ry="1.2" fill="#ff9cb0" opacity=".55"/><ellipse cx="6.8" cy="-29.4" rx="2" ry="1.2" fill="#ff9cb0" opacity=".55"/>
+      <path d="M-3.9 -28.6 Q0 -27.9 3.9 -28.6 Q3.1 -24.6 0 -24.4 Q-3.1 -24.6 -3.9 -28.6 Z" fill="#a8384a"/>
+      <path d="M-3.5 -28.4 Q0 -27.8 3.5 -28.4 L3.2 -27.2 Q0 -26.8 -3.2 -27.2 Z" fill="#fff"/>`;
+}
+
 /** Un joueur du marché, origine aux pieds, avec son pseudo au-dessus. */
 function joueur(nom, look, { x, y, assis = false, coucou = false, flane = false, coeur = false }) {
   const { peau, cheveux, haut, bas, coiffe } = look;
@@ -1175,7 +1214,7 @@ function joueur(nom, look, { x, y, assis = false, coucou = false, flane = false,
     ? `<g class="e5-coucou"><path d="M7 -19 Q12 -24 13 -31" stroke="${haut}" stroke-width="4.4" stroke-linecap="round" fill="none"/><circle cx="13" cy="-32.5" r="2.7" fill="${peau}"/></g>`
     : `<path d="M7.5 -19 Q10 -15 9.5 -11" stroke="${haut}" stroke-width="4.4" stroke-linecap="round" fill="none"/><circle cx="9.4" cy="-10.4" r="2.5" fill="${peau}"/>`;
   const l = Math.round(16 + nom.length * 5.6);
-  const corps = look.clement ? `<g transform="scale(1.1)">${corpsClement(coucou)}</g>` : `
+  const corps = look.clement ? `<g transform="scale(1.1)">${corpsClement(coucou)}</g>` : look.estel ? corpsEstel(assis) : `
       ${jambes}
       <path d="M-8 -9 Q-9 -21 -6 -23 H6 Q9 -21 8 -9 Z" fill="${haut}"/>
       <path d="M-7.5 -19 Q-10 -15 -9.5 -11" stroke="${haut}" stroke-width="4.4" stroke-linecap="round" fill="none"/><circle cx="-9.4" cy="-10.4" r="2.5" fill="${peau}"/>
