@@ -542,6 +542,16 @@ body[data-fond="sombre"] {
 .e5-pancarte { transform-box: fill-box; transform-origin: 50% 50%; }
 
 .e5-bf-barre { transform-box: fill-box; transform-origin: 0% 50%; }
+.e5-bf-titre { font-variant-numeric: tabular-nums; }
+.e5-bf-vitesse { cursor: pointer; }
+.e5-bf-vitesse:focus { outline: none; }
+.e5-bf-vitesse:focus-visible .e5-vitesse-fond { stroke: var(--violet); stroke-width: 3; }
+.e5-vitesse-corps { transform-box: fill-box; transform-origin: 50% 50%; }
+.e5-bf-vitesse[aria-pressed="false"] .e5-vitesse-corps { animation: e5-vitesse 1.1s ease-in-out infinite; }
+.e5-bf-vitesse[aria-pressed="true"] .e5-vitesse-corps { transform: translateY(2.5px); }
+.e5-bf-vitesse[aria-pressed="true"] .e5-vitesse-fond { fill: var(--violet); }
+.e5-bf-vitesse[aria-pressed="true"] .e5-vitesse-texte { fill: #fff; }
+@keyframes e5-vitesse { 50% { transform: scale(1.08); } }
 
 .e5-touchable,
 .e5-etal,
@@ -1111,6 +1121,23 @@ button.e5-case:disabled { opacity: .38; cursor: default; box-shadow: none; }
 .e5-battement { transform-box: fill-box; transform-origin: 50% 50%; animation: e5-papillon .35s ease-in-out infinite; }
 .e5-crepe-volante { transform-box: fill-box; transform-origin: center; }
 
+/* La fête d'anniversaire */
+.e5-gateau-fete { transform-box: fill-box; transform-origin: 50% 100%; cursor: pointer; }
+.e5-gateau-fete:focus { outline: none; }
+.e5-gateau-fete:focus-visible .e5-bougie:not([data-eteinte]) path:first-of-type { stroke: #fff4c2; }
+.e5-flamme-bougie { transform-box: fill-box; transform-origin: 50% 100%; animation: e5-vacille .16s ease-in-out infinite alternate; }
+@keyframes e5-vacille {
+  from { transform: scale(.93, 1.06) skewX(-4deg); }
+  to { transform: scale(1.05, .94) skewX(4deg); }
+}
+.e5-fumee { stroke-dasharray: 44; animation: e5-fumee 1.5s ease-out forwards; }
+@keyframes e5-fumee {
+  from { stroke-dashoffset: 44; opacity: .95; transform: translateY(0); }
+  to { stroke-dashoffset: 0; opacity: 0; transform: translateY(-16px); }
+}
+.e5-invite, .e5-banniere { transform-box: fill-box; transform-origin: 50% 100%; }
+.e5-banniere { transform-origin: 50% 50%; }
+
 /* Le mot et le cadeau */
 
 .e5-finale {
@@ -1166,6 +1193,7 @@ button.e5-case:disabled { opacity: .38; cursor: default; box-shadow: none; }
 
 @media (prefers-reduced-motion: reduce) {
   .e5-pluie line, .e5-vapeur path, .e5-flamme, .e5-brille { animation: none; }
+  .e5-bf-vitesse .e5-vitesse-corps, .e5-flamme-bougie { animation: none; }
   .e5-jets path, .e5-ronds ellipse, .e5-flane, .e5-respire, .e5-coucou, .e5-petit-coeur, .e5-vol-papillon, .e5-clignote { animation: none; }
   .e5 .e5-aile, .e5-ailes-machaon, .e5-flotte { animation-duration: 2.4s; }
   .e5-marche, .e5-content { animation: none; }

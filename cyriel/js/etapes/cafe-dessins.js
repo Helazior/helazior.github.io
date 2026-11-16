@@ -6,6 +6,8 @@
 // Le café est dessiné dans un cadre de 400 × 560 ; le décor déborde
 // largement pour remplir les écrans plus larges ou plus hauts.
 
+import { cheminChiffre } from '../chiffres.js';
+
 export const LARGEUR = 400;
 export const HAUTEUR = 560;
 
@@ -519,9 +521,116 @@ export function bulleFourneau() {
     <g class="e5-bf-minuteur" style="display:none">
       <circle cx="-72" cy="0" r="11" fill="none" stroke="#efe6ff" stroke-width="4"/>
       <circle class="e5-bf-arc" cx="-72" cy="0" r="11" fill="none" stroke="#8f5cf7" stroke-width="4" stroke-linecap="round" stroke-dasharray="69.1" stroke-dashoffset="69.1" transform="rotate(-90 -72 0)"/>
-      <text class="e5-bf-sec" x="-72" y="3.4" text-anchor="middle" font-size="9.5" font-weight="700"></text>
+      <path d="M-72 -5.5 V0 L-68 2.4" stroke="#4a1fa8" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    <g transform="translate(62 41)">
+      <g class="e5-bf-vitesse" data-e5="vitesse" role="button" tabindex="0" aria-pressed="false" style="display:none">
+        <rect x="-42" y="-20" width="84" height="42" fill="transparent"/>
+        <rect x="-34" y="-11" width="68" height="27" rx="13.5" fill="${ENCRE}"/>
+        <g class="e5-vitesse-corps">
+          <rect class="e5-vitesse-fond" x="-34" y="-14" width="68" height="27" rx="13.5" fill="#ffd23f" stroke="${ENCRE}" stroke-width="2"/>
+          <path class="e5-vitesse-texte" d="M-24 -6.5 L-16 -0.5 L-24 5.5 Z M-15 -6.5 L-7 -0.5 L-15 5.5 Z" fill="${ENCRE}"/>
+          <text class="e5-vitesse-texte" x="11" y="4.4" text-anchor="middle" font-size="13.5" font-weight="700" fill="${ENCRE}">60x</text>
+        </g>
+      </g>
     </g>
   </g>`;
+}
+
+/* ===================================================== Gâteau d'anniversaire */
+
+// Le gâteau de la fin, en grand : rhubarbe et crème de marron, son prénom
+// dessus, et des bougies. age : bougies en chiffres (24 → « 2 » et « 4 ») ;
+// sans âge, cinq bougies classiques. Origine au pied du présentoir.
+// Chaque bougie : <g class="e5-bougie" data-i> avec une flamme cachée
+// (.e5-flamme-bougie) que le jeu allume. bougiesGateau() donne leur position.
+
+const GF = { R: 78, Y0: -10, H: 70 };   // rayon, bas et hauteur du gâteau
+
+export function bougiesGateau(age) {
+  const yHaut = GF.Y0 - GF.H;
+  if (age) {
+    const chiffres = String(age).split('');
+    const pas = 50;
+    return chiffres.map((c, i) => ({ chiffre: +c, x: (i - (chiffres.length - 1) / 2) * pas, y: yHaut - 12 }));
+  }
+  return [210, 240, 270, 300, 330].map((a) => {
+    const t = (a * Math.PI) / 180;
+    return { x: 52 * Math.cos(t), y: yHaut + 11 * Math.sin(t) };
+  }).sort((p, q) => p.y - q.y);
+}
+
+function flammeBougie(x, y) {
+  return `<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"><g class="e5-flamme-bougie" style="display:none">
+    <circle cy="-9" r="14" fill="#ffd27a" opacity=".4"/>
+    <path d="M0 0 C-6 -3 -6 -10 0 -19 C6 -10 6 -3 0 0 Z" fill="#ffad2e"/>
+    <path d="M0 -2 C-2.8 -3.6 -2.8 -7.6 0 -12 C2.8 -7.6 2.8 -3.6 0 -2 Z" fill="#fff4c2"/>
+  </g></g>`;
+}
+
+export function gateauFete(age, prenom) {
+  const { R, Y0, H } = GF;
+  const yt = Y0 - H;
+  const bande = (y, h, c) => `<path d="M${-R} ${y} A${R} 20 0 0 0 ${R} ${y} V${y + h} A${R} 20 0 0 1 ${-R} ${y + h} Z" fill="${c}"/>`;
+  const surArc = (t, dy = 0) => [R * Math.cos(t), yt + 20 * Math.sin(t) + dy];
+  const coulures = [0.12, 0.24, 0.36, 0.5, 0.62, 0.76, 0.88].map((u, i) => {
+    const [x, y] = surArc(Math.PI * u);
+    const l = [12, 20, 9, 16, 22, 11, 17][i];
+    return `<path d="M${(x - 5.5).toFixed(1)} ${(y - 2).toFixed(1)} V${(y + l - 5).toFixed(1)} Q${(x - 5.5).toFixed(1)} ${(y + l).toFixed(1)} ${x.toFixed(1)} ${(y + l).toFixed(1)} Q${(x + 5.5).toFixed(1)} ${(y + l).toFixed(1)} ${(x + 5.5).toFixed(1)} ${(y + l - 5).toFixed(1)} V${(y - 2).toFixed(1)} Z" fill="#7b4a2d"/>`;
+  }).join('');
+  const chantilly = [0.06, 0.19, 0.31, 0.44, 0.56, 0.69, 0.81, 0.94].map((u, i) => {
+    const [x, y] = surArc(Math.PI * u, -2);
+    const rhubarbe = i % 2 ? '' : `<rect x="${(x - 2.5).toFixed(1)}" y="${(y - 11).toFixed(1)}" width="5" height="9" rx="2.4" fill="#e8456f" transform="rotate(${-20 + i * 6} ${x.toFixed(1)} ${(y - 6).toFixed(1)})"/>`;
+    return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5.6" fill="#fffaf2"/><circle cx="${(x - 1.6).toFixed(1)}" cy="${(y - 1.8).toFixed(1)}" r="2" fill="#fff"/>${rhubarbe}`;
+  }).join('');
+  const bougies = bougiesGateau(age).map((b, i) => {
+    if (b.chiffre !== undefined) {
+      const l = 30;
+      const h = 46;
+      const d = cheminChiffre(b.chiffre, b.x - l / 2, b.y - h, l, h);
+      const [sx, sy] = [b.x + (b.chiffre === 4 ? 0.16 * l : 0), b.y - h];
+      return `<g class="e5-bougie" data-i="${i}">
+        <rect x="${b.x - 26}" y="${b.y - h - 34}" width="52" height="${h + 40}" fill="transparent"/>
+        <ellipse cx="${b.x}" cy="${b.y + 1}" rx="17" ry="4" fill="#5e3a22" opacity=".45"/>
+        <path d="${d}" fill="none" stroke="${ENCRE}" stroke-width="12.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="${d}" fill="none" stroke="#b48cff" stroke-width="9.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="${d}" fill="none" stroke="#fffaf2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4 6"/>
+        <path d="M${sx.toFixed(1)} ${(sy - 5).toFixed(1)} v-6" stroke="${ENCRE}" stroke-width="1.6" stroke-linecap="round"/>
+        ${flammeBougie(sx, sy - 11)}
+      </g>`;
+    }
+    return `<g class="e5-bougie" data-i="${i}">
+      <rect x="${(b.x - 11).toFixed(1)}" y="${(b.y - 66).toFixed(1)}" width="22" height="70" fill="transparent"/>
+      <rect x="${(b.x - 3.5).toFixed(1)}" y="${(b.y - 34).toFixed(1)}" width="7" height="34" rx="2" fill="#c9a8ff" stroke="${ENCRE}" stroke-width="1.4"/>
+      <path d="M${(b.x - 3.5).toFixed(1)} ${(b.y - 24).toFixed(1)} l7 -5 M${(b.x - 3.5).toFixed(1)} ${(b.y - 14).toFixed(1)} l7 -5 M${(b.x - 3.5).toFixed(1)} ${(b.y - 4).toFixed(1)} l7 -5" stroke="#fffaf2" stroke-width="2"/>
+      <path d="M${b.x.toFixed(1)} ${(b.y - 34).toFixed(1)} v-5" stroke="${ENCRE}" stroke-width="1.4"/>
+      ${flammeBougie(b.x, b.y - 39)}
+    </g>`;
+  }).join('');
+  const papillon = `<g transform="translate(46 ${Y0 - 30}) rotate(-12)">
+    <path d="M0 0 C3 -9 12 -11 13 -4 C13 1 6 2 0 0 Z M0 0 C-3 -9 -12 -11 -13 -4 C-13 1 -6 2 0 0 Z" fill="#9a63ff" stroke="#6a3fd0" stroke-width="1"/>
+    <path d="M0 0 C5 1 9 5 6 8 C3 10 1 5 0 0 Z M0 0 C-5 1 -9 5 -6 8 C-3 10 -1 5 0 0 Z" fill="#c9a8ff" stroke="#6a3fd0" stroke-width="1"/>
+    <ellipse cx="0" cy="1" rx="1.3" ry="5" fill="#4a1fa8"/>
+  </g>`;
+  return `
+  <ellipse cx="0" cy="26" rx="58" ry="10" fill="#1a1026" opacity=".2"/>
+  <ellipse cx="0" cy="22" rx="42" ry="8" fill="#b9a6e6"/>
+  <path d="M-15 2 L-26 21 H26 L15 2 Z" fill="#d8ccef"/>
+  <path d="M5 2 L13 21 H26 L15 2 Z" fill="#c4b4ea"/>
+  <ellipse cx="0" cy="0" rx="100" ry="23" fill="#c9b8ef"/>
+  <ellipse cx="0" cy="-3" rx="96" ry="21" fill="#f7f2ff"/>
+  <path d="M${-R} ${yt} V${Y0} A${R} 20 0 0 0 ${R} ${Y0} V${yt} Z" fill="#f2cf93"/>
+  ${bande(yt + 26, 7, '#7b4a2d')}
+  ${bande(yt + 44, 6, '#f07aa0')}
+  <path d="M${R - 18} ${yt + 14} V${Y0 + 12} A${R} 20 0 0 0 ${R} ${Y0} V${yt} Z" fill="#d9a865" opacity=".55"/>
+  <path d="M${-R + 9} ${yt + 18} V${Y0 + 2}" stroke="#fff" stroke-opacity=".4" stroke-width="6" stroke-linecap="round"/>
+  ${papillon}
+  ${coulures}
+  <ellipse cx="0" cy="${yt}" rx="${R}" ry="20" fill="#8a5a3b"/>
+  <ellipse cx="-22" cy="${yt - 6}" rx="28" ry="5.5" fill="#a87650"/>
+  ${chantilly}
+  <text transform="translate(0 ${yt + 17}) scale(1 .55)" text-anchor="middle" font-size="27" font-weight="700" fill="#fffaf2" stroke="#5e3a22" stroke-width="1" paint-order="stroke">${prenom}</text>
+  ${bougies}`;
 }
 
 /* ================================================================== Café */
@@ -556,6 +665,11 @@ export function defs() {
       <stop offset="0" stop-color="#1b2550"/><stop offset="1" stop-color="#34497f"/>
     </linearGradient>
     <clipPath id="e5-vitre"><rect x="274" y="52" width="52" height="86" rx="3"/></clipPath>
+    <radialGradient id="e5-lueur-fete">
+      <stop offset="0" stop-color="#ffd27a" stop-opacity=".55"/>
+      <stop offset=".55" stop-color="#ffb35c" stop-opacity=".18"/>
+      <stop offset="1" stop-color="#ffb35c" stop-opacity="0"/>
+    </radialGradient>
   </defs>`;
 }
 
@@ -980,7 +1094,9 @@ function poteauCafe(x, y, texte) {
 }
 
 const LOOKS = [
-  { peau: '#f3cfae', cheveux: '#5a3a26', haut: '#7a3cf0', bas: '#3b3550', coiffe: 'courts' },
+  // Clément : houppette brune, cheveux courts sur les côtés, yeux bleu-vert,
+  // veste violette ouverte sur ses abdos.
+  { peau: '#f3cfae', cheveux: '#5a3a26', haut: '#7a3cf0', bas: '#3b3550', coiffe: 'houppette', yeux: '#2f9e9a', abdos: true },
   { peau: '#f0c9a4', cheveux: '#e4e0ee', haut: '#f06fa4', bas: '#6b4a8f', coiffe: 'chignon' },
   { peau: '#c98d64', cheveux: '#2a1d3c', haut: '#3fae8c', bas: '#2f5a7a', coiffe: 'bonnet' },
   { peau: '#f6d8bf', cheveux: '#e3a03a', haut: '#4aa3df', bas: '#f4ead8', coiffe: 'couettes' },
@@ -990,6 +1106,11 @@ const LOOKS = [
 
 function coiffure(c, couleur) {
   switch (c) {
+    case 'houppette': return `
+      <path d="M-11.3 -33 C-11 -35.6 -9.8 -37.2 -8.4 -38.2 L-9 -32.4 C-9.8 -31.8 -10.7 -31.4 -11.4 -31.2 Z" fill="${couleur}"/>
+      <path d="M11.3 -33 C11 -35.6 9.8 -37.2 8.4 -38.2 L9 -32.4 C9.8 -31.8 10.7 -31.4 11.4 -31.2 Z" fill="${couleur}"/>
+      <path d="M-11 -33.4 C-11.4 -40 -8 -44.6 -3.4 -46.4 C-2.4 -50.6 3 -52.6 7.8 -50.8 C12 -49.2 13.4 -45 11.6 -39.6 C11.8 -37.4 11.6 -35.4 11 -33.4 C9.4 -36.6 6.6 -38.8 2.6 -39.2 C-2.4 -39.6 -7.2 -37.8 -11 -33.4 Z" fill="${couleur}"/>
+      <path d="M-1.2 -46.6 C0.6 -49.4 5.2 -50.2 8.6 -48.2 M1.4 -44.4 C3.4 -46 6.8 -46.2 9.4 -44.6" stroke="#8a5f42" stroke-width="1.2" fill="none" stroke-linecap="round"/>`;
     case 'chignon': return `<circle cx="0" cy="-46" r="6" fill="${couleur}"/><path d="M-11 -32 C-12 -45 12 -45 11 -32 C8 -38 -8 -38 -11 -32 Z" fill="${couleur}"/>`;
     case 'bonnet': return `<path d="M-11.5 -33 C-12 -47 12 -47 11.5 -33 Z" fill="#f5d33f"/><rect x="-12.5" y="-36" width="25" height="5" rx="2.5" fill="#e3b04b"/><circle cx="0" cy="-46" r="3.6" fill="#fffaf2"/>`;
     case 'couettes': return `<path d="M-11 -31 C-12 -46 12 -46 11 -31 C7 -37 -7 -37 -11 -31 Z" fill="${couleur}"/><ellipse cx="-13.5" cy="-30" rx="4" ry="6" fill="${couleur}"/><ellipse cx="13.5" cy="-30" rx="4" ry="6" fill="${couleur}"/><circle cx="-11" cy="-35" r="1.8" fill="#f06fa4"/><circle cx="11" cy="-35" r="1.8" fill="#f06fa4"/>`;
@@ -999,7 +1120,7 @@ function coiffure(c, couleur) {
 
 /** Un joueur du marché, origine aux pieds, avec son pseudo au-dessus. */
 function joueur(nom, look, { x, y, assis = false, coucou = false, flane = false, coeur = false }) {
-  const { peau, cheveux, haut, bas, coiffe } = look;
+  const { peau, cheveux, haut, bas, coiffe, yeux, abdos } = look;
   const jambes = assis
     ? `<ellipse cx="-4" cy="-8" rx="4.4" ry="3" fill="${bas}"/><ellipse cx="4" cy="-8" rx="4.4" ry="3" fill="${bas}"/><ellipse cx="-6" cy="-5" rx="3" ry="2" fill="#3b2a52"/><ellipse cx="6" cy="-5" rx="3" ry="2" fill="#3b2a52"/>`
     : `<rect x="-5.5" y="-10" width="4.4" height="9" rx="2" fill="${bas}"/><rect x="1.1" y="-10" width="4.4" height="9" rx="2" fill="${bas}"/><ellipse cx="-3.4" cy="-1" rx="3.4" ry="2" fill="#3b2a52"/><ellipse cx="3.4" cy="-1" rx="3.4" ry="2" fill="#3b2a52"/>`;
@@ -1009,12 +1130,19 @@ function joueur(nom, look, { x, y, assis = false, coucou = false, flane = false,
   const l = Math.round(16 + nom.length * 5.6);
   const corps = `
       ${jambes}
-      <path d="M-8 -9 Q-9 -21 -6 -23 H6 Q9 -21 8 -9 Z" fill="${haut}"/>
+      ${abdos ? `
+      <path d="M-8 -9 Q-9 -21 -6 -23 H6 Q9 -21 8 -9 Z" fill="${peau}"/>
+      <path d="M-5.6 -21.2 Q-2.8 -19.6 -0.4 -21 M0.4 -21 Q2.8 -19.6 5.6 -21.2" stroke="#d99e78" stroke-width="1" fill="none" stroke-linecap="round"/>
+      ${[0, 1, 2].map((r) => `<rect x="-4.5" y="${(-19 + r * 3.4).toFixed(1)}" width="4" height="2.9" rx="1.2" fill="#e8b48f"/><rect x="0.5" y="${(-19 + r * 3.4).toFixed(1)}" width="4" height="2.9" rx="1.2" fill="#e8b48f"/>`).join('')}
+      <path d="M-8 -9 Q-9 -21 -6 -23 H-4 L-5.6 -9 Z" fill="${haut}"/><path d="M8 -9 Q9 -21 6 -23 H4 L5.6 -9 Z" fill="${haut}"/>` : `
+      <path d="M-8 -9 Q-9 -21 -6 -23 H6 Q9 -21 8 -9 Z" fill="${haut}"/>`}
       <path d="M-7.5 -19 Q-10 -15 -9.5 -11" stroke="${haut}" stroke-width="4.4" stroke-linecap="round" fill="none"/><circle cx="-9.4" cy="-10.4" r="2.5" fill="${peau}"/>
       ${brasD}
       <circle cx="0" cy="-33" r="11" fill="${peau}"/>
       ${coiffure(coiffe, cheveux)}
-      <circle cx="-3.8" cy="-32" r="1.5" fill="${ENCRE}"/><circle cx="3.8" cy="-32" r="1.5" fill="${ENCRE}"/>
+      ${yeux
+        ? `<circle cx="-3.8" cy="-32" r="2" fill="${yeux}" stroke="${ENCRE}" stroke-width=".8"/><circle cx="3.8" cy="-32" r="2" fill="${yeux}" stroke="${ENCRE}" stroke-width=".8"/><circle cx="-3.8" cy="-32" r=".8" fill="${ENCRE}"/><circle cx="3.8" cy="-32" r=".8" fill="${ENCRE}"/><circle cx="-3.1" cy="-32.8" r=".55" fill="#fff"/><circle cx="4.5" cy="-32.8" r=".55" fill="#fff"/>`
+        : `<circle cx="-3.8" cy="-32" r="1.5" fill="${ENCRE}"/><circle cx="3.8" cy="-32" r="1.5" fill="${ENCRE}"/>`}
       <ellipse cx="-6.8" cy="-28.6" rx="2" ry="1.2" fill="#ff9cc8" opacity=".8"/><ellipse cx="6.8" cy="-28.6" rx="2" ry="1.2" fill="#ff9cc8" opacity=".8"/>
       <path d="M-2 -27.6 Q0 -26 2 -27.6" stroke="${ENCRE}" stroke-width="1" fill="none" stroke-linecap="round"/>`;
   const petitCoeur = coeur ? `<g transform="translate(13 -64)"><g class="e5-petit-coeur"><path d="M0 4 C-4 1 -5 -1.6 -3.2 -2.6 C-1.8 -3.2 -0.6 -2.4 0 -1.6 C0.6 -2.4 1.8 -3.2 3.2 -2.6 C5 -1.6 4 1 0 4 Z" fill="#ff7ab8"/></g></g>` : '';

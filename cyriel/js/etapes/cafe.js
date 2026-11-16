@@ -69,12 +69,27 @@ const TEXTES = {
   commandeSuivante: 'Touche le fourneau pour préparer une autre commande.',
   attenteClient: 'On attend le prochain client…',
   preparation: 'Tout est dans la casserole. Au travail !',
+  vraiTemps: 'Comme dans le vrai jeu, la cuisson prend du vrai temps ! Pour ne pas attendre, touche le bouton jaune 60x.',
   pret: 'C’est prêt ! Touche le fourneau pour poser le plat sur le comptoir.',
+  pretSpecial: 'Le gâteau est prêt ! Touche le fourneau pour le sortir du four.',
   service: 'Je l’apporte !',
   calme: 'Ouf, tout le monde est servi.',
   special: 'Oh ! Un client très spécial… Il commande la spécialité de la maison. Sa recette vient d’apparaître dans le livre !',
   commandeSpeciale: 'Touche le fourneau pour préparer la spécialité.',
-  cadeauLaisse: 'Il a laissé quelque chose pour toi sur la table…',
+
+  // La fin : le gâteau est pour elle, avec ses bougies.
+  fete: {
+    age: 24,   // les bougies en chiffres ; null pour cinq bougies classiques
+    attends: 'Attends… le machaon me chuchote quelque chose à l’oreille.',
+    surprise: 'Surprise ! Ce gâteau, le machaon ne l’a pas commandé pour lui… Il est pour toi !',
+    pourMoi: 'Pour moi ?!',
+    allumer: 'Je m’occupe des bougies…',
+    souffler: 'Joyeux anniversaire, Cyriel ! Fais un vœu, puis souffle tes bougies : touche les flammes.',
+    bravo: 'Bravo ! Et ce n’est pas fini : le machaon t’a apporté autre chose…',
+    objets: 'Une enveloppe et un cadeau, rien que pour toi.',
+    banniere: ['Joyeux anniversaire', 'Cyriel !'],
+    ariaGateau: 'Ton gâteau d’anniversaire : touche les bougies pour les souffler',
+  },
   fin: 'Le café est à toi, cheffe. Reviens quand tu veux !',
 
   // Les commandes, avec l'exigence de chaque client.
@@ -109,19 +124,18 @@ const TEXTES = {
     manque: 'Il manque quelque chose… Relis bien la recette et la commande.',
     manqueFrigoFlou: 'Il manque quelque chose, et le frigo n’a pas tout ce qu’il faut. Relis bien la commande, puis va au marché !',
     manqueFrigo: (liste) => `Il manque ${liste}, et le frigo n’en a plus : direction le marché !`,
+    detesteSpecial: (a) => `${cap(a.defini)} dans la spécialité de la maison ? Sûrement pas : elle doit être parfaite !`,
     aide: 'Coup de pouce : il faut exactement',
   },
   audacieux: 'Audacieux…',
 
   // Les aliments détestés : la réaction des clients.
   reactions: ['Beurk !', 'Pouah !', 'Affreux !'],   // ce que dit chaque client
-  reactionMachaon: 'Beurk…',
   reaction: [
     (client, aliment) => `${client} déteste ${aliment}… comme toi !`,
     (client, aliment) => `${client} déteste aussi ${aliment} !`,
     (client, aliment) => `${client} ne supporte pas ${aliment} non plus.`,
   ],
-  reactionSpeciale: (aliment) => `Même le machaon déteste ${aliment}… Mais il a laissé quelque chose pour toi sur la table.`,
 
   livreTexte: {
     titre: 'Livre de recettes',
@@ -135,7 +149,7 @@ const TEXTES = {
     recettes: 'Les recettes',
     secretTitre: 'Spécialité de la maison',
     secret: 'Recette réservée à un client très spécial…',
-    cuisson: (s) => `Cuisson : ${s} s`,
+    cuisson: (min) => `Cuisson : ${min} min`,
     reste: (n) => `${n} au frigo`,
   },
   frigo: { titre: 'Frigo', vide: 'Le frigo est vide. Les courses se font au marché !' },
@@ -147,8 +161,8 @@ const TEXTES = {
 
   fourneau: {
     toucher: 'Touche le fourneau',
-    cuisson: 'Cuisson…',
     pret: 'C’est prêt !',
+    accelerer: 'Accélérer la cuisson 60 fois',
   },
 
   boutons: {
@@ -186,13 +200,16 @@ const TEXTES = {
 
 /* ============================================================== La partie */
 
-// gestes : ce qu'on fait au fourneau, un toucher par geste ; cuisson en secondes.
+// gestes : ce qu'on fait au fourneau, un toucher par geste.
+// cuisson : en vraies minutes, comme dans le jeu d'origine ; le bouton 60x
+// la fait passer en autant de secondes.
 const RECETTES = {
   chocolat: { plat: 'tasse', ingredients: { lait: 1, chocolat: 1 }, gestes: ['remuer'], cuisson: 5 },
-  tarte: { plat: 'tarte', ingredients: { farine: 1, beurre: 1, sucre: 1, rhubarbe: 1 }, gestes: ['etaler', 'enfourner'], cuisson: 8, four: true },
-  crepes: { plat: 'crepes', ingredients: { farine: 1, oeufs: 1, lait: 1, marron: 1 }, gestes: ['verser', 'retourner'], cuisson: 6 },
-  gateau: { plat: 'gateau', ingredients: { rhubarbe: 1, farine: 1, oeufs: 1, sucre: 1, marron: 1 }, gestes: ['melanger', 'enfourner'], cuisson: 10, four: true, secret: true },
+  tarte: { plat: 'tarte', ingredients: { farine: 1, beurre: 1, sucre: 1, rhubarbe: 1 }, gestes: ['etaler', 'enfourner'], cuisson: 12, four: true },
+  crepes: { plat: 'crepes', ingredients: { farine: 1, oeufs: 1, lait: 1, marron: 1 }, gestes: ['verser', 'retourner'], cuisson: 8 },
+  gateau: { plat: 'gateau', ingredients: { rhubarbe: 1, farine: 1, oeufs: 1, sucre: 1, marron: 1 }, gestes: ['melanger', 'enfourner'], cuisson: 15, four: true, secret: true },
 };
+const ACCELERATION = 60;
 
 // Les clients, leur table et leur commande : plus = en plus de la recette,
 // sans = à ne surtout pas mettre.
@@ -250,6 +267,9 @@ function besoins(cmd) {
 // client les goûtera…
 function verifier(cmd, pot) {
   const b = besoins(cmd);
+  // La spécialité doit être parfaite : pas d'aliment détesté.
+  const deteste = cmd.special && [...pot.keys()].find((k) => DETESTES.includes(k));
+  if (deteste) return { ok: false, type: 'deteste', k: deteste };
   for (const k of cmd.sans || []) if (pot.get(k)) return { ok: false, type: 'sans', k };
   for (const k of pot.keys()) if (!DETESTES.includes(k) && !b.has(k)) return { ok: false, type: 'intrus', k };
   for (const [k, n] of pot) if (b.has(k) && n > b.get(k)) return { ok: false, type: 'trop', k };
@@ -819,7 +839,8 @@ function demarrer({ scene, son, fx, memoire, debug }) {
       cmd.erreurs = (cmd.erreurs || 0) + 1;
       marcheConseille = false;
       const a = (k) => D.ARTICLES[k];
-      if (v.type === 'sans') alerte = TEXTES.rappels[cmd.sorte] || TEXTES.verif.sans(a(v.k));
+      if (v.type === 'deteste') alerte = TEXTES.verif.detesteSpecial(a(v.k));
+      else if (v.type === 'sans') alerte = TEXTES.rappels[cmd.sorte] || TEXTES.verif.sans(a(v.k));
       else if (v.type === 'intrus') alerte = TEXTES.verif.intrus(a(v.k), recette(cmd.recette));
       else if (v.type === 'trop') alerte = TEXTES.verif.trop(a(v.k));
       else {
@@ -983,7 +1004,23 @@ function demarrer({ scene, son, fx, memoire, debug }) {
     placer(g, L.bulleFour.x, L.bulleFour.y);
     const pop = g.firstElementChild;
     const q = (s) => g.querySelector(s);
-    const [titreB, sous, jauge, barre, minuteur, arc, sec] = ['.e5-bf-titre', '.e5-bf-sous', '.e5-bf-jauge', '.e5-bf-barre', '.e5-bf-minuteur', '.e5-bf-arc', '.e5-bf-sec'].map(q);
+    const [titreB, sous, jauge, barre, minuteur, arc, vitesseB] = ['.e5-bf-titre', '.e5-bf-sous', '.e5-bf-jauge', '.e5-bf-barre', '.e5-bf-minuteur', '.e5-bf-arc', '.e5-bf-vitesse'].map(q);
+    vitesseB.setAttribute('aria-label', TEXTES.fourneau.accelerer);
+    let vitesse = 1;
+    const majVitesse = () => vitesseB.setAttribute('aria-pressed', String(vitesse > 1));
+    surToucher(vitesseB, () => {
+      vitesse = vitesse > 1 ? 1 : ACCELERATION;
+      majVitesse();
+      bip(vitesse > 1 ? 'vol' : 'clic', 0.6);
+    });
+    // « 4:59 », ou « 1:04:59 » au-delà d'une heure.
+    const duree = (s) => {
+      const t = Math.max(0, Math.ceil(s));
+      const h = Math.floor(t / 3600);
+      const m = Math.floor((t % 3600) / 60);
+      const ss = String(t % 60).padStart(2, '0');
+      return h ? `${h}:${String(m).padStart(2, '0')}:${ss}` : `${m}:${ss}`;
+    };
     function afficher(t, s, { avecJauge = false, avecMinuteur = false } = {}) {
       if (g.style.display === 'none') {
         g.style.display = '';
@@ -1007,17 +1044,28 @@ function demarrer({ scene, son, fx, memoire, debug }) {
       remplir(ms) {
         return animer(barre, [{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], { duree: ms, easing: 'ease-in-out' });
       },
-      minuter(secondes, nom) {
-        afficher(TEXTES.fourneau.cuisson, nom, { avecMinuteur: true });
-        const total = (secondes * 1000) / V;
-        const debut = performance.now();
+      // Cuisson en vraies minutes ; le bouton 60x accélère (ou ralentit à
+      // nouveau) à tout moment. Chaque plat repart à vitesse normale.
+      minuter(minutes, nom) {
+        const total = minutes * 60;
+        afficher(duree(total), nom, { avecMinuteur: true });
+        vitesse = 1;
+        majVitesse();
+        vitesseB.style.display = '';
+        let fait = 0;
+        let avant = performance.now();
         return new Promise((resolve) => {
           const pas = (t) => {
             if (!vivant) return;
-            const p = Math.min(1, (t - debut) / total);
+            fait += ((t - avant) / 1000) * vitesse * V;
+            avant = t;
+            const p = Math.min(1, fait / total);
             arc.setAttribute('stroke-dashoffset', (69.1 * (1 - p)).toFixed(2));
-            sec.textContent = String(Math.ceil(secondes * (1 - p)));
-            if (p < 1) requestAnimationFrame(pas); else resolve();
+            titreB.textContent = duree(total - fait);
+            if (p < 1) { requestAnimationFrame(pas); return; }
+            vitesseB.style.display = 'none';
+            if (document.activeElement === vitesseB) vitesseB.blur();
+            resolve();
           };
           requestAnimationFrame(pas);
         });
@@ -1087,6 +1135,7 @@ function demarrer({ scene, son, fx, memoire, debug }) {
     cmd.surComptoir = { x, g: pose };
   }
 
+  let premiereCuisson = true;
   async function cuisiner(cmd) {
     const r = recette(cmd.recette);
     cmd.etat = 'cuisine';
@@ -1110,7 +1159,8 @@ function demarrer({ scene, son, fx, memoire, debug }) {
     }
     cacherGuide();
 
-    dire(r.cuit);
+    dire(premiereCuisson ? TEXTES.vraiTemps : r.cuit);
+    premiereCuisson = false;
     four.classList.add(r.four ? 'e5-four-chaud' : 'e5-feu');
     bip('feu');
     await bulleFour.minuter(r.cuisson, r.nom);
@@ -1118,11 +1168,12 @@ function demarrer({ scene, son, fx, memoire, debug }) {
     bip('ding');
     bulleFour.pret();
     montrer(L.fourneau.x, L.fourneau.y, L.fourneau.r, false);
-    dire(TEXTES.pret);
+    dire(cmd.special ? TEXTES.pretSpecial : TEXTES.pret);
     await toucher(four);
     cacherGuide();
     bulleFour.cacher();
     bip('clic', 1);
+    if (cmd.special) return;
     await platVersComptoir(r, cmd);
     cmd.etat = 'comptoir';
   }
@@ -1330,9 +1381,13 @@ function demarrer({ scene, son, fx, memoire, debug }) {
       choisie = null;
       await cuisiner(res.cmd);
       const cmd = res.cmd;
+      if (cmd.special) {
+        cmd.objets = await fete(cmd);
+        cmd.etat = 'partie';
+        continue;
+      }
       enFond.push(servir(cmd).then(async () => {
-        if (cmd.special) cmd.objets = await mangerSpecial(cmd.client, res.extra);
-        else await mangerEtPartir(cmd.client, res.extra);
+        await mangerEtPartir(cmd.client, res.extra);
         cmd.etat = 'partie';
       }));
     }
@@ -1360,40 +1415,140 @@ function demarrer({ scene, son, fx, memoire, debug }) {
     return c;
   }
 
-  function objetSurTable(dessin, x, y, nom, etiquette) {
-    const g = svgEl('g', { role: 'button', tabindex: '0', 'aria-label': etiquette, 'data-e5': nom }, calques.tables);
+  function objetSurTable(dessin, x, y, nom, etiquette, parent = calques.tables) {
+    const g = svgEl('g', { role: 'button', tabindex: '0', 'aria-label': etiquette, 'data-e5': nom }, parent);
     g.innerHTML = `<circle r="20" fill="transparent"/><g class="e5-pop">${dessin}</g>`;
     placer(g, x, y);
     return g;
   }
 
-  async function mangerSpecial(c, extra) {
-    await dormir(400);
-    if (extra) {
-      await animer(c.assiette.firstElementChild, [{ transform: 'scale(1)' }, { transform: 'scale(.85)' }], { duree: 450 });
-      await degouter(c, L.perchoir, TEXTES.reactionMachaon);
-    } else {
-      const p = versEcran(c.x, L.perchoir - 30);
-      coeurs(p.x, p.y, 10);
-      bip('miam');
-      await animer(c.assiette.firstElementChild, [{ transform: 'scale(1)' }, { transform: 'scale(0)' }], { duree: 2600, easing: 'ease-in' });
+  /* ------------------------------------------------ La fête d'anniversaire */
+
+  // Le gâteau du machaon était pour elle : lumières tamisées, bougies, la
+  // chanson, les clients qui reviennent ; elle souffle, puis le machaon
+  // dépose le mot et le cadeau.
+  async function fete(cmd) {
+    const T = TEXTES.fete;
+    const sp = cmd.client;
+    if (sp.bulle) { sp.bulle.remove(); sp.bulle = null; }
+    const C = { x: 200, y: 434 };   // pied du présentoir
+
+    const calque = svgEl('g', { class: 'e5-fete' }, vues.cafe);
+    const nuit = svgEl('rect', { x: -1400, y: -1400, width: 3200, height: 3360, fill: '#140a24' }, calque);
+    nuit.style.opacity = '0';
+    const lueur = svgEl('ellipse', { cx: C.x, cy: C.y - 130, rx: 240, ry: 210, fill: 'url(#e5-lueur-fete)' }, calque);
+    lueur.style.opacity = '0';
+    const invites = svgEl('g', {}, calque);
+    const support = svgEl('g', {}, calque);
+    const gateau = svgEl('g', { class: 'e5-gateau-fete', 'data-e5': 'gateau-fete', 'aria-label': T.ariaGateau }, support);
+    gateau.innerHTML = D.gateauFete(T.age, TEXTES.connexion.pseudoValeur);
+    const bougies = [...gateau.querySelectorAll('.e5-bougie')];
+    for (const b of bougies) b.style.opacity = '0';
+    const banniere = svgEl('g', { class: 'e5-banniere' }, calque);
+    banniere.style.display = 'none';
+    banniere.innerHTML = T.banniere.map((l, i) => `<text x="${C.x}" y="${204 + i * 42}" text-anchor="middle" font-size="${i ? 38 : 26}" font-weight="700" fill="#fff4c2" stroke="#4a1fa8" stroke-width="6" stroke-linejoin="round" paint-order="stroke">${esc(l)}</text>`).join('');
+    calque.append(sp.g, pipi);
+
+    // Le gâteau sort du four et vient au centre, en grand.
+    dire(T.attends);
+    placer(support, L.fourneau.x, 210);
+    await Promise.all([
+      animer(nuit, [{ opacity: 0 }, { opacity: 0.64 }], { duree: 1000 }),
+      aller(support, C.x, C.y, 1200, 'cubic-bezier(.3,.8,.3,1)'),
+      animer(gateau, [{ transform: 'scale(.18)' }, { transform: 'scale(1)' }], { duree: 1200, easing: 'cubic-bezier(.3,.8,.3,1)' }),
+    ]);
+    sp.ailes.classList.add('e5-vite');
+    await voler(sp.g, 342, 292, 1300, { hauteur: 30, ondule: 8 });
+    sp.ailes.classList.remove('e5-vite');
+    await dire(T.surprise, [T.pourMoi]);
+
+    // Les bougies, puis Pipistrelle les allume.
+    for (const b of bougies) {
+      bip('poc');
+      animer(b, [{ opacity: 0, transform: 'translateY(-16px)' }, { opacity: 1, transform: 'none' }], { duree: 320, easing: 'cubic-bezier(.3,1.4,.5,1)' });
+      await dormir(320);
     }
-    c.assiette.remove();
-    await dormir(400);
-    const enveloppe = objetSurTable(D.enveloppe(), c.x - 16, L.assis - 6, 'enveloppe', TEXTES.ariaEnveloppe);
-    bip('papier');
-    await dormir(300);
-    const cadeau = objetSurTable(D.cadeau(), c.x + 22, L.assis - 9, 'cadeau', TEXTES.ariaCadeau);
+    dire(T.allumer);
+    pipi.classList.add('e5-vole');
+    for (const b of bougies) {
+      const flamme = b.querySelector('.e5-flamme-bougie');
+      const bb = b.getBBox();
+      await voler(pipi, C.x + bb.x + bb.width / 2 + 26, C.y + bb.y + 16, 520, { hauteur: 16 });
+      flamme.style.display = '';
+      bip('allume');
+      const e = centre(flamme);
+      if (vivant) fx.etincelles(e.x, e.y, 8, '#ffd27a', 60);
+      await dormir(200);
+    }
+    await voler(pipi, 82, 262, 700, { hauteur: 20 });
+    pipi.classList.remove('e5-vole');
+    animer(lueur, [{ opacity: 0 }, { opacity: 1 }], { duree: 900 });
+
+    // Les clients du soir reviennent pour la fête.
+    for (const [sorte, x, y] of [['herisson', 62, 512], ['grenouille', 124, 532], ['loutre', 338, 512]]) {
+      const g = svgEl('g', {}, invites);
+      g.innerHTML = `<g class="e5-invite">${D.PERSONNAGES[sorte].dessin()}</g>`;
+      placer(g, x, y);
+      bip('poc');
+      animer(g.firstElementChild, [{ opacity: 0, transform: 'translateY(18px) scale(.7)' }, { opacity: 1, transform: 'none' }], { duree: 420, easing: 'cubic-bezier(.3,1.5,.5,1)' });
+      await dormir(260);
+    }
+    banniere.style.display = '';
+    animer(banniere, [{ opacity: 0, transform: 'scale(.6)' }, { opacity: 1, transform: 'scale(1)' }], { duree: 520, easing: 'cubic-bezier(.3,1.5,.5,1)' });
+    bip('anniversaire');
+    dire(T.souffler);
+
+    // Elle souffle les bougies, une flamme par toucher.
+    gateau.setAttribute('role', 'button');
+    gateau.setAttribute('tabindex', '0');
+    await new Promise((resolve) => {
+      let restantes = bougies.length;
+      surToucher(gateau, (e) => {
+        const visee = e.target.closest && e.target.closest('.e5-bougie');
+        const b = visee && !visee.dataset.eteinte ? visee : bougies.find((x) => !x.dataset.eteinte);
+        if (!b) return;
+        b.dataset.eteinte = '1';
+        const flamme = b.querySelector('.e5-flamme-bougie');
+        flamme.style.display = 'none';
+        const fumee = svgEl('path', { class: 'e5-fumee', d: 'M0 -2 C-5 -8 5 -13 0 -19 C-5 -25 4 -30 0 -36', fill: 'none', stroke: '#e6dcf7', 'stroke-width': '2.6', 'stroke-linecap': 'round' }, flamme.parentNode);
+        dormir(1600).then(() => fumee.remove());
+        bip('souffle');
+        restantes -= 1;
+        lueur.style.opacity = String(restantes / bougies.length);
+        if (!restantes) resolve();
+      });
+    });
+    gateau.removeAttribute('tabindex');
+
+    // Bravo : la lumière revient, tout le monde saute de joie.
+    await dormir(500);
     bip('chiffre');
-    const q = versEcran(c.x + 4, L.assis - 10);
+    const c = centre(gateau);
+    coeurs(c.x, c.y - 30, 20);
+    if (vivant) fx.etincelles(c.x, c.y - 60, 24, '#d7b3ff', 170);
+    animer(nuit, [{ opacity: 0.64 }, { opacity: 0 }], { duree: 1200 });
+    for (const g of invites.children) {
+      animer(g.firstElementChild, [{ transform: 'none' }, { transform: 'translateY(-14px)' }, { transform: 'none' }, { transform: 'translateY(-9px)' }, { transform: 'none' }], { duree: 900, easing: 'ease-out', garder: false });
+    }
+    dire(T.bravo);
+    await dormir(1500);
+
+    // Le machaon dépose l'enveloppe et le cadeau sur le présentoir.
+    const E = { x: C.x - 66, y: C.y + 12 };
+    const K = { x: C.x + 68, y: C.y + 8 };
+    sp.ailes.classList.add('e5-vite');
+    await voler(sp.g, E.x, E.y - 34, 1100, { hauteur: 24, ondule: 6 });
+    const enveloppe = objetSurTable(D.enveloppe(), E.x, E.y, 'enveloppe', TEXTES.ariaEnveloppe, calque);
+    bip('papier');
+    await voler(sp.g, K.x, K.y - 38, 800, { hauteur: 18, ondule: 6 });
+    const cadeau = objetSurTable(D.cadeau(), K.x, K.y, 'cadeau', TEXTES.ariaCadeau, calque);
+    bip('chiffre');
+    const q = versEcran(K.x, K.y - 8);
     if (vivant) fx.etincelles(q.x, q.y, 16, '#d7b3ff', 140);
-    await dormir(900);
-    c.ailes.classList.add('e5-vite');
-    ouvrirPorte();
-    await voler(c.g, L.porte.x, L.porte.y - 40, 2400, { hauteur: 60, ondule: 12 });
-    await animer(c.g, [{ opacity: 1 }, { opacity: 0 }], { duree: 400 });
-    c.g.remove();
-    return { enveloppe, cadeau, extra };
+    await voler(sp.g, 342, 292, 1100, { hauteur: 30, ondule: 8 });
+    sp.ailes.classList.remove('e5-vite');
+    calque.append(sp.g, pipi);
+    return { enveloppe, cadeau, x: E.x, y: E.y };
   }
 
   /* ------------------------------------------------- Le mot et le cadeau */
@@ -1580,9 +1735,9 @@ function demarrer({ scene, son, fx, memoire, debug }) {
     rendreBavard(cmdSpeciale, special.g, special.bulle);
     bip('eclat');
     await service(commandes, { premierTexte: TEXTES.special, texte: TEXTES.commandeSpeciale });
-    const { enveloppe, cadeau, extra } = cmdSpeciale.objets;
-    dire(extra ? TEXTES.reactionSpeciale(D.ARTICLES[extra].defini) : TEXTES.cadeauLaisse);
-    montrer(special.x - 16, L.assis - 6, 22, true);
+    const { enveloppe, cadeau, x, y } = cmdSpeciale.objets;
+    dire(TEXTES.fete.objets);
+    montrer(x, y, 24, true);
     await toucher(enveloppe, cadeau);
     cacherGuide();
     bip('papier');

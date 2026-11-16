@@ -219,5 +219,30 @@ export function bip(nom, p = 0) {
         ton({ de: f, duree: 2.0, volume: 0.1, attaque: 0.5, retard: i * 0.09 });
       });
       break;
+    case 'allume':
+      bruit({ duree: 0.12, volume: 0.14, filtre: 'highpass', de: 2600 });
+      ton({ de: 1760, a: 2400, duree: 0.12, volume: 0.05 });
+      break;
+    case 'souffle':
+      bruit({ duree: 0.55, volume: 0.28, filtre: 'bandpass', de: 1100, a: 380, q: 0.5 });
+      break;
+    case 'anniversaire': {
+      // « Joyeux anniversaire » (air du domaine public), en boîte à musique.
+      const N = { G4: 392, A4: 440, B4: 493.88, C5: 523.25, D5: 587.33, E5: 659.25, F5: 698.46, G5: 783.99 };
+      const air = [
+        ['G4', 0.75], ['G4', 0.25], ['A4', 1], ['G4', 1], ['C5', 1], ['B4', 2],
+        ['G4', 0.75], ['G4', 0.25], ['A4', 1], ['G4', 1], ['D5', 1], ['C5', 2],
+        ['G4', 0.75], ['G4', 0.25], ['G5', 1], ['E5', 1], ['C5', 1], ['B4', 1], ['A4', 2],
+        ['F5', 0.75], ['F5', 0.25], ['E5', 1], ['C5', 1], ['D5', 1], ['C5', 3],
+      ];
+      const temps = 0.42;
+      let t = 0;
+      for (const [n, d] of air) {
+        ton({ de: N[n], duree: Math.max(0.4, d * temps * 1.6), volume: 0.13, retard: t });
+        ton({ de: N[n] * 2, duree: 0.3, volume: 0.035, retard: t });
+        t += d * temps;
+      }
+      break;
+    }
   }
 }
