@@ -27,6 +27,7 @@ const TEXTES = {
   bravo: 'Bravo !',
   aile: 'Le machaon a quelque chose sur l’aile…',
   continuer: 'Continuer',
+  versCafe: 'Le machaon s’envole… On dirait qu’il sait où aller.',
 };
 
 // Dans l'ordre du jeu ; le machaon doit rester le dernier (il porte le 4e chiffre).
@@ -644,9 +645,37 @@ function demarrer({ scene, son, fx, suivante, debug }) {
     b.className = 'e4-principal';
     b.dataset.e4 = 'continuer';
     b.textContent = TEXTES.continuer;
-    b.addEventListener('click', () => { bip('clic', 0.5); suivante(); });
+    b.addEventListener('click', () => { bip('clic', 0.5); versLeCafe(machaon); }, { once: true });
     zoneBoutons.append(b);
     b.focus({ preventScroll: true });
+  }
+
+  // Transition vers le café : tous les papillons s'envolent, le machaon en
+  // tête, et l'écran se teinte des couleurs de l'écran d'accueil du café.
+  async function versLeCafe(machaon) {
+    zoneBoutons.replaceChildren();
+    dire(TEXTES.versCafe);
+    cancelAnimationFrame(boucleErrance);
+    boucleErrance = 0;
+    bip('vol');
+    const envols = errants.map((e, i) => {
+      positions.set(e.g, { x: e.x, y: e.y });
+      e.g.classList.add('e4-vite');
+      return dormir(150 + i * 120).then(() => voler(e.g, 470 + i * 20, -60 - i * 15, 1500, { hauteur: 40, ondule: 8 }));
+    });
+    machaon.classList.remove('e4-lent');
+    machaon.classList.add('e4-vite');
+    const zoom = machaon.querySelector('.e4-zoom');
+    await Promise.all([
+      voler(machaon, 470, -80, 1900, { hauteur: 70, ondule: 12 }),
+      animer(zoom, [{ transform: 'scale(2.3)' }, { transform: 'scale(.7)' }], { duree: 1900, easing: 'ease-in' }),
+      ...envols,
+    ]);
+    const voile = document.createElement('div');
+    voile.className = 'e4-voile';
+    racine.append(voile);
+    await animer(voile, [{ opacity: 0 }, { opacity: 1 }], { duree: 700, easing: 'ease-in' });
+    suivante();
   }
 
   async function scenario() {

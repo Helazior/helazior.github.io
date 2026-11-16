@@ -977,3 +977,13 @@ body[data-fond="sombre"] {
   .e4-corps, .e4-rampe .e4-seg, .e4-rampe .e4-limace, .e4-marche-fourmi .e4-fourmi { animation: none; }
   .e4-ailes { animation-duration: 2.4s; }
 }
+
+.e4-voile {
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  background:
+    radial-gradient(60% 40% at 50% 18%, #ffffff 0%, rgba(255, 255, 255, 0) 100%),
+    linear-gradient(#efe4ff, #dccbff);
+  opacity: 0;
+}
