@@ -37,9 +37,9 @@ const TEXTES = {
   panneauCafe: 'Café',
 
   // Les pseudos des joueurs qui flânent au marché : Clément près de la
-  // fontaine, Chanel qui se promène, Estel sur le banc (les deux derniers ne
+  // fontaine, Chachou qui se promène, Estel sur le banc (les deux derniers ne
   // se voient que sur un écran large).
-  joueurs: ['Clément', 'Mamie_Confiture', 'Xx-Chanel-xX', 'Estelou du Luxou', 'Gaston_du_43', 'Bichette'],
+  joueurs: ['Clément', 'Mamie_Confiture', 'Xx-Chachou-xX', 'Estelou du Luxou', 'Gaston_du_43', 'Bichette'],
 
   connexion: {
     pseudo: 'Pseudo',

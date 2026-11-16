@@ -1096,7 +1096,7 @@ function poteauCafe(x, y, texte) {
 const LOOKS = [
   { clement: true },   // Clément, dessiné à part : corpsClement()
   { peau: '#f0c9a4', cheveux: '#e4e0ee', haut: '#f06fa4', bas: '#6b4a8f', coiffe: 'chignon' },
-  { chanel: true },    // Chanel, dessinée à part : corpsChanel()
+  { chachou: true },   // Chachou, dessinée à part : corpsChachou()
   { estel: true },     // Estel, dessinée à part : corpsEstel()
   { peau: '#e8b48f', cheveux: '#8a1c34', haut: '#f5d33f', bas: '#3b3550', coiffe: 'courts' },
   { peau: '#8f5a3c', cheveux: '#1a1026', haut: '#e5484d', bas: '#4a7bd8', coiffe: 'chignon' },
@@ -1204,54 +1204,145 @@ function corpsEstel(assis) {
       <path d="M-3.5 -28.4 Q0 -27.8 3.5 -28.4 L3.2 -27.2 Q0 -26.8 -3.2 -27.2 Z" fill="#fff"/>`;
 }
 
-// Chanel, d'après ses photos : cheveux châtain clair tirés en arrière, raie
-// au milieu, deux longues nattes devant les épaules, visage allongé, front
-// dégagé, yeux clairs, boucles pendantes, chemise crème à fleurs bleu marine.
-function corpsChanel(assis) {
-  const peau = '#f4d4bf';
-  const cheveux = '#a8794e';
-  const fonce = '#85593a';
-  const reflet = '#c79a68';
-  const creme = '#efe3cf';
-  const marine = '#2e3a6b';
+// Chachou, d'après ses photos : visage ovale au front dégagé, cheveux blond
+// foncé, raie au milieu, deux mèches torsadées ramenées en arrière et le
+// reste lâché, long, sur les épaules ; yeux bleu-gris, grand sourire, petite
+// créole dorée ; chemise bleu nuit à fleurettes blanches et sac à dos noir.
+function corpsChachou(assis) {
+  const peau = '#f6d6c2';
+  const ombre = '#e2aa8e';
+  const blond = '#b98b5c';
+  const clair = '#dab683';
+  const fonce = '#94683f';
+  const nuit = '#262f52';
+  const jambes = assis
+    ? `<ellipse cx="-4" cy="-8" rx="4.4" ry="3" fill="#3d4563"/><ellipse cx="4" cy="-8" rx="4.4" ry="3" fill="#3d4563"/><ellipse cx="-6" cy="-5" rx="3" ry="2" fill="#2a2433"/><ellipse cx="6" cy="-5" rx="3" ry="2" fill="#2a2433"/>`
+    : `<rect x="-5.5" y="-10" width="4.4" height="9" rx="2" fill="#3d4563"/><rect x="1.1" y="-10" width="4.4" height="9" rx="2" fill="#3d4563"/><ellipse cx="-3.4" cy="-1" rx="3.4" ry="2" fill="#2a2433"/><ellipse cx="3.4" cy="-1" rx="3.4" ry="2" fill="#2a2433"/>`;
+  const fleurettes = [[-5.8, -20], [-3.2, -17.4], [-6.2, -15], [-2.6, -12.4], [-5.4, -10.8], [5.8, -20], [3.2, -17.4], [6.2, -15], [2.6, -12.4], [5.4, -10.8], [0, -14.6], [-8.6, -16.4], [8.6, -16.4], [-9.4, -13], [9.4, -13]]
+    .map(([x, y]) => `<circle cx="${x}" cy="${y}" r=".62"/>`).join('');
+  // Les cheveux lâchés : fins, longs, qui passent derrière puis devant les épaules.
+  const longueur = (c) => `<path d="M${c * 8.2} -38 C${c * 11.4} -34 ${c * 11.8} -26 ${c * 10.6} -19 C${c * 10} -15.4 ${c * 8.8} -12.6 ${c * 7.4} -11 C${c * 7.8} -15 ${c * 8} -19 ${c * 7.6} -23 C${c * 7.4} -27 ${c * 7.6} -32 ${c * 8.2} -38 Z" fill="${blond}"/>
+    <path d="M${c * 9.8} -30 C${c * 10.2} -24 ${c * 9.6} -17 ${c * 8.2} -13" stroke="${clair}" stroke-width=".7" fill="none" stroke-linecap="round"/>`;
+  // Une mèche torsadée, de la raie vers l'arrière de l'oreille.
+  const torsade = (c) => [0, 1, 2, 3, 4].map((k) => {
+    const x = c * (1.6 + k * 1.75);
+    const y = -44.4 + k * k * 0.42;
+    return `<path d="M${x.toFixed(1)} ${(y - 1).toFixed(1)} l${c * 1.5} 1.9" stroke="${fonce}" stroke-width=".8" stroke-linecap="round"/>`;
+  }).join('');
+  return `
+      ${longueur(-1)}${longueur(1)}
+      ${jambes}
+      <path d="M-7.5 -19 Q-10 -15 -9.5 -11" stroke="${nuit}" stroke-width="4.4" stroke-linecap="round" fill="none"/><circle cx="-9.4" cy="-10.4" r="2.4" fill="${peau}"/>
+      <path d="M7.5 -19 Q10 -15 9.5 -11" stroke="${nuit}" stroke-width="4.4" stroke-linecap="round" fill="none"/><circle cx="9.4" cy="-10.4" r="2.4" fill="${peau}"/>
+      <path d="M-8 -9 Q-9 -21 -6 -23 H6 Q9 -21 8 -9 Z" fill="${nuit}"/>
+      <g fill="#eef1fb">${fleurettes}</g>
+      <path d="M-2.4 -23 L0 -17.6 L2.4 -23 Z" fill="${peau}"/>
+      <path d="M-5.4 -23.6 L-2.4 -23 L0 -17.6 L-3.6 -19 Z M5.4 -23.6 L2.4 -23 L0 -17.6 L3.6 -19 Z" fill="#303a63" stroke="#1a2140" stroke-width=".5" stroke-linejoin="round"/>
+      <path d="M-5.6 -23 Q-6.6 -17 -6.2 -11 M5.6 -23 Q6.6 -17 6.2 -11" stroke="#15161d" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <rect x="-1.6" y="-25.6" width="3.2" height="3.4" fill="${peau}"/>
+      <circle cx="-8.7" cy="-32.6" r="2" fill="${peau}"/><circle cx="8.7" cy="-32.6" r="2" fill="${peau}"/>
+      <path d="M8.9 -33.6 Q9.7 -32.6 8.9 -31.6" stroke="${ombre}" stroke-width=".6" fill="none"/>
+      <circle cx="9.3" cy="-29.6" r="1.25" fill="none" stroke="#e0b44c" stroke-width=".8"/>
+      <path d="M-8.9 -30.6 V-29.4" stroke="#c9a56a" stroke-width=".5"/><path d="M-8.9 -29.4 C-9.9 -28.2 -9.7 -26.4 -8.9 -25.6 C-8.1 -26.4 -7.9 -28.2 -8.9 -29.4 Z" fill="#2c4a44"/>
+      <path d="M-8.6 -34 C-8.8 -41.6 -5 -46 0 -46 C5 -46 8.8 -41.6 8.6 -34 C8.4 -27.6 5 -22.4 0 -22.4 C-5 -22.4 -8.4 -27.6 -8.6 -34 Z" fill="${peau}"/>
+      <path d="M-8.7 -35.4 C-9.2 -42.4 -5.4 -46.8 0 -47 C5.4 -46.8 9.2 -42.4 8.7 -35.4 C7.6 -39.6 4.6 -43.6 0.4 -45 L0 -43.8 L-0.4 -45 C-4.6 -43.6 -7.6 -39.6 -8.7 -35.4 Z" fill="${blond}"/>
+      <path d="M0 -46.8 V-44.4" stroke="${fonce}" stroke-width=".6"/>
+      <path d="M-1.4 -46 C-4.4 -45.4 -6.8 -43 -8 -39.6 M1.4 -46 C4.4 -45.4 6.8 -43 8 -39.6" stroke="${clair}" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      ${torsade(-1)}${torsade(1)}
+      <path d="M-6 -37.4 Q-4.2 -38.3 -2.2 -37.8 M2.2 -37.8 Q4.2 -38.3 6 -37.4" stroke="#b08a62" stroke-width=".8" fill="none" stroke-linecap="round"/>
+      <ellipse cx="-3.6" cy="-34.2" rx="1.75" ry="1.45" fill="#fff"/><ellipse cx="3.6" cy="-34.2" rx="1.75" ry="1.45" fill="#fff"/>
+      <circle cx="-3.6" cy="-34.1" r="1.2" fill="#6f8fb0"/><circle cx="3.6" cy="-34.1" r="1.2" fill="#6f8fb0"/>
+      <circle cx="-3.6" cy="-34.1" r=".55" fill="${ENCRE}"/><circle cx="3.6" cy="-34.1" r=".55" fill="${ENCRE}"/>
+      <path d="M-5.5 -34.8 Q-3.6 -36.3 -1.7 -34.8 M1.7 -34.8 Q3.6 -36.3 5.5 -34.8" stroke="${ENCRE}" stroke-width=".8" fill="none" stroke-linecap="round"/>
+      <path d="M-5.2 -32.6 Q-3.6 -32 -2 -32.6 M2 -32.6 Q3.6 -32 5.2 -32.6" stroke="${ombre}" stroke-width=".55" fill="none" stroke-linecap="round"/>
+      <path d="M-0.5 -33 Q-1 -30.6 0 -30 Q1 -30.2 1.1 -30.8" stroke="${ombre}" stroke-width=".8" fill="none" stroke-linecap="round"/>
+      <ellipse cx="-5.6" cy="-29.8" rx="1.7" ry="1" fill="#ff9cb0" opacity=".5"/><ellipse cx="5.6" cy="-29.8" rx="1.7" ry="1" fill="#ff9cb0" opacity=".5"/>
+      <path d="M-4 -28.4 Q0 -27.2 4 -28.4 Q3 -24.6 0 -24.4 Q-3 -24.6 -4 -28.4 Z" fill="#9c3344"/>
+      <path d="M-3.6 -28.2 Q0 -27.1 3.6 -28.2 L3.2 -26.7 Q0 -26.1 -3.2 -26.7 Z" fill="#fff"/>
+      <path d="M-4.9 -28.6 q-.7 1.2 -.1 2.2 M4.9 -28.6 q.7 1.2 .1 2.2" stroke="${ombre}" stroke-width=".55" fill="none" stroke-linecap="round"/>`;
+}
+
+// Angelouné, d'après sa photo : foulard blanc noué sous le menton, lunettes
+// de soleil rondes en écaille, petit sourire, chemise à fines rayures bleues,
+// sac en bandoulière marron, et les doigts en V.
+// Pas encore placée au marché : ajouter { angeloune: true } dans LOOKS.
+export function corpsAngeloune(assis = false) {
+  const peau = '#f3d2bd';
+  const blanc = '#fbfbff';
+  const pli = '#d5d9ea';
+  const chemise = '#e4ecf9';
+  const rayure = '#8aa7d6';
   const jambes = assis
     ? `<ellipse cx="-4" cy="-8" rx="4.4" ry="3" fill="#2f3a5c"/><ellipse cx="4" cy="-8" rx="4.4" ry="3" fill="#2f3a5c"/><ellipse cx="-6" cy="-5" rx="3" ry="2" fill="#3b2a52"/><ellipse cx="6" cy="-5" rx="3" ry="2" fill="#3b2a52"/>`
-    : `<rect x="-5.5" y="-10" width="4.4" height="9" rx="2" fill="#3a3550"/><rect x="1.1" y="-10" width="4.4" height="9" rx="2" fill="#3a3550"/><ellipse cx="-3.4" cy="-1" rx="3.4" ry="2" fill="#2a2433"/><ellipse cx="3.4" cy="-1" rx="3.4" ry="2" fill="#2a2433"/>`;
-  const fleur = (x, y) => `<circle cx="${x}" cy="${y}" r="1.25" fill="${marine}"/><circle cx="${x + 1.3}" cy="${y + 0.9}" r=".75" fill="${marine}"/><circle cx="${x - 1.1}" cy="${y + 1}" r=".7" fill="${marine}"/>`;
-  const fleurs = [[-3.4, -19.4], [-1.6, -14.2], [-3.6, -11.6], [3, -18.6], [1.8, -15.4], [3.6, -12.2]].map(([x, y]) => fleur(x, y)).join('');
-  // Une natte : des maillons qui se croisent, un élastique, une petite mèche.
-  const natte = (c) => {
-    let d = '';
-    for (let k = 0; k < 6; k++) {
-      const x = c * (9.4 - k * 0.5);
-      const y = -26.6 + k * 3;
-      d += `<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="2.5" ry="2" fill="${cheveux}" stroke="${fonce}" stroke-width=".7" transform="rotate(${(k % 2 ? 24 : -24) * c} ${x.toFixed(1)} ${y.toFixed(1)})"/>`;
-    }
-    const x = c * 6.6;
-    return `${d}<rect x="${(x - 1.5).toFixed(1)}" y="-9.6" width="3" height="1.6" rx=".8" fill="${marine}"/><path d="M${(x - 1.4).toFixed(1)} -8 Q${x.toFixed(1)} -4.6 ${(x + 1.4).toFixed(1)} -8 Z" fill="${cheveux}"/>`;
-  };
+    : `<rect x="-5.5" y="-10" width="4.4" height="9" rx="2" fill="#2f3a5c"/><rect x="1.1" y="-10" width="4.4" height="9" rx="2" fill="#2f3a5c"/><ellipse cx="-3.4" cy="-1" rx="3.4" ry="2" fill="#f4f1ea"/><ellipse cx="3.4" cy="-1" rx="3.4" ry="2" fill="#f4f1ea"/>`;
+  const rayures = [-6, -4, -2, 0, 2, 4, 6].map((x) => `M${x} -22.4 V-9.6`).join(' ');
   return `
       ${jambes}
-      <path d="M-7.5 -19 Q-10 -15 -9.5 -11" stroke="${peau}" stroke-width="4" stroke-linecap="round" fill="none"/><circle cx="-9.4" cy="-10.4" r="2.4" fill="${peau}"/>
-      <path d="M7.5 -19 Q10 -15 9.5 -11" stroke="${peau}" stroke-width="4" stroke-linecap="round" fill="none"/><circle cx="9.4" cy="-10.4" r="2.4" fill="${peau}"/>
-      <path d="M-8 -9 Q-9 -21 -6 -23 H6 Q9 -21 8 -9 Z" fill="${creme}"/>
-      ${fleurs}
-      <path d="M-2.6 -23 L0 -19 L2.6 -23 Z" fill="${peau}"/>
-      <path d="M-5.6 -23.4 L-2.6 -23 L0 -19 L-3.2 -19.6 Z M5.6 -23.4 L2.6 -23 L0 -19 L3.2 -19.6 Z" fill="${creme}" stroke="${marine}" stroke-width=".6" stroke-linejoin="round"/>
-      <circle cx="-9.5" cy="-32.6" r="2.1" fill="${peau}"/><circle cx="9.5" cy="-32.6" r="2.1" fill="${peau}"/>
-      <path d="M-9.9 -30.4 C-10.9 -29.2 -10.7 -27.6 -9.9 -26.8 C-9.1 -27.6 -8.9 -29.2 -9.9 -30.4 Z M9.9 -30.4 C8.9 -29.2 9.1 -27.6 9.9 -26.8 C10.7 -27.6 10.9 -29.2 9.9 -30.4 Z" fill="#253556"/>
-      ${natte(-1)}${natte(1)}
-      <ellipse cx="0" cy="-33.4" rx="9.2" ry="11.8" fill="${peau}"/>
-      <path d="M-8.9 -36 C-9.6 -42.4 -6 -46.2 0 -46.4 C6 -46.2 9.6 -42.4 8.9 -36 C8.2 -39.6 5.6 -42.4 0.5 -43.4 L0 -42 L-0.5 -43.4 C-5.6 -42.4 -8.2 -39.6 -8.9 -36 Z" fill="${cheveux}"/>
-      <path d="M-6.4 -43 C-4.4 -44.8 -2 -45.4 -0.5 -45.2 M6.4 -43 C4.4 -44.8 2 -45.4 0.5 -45.2 M-7.6 -40 C-6 -42.2 -3.6 -43.4 -1.4 -43.8 M7.6 -40 C6 -42.2 3.6 -43.4 1.4 -43.8" stroke="${reflet}" stroke-width=".7" fill="none" stroke-linecap="round"/>
-      <path d="M-6 -37.2 Q-4 -38.2 -2 -37.5 M2 -37.5 Q4 -38.2 6 -37.2" stroke="#9a7350" stroke-width=".9" fill="none" stroke-linecap="round"/>
-      <circle cx="-3.7" cy="-33.8" r="1.55" fill="#7fa3c4" stroke="${ENCRE}" stroke-width=".7"/><circle cx="3.7" cy="-33.8" r="1.55" fill="#7fa3c4" stroke="${ENCRE}" stroke-width=".7"/>
-      <circle cx="-3.7" cy="-33.8" r=".65" fill="${ENCRE}"/><circle cx="3.7" cy="-33.8" r=".65" fill="${ENCRE}"/>
-      <circle cx="-3.1" cy="-34.4" r=".45" fill="#fff"/><circle cx="4.3" cy="-34.4" r=".45" fill="#fff"/>
-      <path d="M0.3 -32.4 Q1.3 -30 0 -29.4" stroke="#e0a688" stroke-width=".8" fill="none" stroke-linecap="round"/>
-      <ellipse cx="-6.2" cy="-29.4" rx="1.8" ry="1.1" fill="#ff9cb0" opacity=".5"/><ellipse cx="6.2" cy="-29.4" rx="1.8" ry="1.1" fill="#ff9cb0" opacity=".5"/>
-      <path d="M-3.4 -27.8 Q0 -27.2 3.4 -27.8 Q2.8 -24.6 0 -24.4 Q-2.8 -24.6 -3.4 -27.8 Z" fill="#a8384a"/>
-      <path d="M-3 -27.6 Q0 -27.1 3 -27.6 L2.8 -26.5 Q0 -26.1 -2.8 -26.5 Z" fill="#fff"/>`;
+      <path d="M-7.5 -19 Q-10 -15 -9.5 -11" stroke="${chemise}" stroke-width="4.4" stroke-linecap="round" fill="none"/>
+      <path d="M-8.3 -17.6 Q-10.3 -14.6 -9.9 -11.6 M-7.2 -18.2 Q-9 -15 -8.7 -11.4" stroke="${rayure}" stroke-width=".55" fill="none"/>
+      <circle cx="-9.4" cy="-10.2" r="2.4" fill="${peau}"/>
+      <path d="M-8 -9 Q-9 -21 -6 -23 H6 Q9 -21 8 -9 Z" fill="${chemise}"/>
+      <path d="${rayures}" stroke="${rayure}" stroke-width=".6"/>
+      <path d="M-6.2 -22.8 L-7.4 -9.4" stroke="#a8623a" stroke-width="1.9" stroke-linecap="round"/>
+      <path d="M-10.8 -31 C-11.6 -41 -6.5 -46.8 0 -46.8 C6.5 -46.8 11.6 -41 10.8 -31 C10.6 -27 9.8 -24.2 8.6 -22.4 L3.2 -13.6 Q0 -11.2 -3.2 -13.6 L-8.6 -22.4 C-9.8 -24.2 -10.6 -27 -10.8 -31 Z" fill="${blanc}" stroke="${pli}" stroke-width=".7" stroke-linejoin="round"/>
+      <path d="M-5 -24 Q-2 -19 -0.6 -13 M5 -24 Q2 -19 0.6 -13 M-8.6 -27 Q-7 -23.6 -5 -21.6 M8.6 -27 Q7 -23.6 5 -21.6" stroke="${pli}" stroke-width=".7" fill="none" stroke-linecap="round"/>
+      <ellipse cx="0" cy="-22.6" rx="2.2" ry="1.5" fill="${blanc}" stroke="${pli}" stroke-width=".7"/>
+      <ellipse cx="0" cy="-33" rx="7.7" ry="8.9" fill="${peau}"/>
+      <path d="M-7.6 -34 C-7.4 -40 -4 -42.4 0 -42.4 C4 -42.4 7.4 -40 7.6 -34 C6 -38.4 3.4 -40.2 0 -40.2 C-3.4 -40.2 -6 -38.4 -7.6 -34 Z" fill="#eceef8"/>
+      <path d="M-1.2 -34.4 Q0 -35.4 1.2 -34.4" stroke="#8a5a34" stroke-width="1" fill="none"/>
+      <circle cx="-3.9" cy="-33.8" r="2.9" fill="#3a2a22" stroke="#9a6638" stroke-width="1"/><circle cx="3.9" cy="-33.8" r="2.9" fill="#3a2a22" stroke="#9a6638" stroke-width="1"/>
+      <path d="M-5.6 -35 Q-4.6 -36 -3.4 -35.8 M2.2 -35 Q3.2 -36 4.4 -35.8" stroke="#fff" stroke-opacity=".55" stroke-width=".8" fill="none" stroke-linecap="round"/>
+      <path d="M0.2 -31 Q0.9 -29.8 0 -29.4" stroke="#e0a688" stroke-width=".7" fill="none" stroke-linecap="round"/>
+      <ellipse cx="-5" cy="-29" rx="1.5" ry=".9" fill="#ff9cb0" opacity=".45"/><ellipse cx="5" cy="-29" rx="1.5" ry=".9" fill="#ff9cb0" opacity=".45"/>
+      <path d="M-2.2 -27.4 Q0.2 -25.9 2.6 -27.8" stroke="#b5475a" stroke-width="1" fill="none" stroke-linecap="round"/>
+      <path d="M7.2 -18.6 Q10.4 -18.4 11.2 -22" stroke="${chemise}" stroke-width="4.4" stroke-linecap="round" fill="none"/>
+      <path d="M8 -17 Q11.4 -17.4 12.6 -20.6" stroke="${rayure}" stroke-width=".55" fill="none"/>
+      <path d="M10.6 -24.6 L9.5 -29 M12.2 -24.6 L13.6 -28.8" stroke="${peau}" stroke-width="1.7" stroke-linecap="round"/>
+      <circle cx="11.4" cy="-23.6" r="2.4" fill="${peau}"/>
+      <path d="M10.2 -23 Q11.4 -22 12.6 -23" stroke="#e0a688" stroke-width=".6" fill="none"/>`;
+}
+
+// Rachou, d'après sa photo : cheveux bruns courts et ébouriffés, lunettes de
+// soleil posées sur la tête, créoles dorées, chemise rose saumon à col.
+// Pas encore placée au marché : ajouter { rachou: true } dans LOOKS.
+export function corpsRachou(assis = false) {
+  const peau = '#eec4a6';
+  const cheveux = '#4a3226';
+  const reflet = '#7d553a';
+  const rose = '#f0918a';
+  const roseFonce = '#d9736e';
+  const or = '#e0b44c';
+  const jambes = assis
+    ? `<ellipse cx="-4" cy="-8" rx="4.4" ry="3" fill="#39415f"/><ellipse cx="4" cy="-8" rx="4.4" ry="3" fill="#39415f"/><ellipse cx="-6" cy="-5" rx="3" ry="2" fill="#3b2a52"/><ellipse cx="6" cy="-5" rx="3" ry="2" fill="#3b2a52"/>`
+    : `<rect x="-5.5" y="-10" width="4.4" height="9" rx="2" fill="#39415f"/><rect x="1.1" y="-10" width="4.4" height="9" rx="2" fill="#39415f"/><ellipse cx="-3.4" cy="-1" rx="3.4" ry="2" fill="#f4f1ea"/><ellipse cx="3.4" cy="-1" rx="3.4" ry="2" fill="#f4f1ea"/>`;
+  return `
+      ${jambes}
+      <path d="M-7.5 -19 Q-10 -15 -9.5 -11" stroke="${rose}" stroke-width="4.4" stroke-linecap="round" fill="none"/><circle cx="-9.4" cy="-10.4" r="2.4" fill="${peau}"/>
+      <path d="M7.5 -19 Q10 -15 9.5 -11" stroke="${rose}" stroke-width="4.4" stroke-linecap="round" fill="none"/><circle cx="9.4" cy="-10.4" r="2.4" fill="${peau}"/>
+      <path d="M-8 -9 Q-9 -21 -6 -23 H6 Q9 -21 8 -9 Z" fill="${rose}"/>
+      <path d="M-2.8 -23 L0 -18.4 L2.8 -23 Z" fill="${peau}"/>
+      <path d="M-6 -23.6 L-2.8 -23 L0 -18.4 L-3.6 -19.2 Z M6 -23.6 L2.8 -23 L0 -18.4 L3.6 -19.2 Z" fill="${rose}" stroke="${roseFonce}" stroke-width=".7" stroke-linejoin="round"/>
+      <path d="M0 -18 V-9.6" stroke="${roseFonce}" stroke-width=".7"/>
+      <circle cx="0" cy="-15.6" r=".55" fill="#fff"/><circle cx="0" cy="-12.4" r=".55" fill="#fff"/>
+      <circle cx="-10.1" cy="-32" r="2.2" fill="${peau}"/><circle cx="10.1" cy="-32" r="2.2" fill="${peau}"/>
+      <circle cx="-10.4" cy="-28.4" r="1.7" fill="none" stroke="${or}" stroke-width=".95"/><circle cx="10.4" cy="-28.4" r="1.7" fill="none" stroke="${or}" stroke-width=".95"/>
+      <ellipse cx="0" cy="-33" rx="10" ry="11" fill="${peau}"/>
+      <path d="M-10.6 -31.4 C-12.6 -36 -12 -42 -8.4 -44.6 C-8.6 -47 -5.6 -48.6 -3.2 -47.4 C-1.6 -49.8 2.6 -50 4.4 -47.8 C7.2 -48.8 10 -46.8 9.8 -44 C12.6 -41.6 12.6 -36 10.6 -31.4 C10.4 -34.4 9.4 -36.6 7.8 -38 C5.4 -39.8 2.4 -39 0 -40.4 C-2.6 -39 -5.8 -39.8 -7.8 -37.6 C-9.4 -36.2 -10.4 -34.2 -10.6 -31.4 Z" fill="${cheveux}"/>
+      <path d="M-9 -40 C-7 -43.4 -3.6 -44.6 -0.6 -44 M2 -45.6 C4.6 -45.8 7 -44.4 8.4 -42.2 M-10.2 -36.4 C-9.8 -38 -9 -39.2 -8 -40" stroke="${reflet}" stroke-width="1" fill="none" stroke-linecap="round"/>
+      <path d="M-11.4 -36.6 l-1.6 -.8 M11.4 -36.6 l1.6 -.8 M-11 -39.4 l-1.4 -1.2 M11 -39.4 l1.4 -1.2" stroke="${cheveux}" stroke-width="1.2" stroke-linecap="round"/>
+      <g transform="rotate(-6 0 -44.6)">
+        <rect x="-7.4" y="-46.8" width="6" height="4.2" rx="2" fill="#5d6b7d" stroke="#c9ccd4" stroke-width=".8"/>
+        <rect x="1.4" y="-46.8" width="6" height="4.2" rx="2" fill="#5d6b7d" stroke="#c9ccd4" stroke-width=".8"/>
+        <path d="M-1.4 -45 Q0 -45.8 1.4 -45 M-7.4 -44.8 L-10 -42.6 M7.4 -44.8 L10 -42.6" stroke="#c9ccd4" stroke-width=".8" fill="none" stroke-linecap="round"/>
+        <path d="M-6.2 -45.8 L-4.6 -45.8 M2.6 -45.8 L4.2 -45.8" stroke="#fff" stroke-opacity=".6" stroke-width=".7" stroke-linecap="round"/>
+      </g>
+      <path d="M-6.6 -36.4 Q-4.4 -37.8 -2.2 -36.8 M2.2 -36.8 Q4.4 -37.8 6.6 -36.4" stroke="${cheveux}" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      <circle cx="-4" cy="-33" r="1.6" fill="#6b4a32" stroke="${ENCRE}" stroke-width=".7"/><circle cx="4" cy="-33" r="1.6" fill="#6b4a32" stroke="${ENCRE}" stroke-width=".7"/>
+      <circle cx="-4" cy="-33" r=".7" fill="${ENCRE}"/><circle cx="4" cy="-33" r=".7" fill="${ENCRE}"/>
+      <circle cx="-3.4" cy="-33.6" r=".45" fill="#fff"/><circle cx="4.6" cy="-33.6" r=".45" fill="#fff"/>
+      <path d="M0.3 -31.4 Q1.3 -29.6 0 -29.2" stroke="#d99c7c" stroke-width=".8" fill="none" stroke-linecap="round"/>
+      <ellipse cx="-6.8" cy="-28.8" rx="1.9" ry="1.1" fill="#ff9cb0" opacity=".5"/><ellipse cx="6.8" cy="-28.8" rx="1.9" ry="1.1" fill="#ff9cb0" opacity=".5"/>
+      <path d="M-3 -26.8 Q0 -24.6 3 -26.8" stroke="#a8384a" stroke-width="1.1" fill="none" stroke-linecap="round"/>`;
 }
 
 /** Un joueur du marché, origine aux pieds, avec son pseudo au-dessus. */
@@ -1264,7 +1355,7 @@ function joueur(nom, look, { x, y, assis = false, coucou = false, flane = false,
     ? `<g class="e5-coucou"><path d="M7 -19 Q12 -24 13 -31" stroke="${haut}" stroke-width="4.4" stroke-linecap="round" fill="none"/><circle cx="13" cy="-32.5" r="2.7" fill="${peau}"/></g>`
     : `<path d="M7.5 -19 Q10 -15 9.5 -11" stroke="${haut}" stroke-width="4.4" stroke-linecap="round" fill="none"/><circle cx="9.4" cy="-10.4" r="2.5" fill="${peau}"/>`;
   const l = Math.round(16 + nom.length * 5.6);
-  const corps = look.clement ? `<g transform="scale(1.1)">${corpsClement(coucou)}</g>` : look.estel ? corpsEstel(assis) : look.chanel ? corpsChanel(assis) : `
+  const corps = look.clement ? `<g transform="scale(1.1)">${corpsClement(coucou)}</g>` : look.estel ? corpsEstel(assis) : look.chachou ? corpsChachou(assis) : look.angeloune ? corpsAngeloune(assis) : look.rachou ? corpsRachou(assis) : `
       ${jambes}
       <path d="M-8 -9 Q-9 -21 -6 -23 H6 Q9 -21 8 -9 Z" fill="${haut}"/>
       <path d="M-7.5 -19 Q-10 -15 -9.5 -11" stroke="${haut}" stroke-width="4.4" stroke-linecap="round" fill="none"/><circle cx="-9.4" cy="-10.4" r="2.5" fill="${peau}"/>
