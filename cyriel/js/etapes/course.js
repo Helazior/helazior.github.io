@@ -12,6 +12,7 @@ import { cyrielNatte } from './clins-doeil.js';
 
 const TEXTES = {
   consigne: 'Course jusqu’au café ! Touche à droite, puis à gauche, très vite !',
+  partez: 'C’est parti !',
   gauche: 'Gauche',
   droite: 'Droite',
   gagne: 'Gagné ! Tu cours plus vite que Clément !',
@@ -22,9 +23,9 @@ const TEXTES = {
 /* ================================================================ Réglages */
 
 const ARRIVEE = 205;        // distance à courir, en unités du décor
-const DUREE = 5;            // Clément arrive en 5 secondes
-const BASE = 26;            // vitesse de Cyriel sans toucher
-const BONUS = 50;           // vitesse ajoutée par élan
+const DUREE = 6;            // Clément arrive 6 secondes après le départ
+const BASE = 18;            // vitesse de Cyriel sans toucher
+const BONUS = 24;           // vitesse ajoutée par élan
 const NS = 'http://www.w3.org/2000/svg';
 
 function decor() {
@@ -76,7 +77,8 @@ export function course(racine, { son, fx, V = 1, calme = false, debug = null }) 
     el.innerHTML = `
       <svg class="cr-svg" viewBox="0 70 320 230" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>
       <p class="cr-texte" aria-live="polite">${TEXTES.consigne}</p>
-      <div class="cr-boutons">
+      <button type="button" class="cr-partez" data-cr="partez">${TEXTES.partez}</button>
+      <div class="cr-boutons cr-cache">
         <button type="button" class="cr-bouton" data-cr="gauche" aria-label="${TEXTES.gauche}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 L8 12 L15 19"/></svg></button>
         <button type="button" class="cr-bouton" data-cr="droite" aria-label="${TEXTES.droite}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 L16 12 L9 19"/></svg></button>
       </div>`;
@@ -103,8 +105,7 @@ export function course(racine, { son, fx, V = 1, calme = false, debug = null }) 
     let encourage = false;
     let depart = false;
     function toucher(cote) {
-      if (fin) return;
-      depart = true;
+      if (fin || !depart) return;
       const bon = cote !== dernier;
       dernier = cote;
       elan = Math.min(1.7, elan + (bon ? 0.42 : 0.08));
@@ -118,6 +119,17 @@ export function course(racine, { son, fx, V = 1, calme = false, debug = null }) 
       b.addEventListener('pointerdown', (e) => { e.preventDefault(); toucher(b.dataset.cr); });
       b.addEventListener('click', (e) => { if (e.detail === 0) toucher(b.dataset.cr); });   // clavier
     });
+    // Le départ : quand elle touche « C'est parti ! » (la consigne a eu le
+    // temps d'être lue).
+    const partez = el.querySelector('.cr-partez');
+    partez.addEventListener('click', () => {
+      depart = true;
+      partez.remove();
+      el.querySelector('.cr-boutons').classList.remove('cr-cache');
+      bip('vol');
+    }, { once: true });
+    setTimeout(() => partez.focus({ preventScroll: true }), 50);
+
     const clavier = (e) => {
       if (e.key === 'ArrowLeft') { e.preventDefault(); toucher('gauche'); }
       if (e.key === 'ArrowRight') { e.preventDefault(); toucher('droite'); }
@@ -128,14 +140,12 @@ export function course(racine, { son, fx, V = 1, calme = false, debug = null }) 
     let fin = false;
     let gagne = false;
     let avant = performance.now();
-    let attente = 1.4;
     let image = 0;
     const X0 = 40;
     const pas = (t) => {
       if (!el.isConnected) return;
       const dt = Math.min(0.05, (t - avant) / 1000) * V;
       avant = t;
-      if (!depart) { attente -= dt; if (attente <= 0) depart = true; }
       if (depart && !fin) {
         elan *= Math.exp(-dt / 0.45);
         const cy = coureurs.cyriel;

@@ -1938,3 +1938,23 @@ button.e5-case:disabled { opacity: .38; cursor: default; box-shadow: none; }
 @keyframes cr-presse { 50% { transform: translateY(4px) scale(.96); box-shadow: 0 0 0 var(--encre); background: #efe4ff; } }
 .cr-bouton:focus { outline: none; }
 .cr-bouton:focus-visible { outline: 3px solid var(--lilas); outline-offset: 3px; }
+
+.cr-partez {
+  position: absolute;
+  left: 50%;
+  bottom: max(40px, calc(env(safe-area-inset-bottom) + 24px));
+  transform: translateX(-50%);
+  padding: 16px 34px 18px;
+  border: 3px solid var(--violet-fonce);
+  border-radius: 999px;
+  background: var(--violet);
+  color: #fff;
+  font: 700 22px/1 var(--police);
+  box-shadow: 0 5px 0 var(--violet-fonce);
+  cursor: pointer;
+  animation: cr-partez 1.2s ease-in-out infinite;
+}
+@keyframes cr-partez { 50% { transform: translateX(-50%) scale(1.07); } }
+.cr-partez:active { box-shadow: 0 1px 0 var(--violet-fonce); }
+.cr-partez:focus { outline: none; }
+.cr-partez:focus-visible { outline: 3px solid var(--lilas); outline-offset: 3px; }
