@@ -165,6 +165,7 @@ const ATTENTE = { x: 200, y: 150 };          // là où la femelle attend qu'on 
 const CIEL = { x0: 30, x1: 370, y0: 40, y1: 172 };
 const LOUPE = { x: 200, y: 300, r: M.RAYON_LOUPE };
 const NS = 'http://www.w3.org/2000/svg';
+const RYTHME = 1.7;   // passages automatiques 1,7 fois plus rapides
 
 // Dans la loupe : les chenilles du paon sur les feuilles d'ortie [x, y, sens].
 const COLONIE = [[-38, -26, 1], [-16, -30, 1], [18, -36, -1], [40, -30, -1], [-30, -78, 1], [-10, -80, 1], [12, -86, -1], [32, -84, -1], [-40, 30, 1], [36, 24, -1]];
@@ -175,6 +176,9 @@ const ICONE_CARNET = `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y=
 
 function demarrer({ scene, son, fx, suivante, debug }) {
   const V = debug === 'vite' ? 4 : 1;
+  // Le rythme des passages automatiques (vols, loupe, pauses) : plus grand =
+  // plus rapide. Les jeux eux-mêmes (la crue, la course) n'en dépendent pas.
+  const R = V * RYTHME;
   const calme = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let vivant = true;
   let etat = 'intro';
@@ -227,13 +231,13 @@ function demarrer({ scene, son, fx, suivante, debug }) {
 
   function dormir(ms) {
     return new Promise((r) => {
-      const id = setTimeout(() => { minuteurs.delete(id); r(); }, ms / V);
+      const id = setTimeout(() => { minuteurs.delete(id); r(); }, ms / R);
       minuteurs.add(id);
     });
   }
 
   function plusTard(ms, fn) {
-    const id = setTimeout(() => { minuteurs.delete(id); if (vivant) fn(); }, ms / V);
+    const id = setTimeout(() => { minuteurs.delete(id); if (vivant) fn(); }, ms / R);
     minuteurs.add(id);
     return id;
   }
@@ -243,7 +247,7 @@ function demarrer({ scene, son, fx, suivante, debug }) {
   }
 
   async function animer(el, images, { duree, easing = 'ease', garder = true } = {}) {
-    const a = el.animate(images, { duration: duree / V, easing, fill: 'both' });
+    const a = el.animate(images, { duration: duree / R, easing, fill: 'both' });
     try { await a.finished; } catch { return; }
     if (garder) {
       try { a.commitStyles(); } catch {
@@ -400,7 +404,7 @@ function demarrer({ scene, son, fx, suivante, debug }) {
   // Affiche un texte et laisse le temps de le lire avant la suite.
   async function raconter(t, min = 1800) {
     dire(t);
-    await dormir(Math.max(min, t.length * 42));
+    await dormir(Math.max(min, t.length * 55));
   }
 
   /* ---------------------------------------------- Transition : la sortie */
@@ -417,7 +421,7 @@ function demarrer({ scene, son, fx, suivante, debug }) {
     const H = racine.clientHeight;
     toile.width = Math.round(W * dpr);
     toile.height = Math.round(H * dpr);
-    const total = (calme ? 1600 : 3800) / V;
+    const total = (calme ? 1600 : 3800) / R;
     const cx = W / 2;
     const cy = H * 0.42;
     const r0 = Math.min(W, H) * 0.16;
@@ -829,8 +833,8 @@ function demarrer({ scene, son, fx, suivante, debug }) {
     const neige = svgEl('g', {}, L.effets);
     for (let i = 0; i < (calme ? 0 : 28); i++) {
       const fl = svgEl('circle', { cx: (-150 + Math.random() * 300).toFixed(1), cy: -LOUPE.r - 10, r: (1.8 + Math.random() * 2.6).toFixed(1), fill: '#fff', class: 'e4-flocon' }, neige);
-      fl.style.animationDuration = `${((2.2 + Math.random() * 1.6) / V).toFixed(2)}s`;
-      fl.style.animationDelay = `${((-Math.random() * 3) / V).toFixed(2)}s`;
+      fl.style.animationDuration = `${((2.2 + Math.random() * 1.6) / R).toFixed(2)}s`;
+      fl.style.animationDelay = `${((-Math.random() * 3) / R).toFixed(2)}s`;
     }
     await animer(voile, [{ opacity: 0 }, { opacity: 0.6 }], { duree: 700 });
     await dormir(duree);
