@@ -7,7 +7,9 @@
 //   3. les clients s'installent et commandent, chacun avec son exigence
 //      (« double chocolat », « sans sucre »…) ;
 //   4. au fourneau, le livre s'ouvre : on choisit la commande, on met dans la
-//      casserole les bons ingrédients du frigo, puis on prépare et on cuit ;
+//      casserole les bons ingrédients du frigo, puis on prépare et on cuit.
+//      Il y a trois fourneaux : pendant qu'un plat cuit, on en lance un autre
+//      (chacun a sa carte en bas de l'écran, avec son minuteur et son 60x) ;
 //   5. Pipistrelle sert. Un client très spécial (un machaon) commande la
 //      spécialité, puis laisse le mot de Clément et le cadeau.
 //
@@ -66,17 +68,21 @@ const TEXTES = {
   manqueEncore: (liste) => `Il manque encore ${liste}. On rentre quand même ?`,
   rangement: 'Je range les courses au frigo…',
   ouverture: 'On ouvre ! Les premiers clients arrivent.',
-  premiereCommande: 'Un client s’est installé ! Touche le fourneau : le livre de recettes te dira ce qu’il veut.',
-  commandeSuivante: 'Touche le fourneau pour préparer une autre commande.',
+  premiereCommande: 'Un client s’est installé ! Touche un fourneau : le livre de recettes te dira ce qu’il veut.',
+  commandeSuivante: 'Touche un fourneau libre pour préparer une autre commande.',
+  enParallele: 'Pendant que ça cuit, lance la commande suivante sur un autre fourneau : tu en as trois !',
+  cuissonEnCours: 'Ça cuit… En bas, le bouton jaune 60x accélère chaque plat.',
+  rienAPreparer: 'Aucune autre commande pour l’instant.',
+  astuce60x: 'Pour aller plus vite : le bouton jaune 60x, en bas.',
   attenteClient: 'On attend le prochain client…',
   preparation: 'Tout est dans la casserole. Au travail !',
-  vraiTemps: 'Comme dans le vrai jeu, la cuisson prend du vrai temps ! Pour ne pas attendre, touche le bouton jaune 60x.',
-  pret: 'C’est prêt ! Touche le fourneau pour poser le plat sur le comptoir.',
-  pretSpecial: 'Le gâteau est prêt ! Touche le fourneau pour le sortir du four.',
+  vraiTemps: 'Comme dans le vrai jeu, la cuisson prend du vrai temps ! Pour ne pas attendre, touche le bouton jaune 60x, en bas.',
+  pret: (n) => `C’est prêt sur le fourneau ${n} ! Touche-le pour poser le plat sur le comptoir.`,
+  pretSpecial: (n) => `Le gâteau est prêt sur le fourneau ${n} ! Touche-le pour le sortir du four.`,
   service: 'Je l’apporte !',
   calme: 'Ouf, tout le monde est servi.',
   special: 'Oh ! Un client très spécial… Il commande la spécialité de la maison. Sa recette vient d’apparaître dans le livre !',
-  commandeSpeciale: 'Touche le fourneau pour préparer la spécialité.',
+  commandeSpeciale: 'Touche un fourneau pour préparer la spécialité.',
 
   // La fin : le gâteau est pour elle, avec ses bougies.
   fete: {
@@ -170,6 +176,14 @@ const TEXTES = {
     pret: 'C’est prêt !',
     accelerer: 'Accélérer la cuisson 60 fois',
   },
+  // Les cartes des trois fourneaux, en bas de l'écran.
+  feux: {
+    nom: (n) => `Fourneau ${n}`,
+    libre: 'Libre',
+    aToi: 'À toi !',
+    pret: 'Prêt !',
+    auMarche: 'Les fourneaux t’attendent au café : rentre pour cuisiner.',
+  },
 
   boutons: {
     intro: 'Bonjour Pipistrelle !',
@@ -241,6 +255,13 @@ const PRIX = {
   poivron: 2, aubergine: 2, gingembre: 2, coriandre: 1, balsamique: 4, vin: 5, champagne: 9, huitres: 6,
 };
 
+// Les sons de fond du café (dans sons/) et leur volume (1 = normal) : le
+// piano de la salle, doucement, et les oiseaux et la fontaine du marché.
+const SONS = {
+  salle: { fichier: 'sons/cafe-salle.mp3', volume: 0.14 },
+  marche: { fichier: 'sons/cafe-marche.mp3', volume: 1 },
+};
+
 const PIECES_DEPART = 40;
 const PAIEMENT = 10;        // ce que laisse un client content
 const PAIEMENT_BEURK = 2;   // … et un client dégoûté
@@ -306,6 +327,19 @@ function gabarit() {
       <div class="e5-voile"></div>
     </div>
     <footer class="e5-bas">
+      <div class="e5-feux" hidden>${[0, 1, 2].map((k) => `
+        <div class="e5-feu-carte" data-k="${k}" data-etat="libre">
+          <button type="button" class="e5-feu-bouton" data-e5="feu-${k}">
+            <svg class="e5-feu-icone" viewBox="-24 -24 48 48" aria-hidden="true"></svg>
+            <span class="e5-feu-texte"></span>
+          </button>
+          <span class="e5-feu-num" aria-hidden="true">${k + 1}</span>
+          <button type="button" class="e5-feu-vite" data-e5="vitesse-${k}" aria-pressed="false" hidden>
+            <svg viewBox="0 0 16 12" aria-hidden="true"><path d="M1 1 L7.5 6 L1 11 Z M8.5 1 L15 6 L8.5 11 Z"/></svg><span>60x</span>
+          </button>
+          <span class="e5-feu-barre" aria-hidden="true"><span></span></span>
+        </div>`).join('')}
+      </div>
       <div class="e5-guide">
         <svg class="e5-avatar" viewBox="-27 -29 54 54" aria-hidden="true">${D.pipistrelle()}</svg>
         <div class="e5-bulle" aria-live="polite">
@@ -377,6 +411,8 @@ function demarrer({ scene, son, fx, memoire, debug }) {
 
   const bip = (...a) => { if (vivant) son.bip(...a); };
   const coeurs = (x, y, n) => { if (vivant) fx.coeurs(x, y, n); };
+  // Le son de fond : 'salle', 'marche' ou null (silence).
+  const ambiance = (nom) => { if (vivant) son.ambiance(nom ? SONS[nom].fichier : null, nom ? SONS[nom].volume : 1); };
 
   function dormir(ms) {
     return new Promise((r) => {
@@ -544,12 +580,14 @@ function demarrer({ scene, son, fx, memoire, debug }) {
   let parole = 0;
   let texteDeFond = '';
   let ephemere = 0;
+  let ephemereActif = false;
 
   // Pipistrelle parle ; avec des choix, renvoie l'indice du bouton touché.
   function dire(t, choix = []) {
     const tour = ++parole;
     texte.textContent = t;
     texteDeFond = t;
+    ephemereActif = false;
     zoneBoutons.replaceChildren();
     animer(bulleGuide, [{ transform: 'translateY(3px)', opacity: 0.55 }, { transform: 'none', opacity: 1 }], { duree: 240, garder: false });
     if (!choix.length) return Promise.resolve(-1);
@@ -573,8 +611,13 @@ function demarrer({ scene, son, fx, memoire, debug }) {
   function direUnInstant(t, ms) {
     const jeton = ++ephemere;
     const tour = parole;
+    ephemereActif = true;
     texte.textContent = t;
-    dormir(ms).then(() => { if (jeton === ephemere && tour === parole) texte.textContent = texteDeFond; });
+    dormir(ms).then(() => {
+      if (jeton !== ephemere) return;
+      ephemereActif = false;
+      if (tour === parole) texte.textContent = texteDeFond;
+    });
   }
 
   let pieces = PIECES_DEPART;
@@ -608,6 +651,7 @@ function demarrer({ scene, son, fx, memoire, debug }) {
     cadreCourant = CADRES[nom];
     cadrer();
     vue = nom;
+    ambiance(nom === 'marche' ? 'marche' : 'salle');
     titre.textContent = nom === 'marche' ? TEXTES.nomMarche : TEXTES.nomCafe;
     await animer(voile, [{ opacity: 1 }, { opacity: 0 }], { duree: 320 });
     enTransition = false;
@@ -1016,6 +1060,7 @@ function demarrer({ scene, son, fx, memoire, debug }) {
   }
 
   function ouvrirCafe() {
+    plateauFeux.hidden = false;
     $('[data-e5="pancarte"]').textContent = TEXTES.ouvert;
     animer($('.e5-pancarte'), [{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], { duree: 320, garder: false });
   }
@@ -1024,117 +1069,208 @@ function demarrer({ scene, son, fx, memoire, debug }) {
     if (vue === 'cafe' && !fenetreCourante && !enTransition && !outils.hidden) { bip('clic', 0.5); fenetreFrigo(); }
   });
 
-  /* ---------------------------------------------------------- Le fourneau */
+  /* -------------------------------------------------------- Les fourneaux */
 
-  const four = $('[data-e5="fourneau"]');
-  const casserole = $('[data-e5="casserole"]');
+  // Trois fourneaux : on lance un plat sur l'un pendant que d'autres cuisent.
+  // Chacun a sa carte en bas de l'écran : ce qui cuit, le minuteur, le 60x.
+  // Un fourneau est « libre », en « gestes » (on prépare), en « cuisson »,
+  // ou « pret » (on touche pour poser le plat sur le comptoir).
+  const plateauFeux = $('.e5-feux');
+  const feux = L.feux.map((lieu, k) => {
+    const el = $(`[data-e5="fourneau-${k}"]`);
+    const carte = plateauFeux.querySelector(`[data-k="${k}"]`);
+    return {
+      k, lieu, el,
+      casserole: el.querySelector('.e5-casserole'),
+      carte,
+      bouton: carte.querySelector('.e5-feu-bouton'),
+      vite: carte.querySelector('.e5-feu-vite'),
+      icone: carte.querySelector('.e5-feu-icone'),
+      texte: carte.querySelector('.e5-feu-texte'),
+      barre: carte.querySelector('.e5-feu-barre span'),
+      etat: 'libre', cmd: null, r: null, extra: null,
+      fait: 0, total: 0, vitesse: 1, signe: null, vu: {},
+    };
+  });
 
+  // « 4:59 », ou « 1:04:59 » au-delà d'une heure.
+  const duree = (s) => {
+    const t = Math.max(0, Math.ceil(s));
+    const h = Math.floor(t / 3600);
+    const m = Math.floor((t % 3600) / 60);
+    const ss = String(t % 60).padStart(2, '0');
+    return h ? `${h}:${String(m).padStart(2, '0')}:${ss}` : `${m}:${ss}`;
+  };
+
+  // Met la carte d'un fourneau à jour (sans retoucher ce qui n'a pas changé).
+  function majCarte(f) {
+    const T = TEXTES.feux;
+    const n = f.k + 1;
+    const icone = f.r ? `p-${f.r.plat}` : 'casserole';
+    const texte = { libre: T.libre, gestes: T.aToi, cuisson: duree(f.total - f.fait), pret: T.pret }[f.etat];
+    const aria = f.etat === 'libre' ? `${T.nom(n)} : ${T.libre}`
+      : f.etat === 'cuisson' ? `${T.nom(n)} : ${f.r.nom}, ${texte}`
+        : f.etat === 'pret' ? `${T.nom(n)} : ${f.r.nom}, ${T.pret}` : `${T.nom(n)} : ${f.r.nom}`;
+    const v = f.vu;
+    if (v.etat !== f.etat) { f.carte.dataset.etat = f.etat; v.etat = f.etat; }
+    if (v.icone !== icone) {
+      // le plat en gros plan ; la casserole vide, un peu plus loin
+      f.icone.setAttribute('viewBox', f.r ? '-19 -18 38 34' : '-24 -24 48 48');
+      f.icone.innerHTML = f.r ? D.PLATS[f.r.plat]({ vapeur: false }) : `<g transform="translate(0 -1) scale(.9)">${D.iconeCasserole()}</g>`;
+      v.icone = icone;
+    }
+    if (v.texte !== texte) { f.texte.textContent = texte; v.texte = texte; }
+    if (v.aria !== aria) { f.bouton.setAttribute('aria-label', aria); v.aria = aria; }
+    const vite = f.etat === 'cuisson';
+    if (v.vite !== vite) { f.vite.hidden = !vite; v.vite = vite; }
+    const presse = String(f.vitesse > 1);
+    if (v.presse !== presse) { f.vite.setAttribute('aria-pressed', presse); v.presse = presse; }
+    const p = f.etat === 'cuisson' && f.total ? Math.round((f.fait / f.total) * 100) : 0;
+    if (v.p !== p) { f.barre.style.width = `${p}%`; v.p = p; }
+  }
+  feux.forEach(majCarte);
+
+  // Le bouton 60x de chaque fourneau : accélère (ou ralentit) ce plat-là,
+  // même depuis le marché. Chaque plat démarre à vitesse normale.
+  for (const f of feux) {
+    f.vite.setAttribute('aria-label', TEXTES.fourneau.accelerer);
+    f.vite.addEventListener('click', () => {
+      if (f.etat !== 'cuisson') return;
+      f.vitesse = f.vitesse > 1 ? 1 : ACCELERATION;
+      bip(f.vitesse > 1 ? 'vol' : 'clic', 0.6);
+      majCarte(f);
+    });
+    // Au marché, les cartes rappellent où sont les fourneaux.
+    f.bouton.addEventListener('click', () => { if (vue !== 'cafe') direUnInstant(TEXTES.feux.auMarche, 2600); });
+  }
+
+  // Une seule horloge pour tous les plats en cuisson.
+  let horloge = 0;
+  function lancerHorloge() {
+    if (horloge) return;
+    let avant = performance.now();
+    const pas = (t) => {
+      if (!vivant) return;
+      const dt = Math.min(0.25, (t - avant) / 1000);
+      avant = t;
+      let encore = false;
+      for (const f of feux) {
+        if (f.etat !== 'cuisson') continue;
+        f.fait = Math.min(f.total, f.fait + dt * f.vitesse * V);
+        if (f.fait >= f.total) platPret(f); else encore = true;
+        majCarte(f);
+      }
+      horloge = encore ? requestAnimationFrame(pas) : 0;
+    };
+    horloge = requestAnimationFrame(pas);
+  }
+
+  // Quelque chose a changé (un client s'installe, un plat est prêt…) : le
+  // service regarde à nouveau ce qu'il y a à faire.
+  const signaux = [];
+  const signaler = () => signaux.splice(0).forEach((r) => r());
+  const unChangement = () => new Promise((r) => signaux.push(r));
+
+  function platPret(f) {
+    f.etat = 'pret';
+    f.el.classList.remove('e5-four-chaud', 'e5-feu');
+    f.el.classList.add('e5-fourneau-pret');
+    bip('ding');
+    f.signe = svgEl('g', { 'pointer-events': 'none' }, calques.bulles);
+    f.signe.innerHTML = `<g class="e5-pret-saute">${D.signePret(D.PLATS[f.r.plat]({ vapeur: false }))}</g>`;
+    placer(f.signe, f.lieu.casserole.x, f.lieu.casserole.y - 30);
+    majCarte(f);
+    signaler();
+  }
+
+  // Attend qu'on touche un fourneau, dans la salle ou par sa carte en bas.
+  // annuler() retire l'attente (elle donne alors null).
+  function attendreFeu() {
+    let finir = () => {};
+    const promesse = new Promise((resolve) => {
+      const ecoutes = [];
+      finir = (f) => {
+        for (const [el, type, h] of ecoutes) el.removeEventListener(type, h);
+        for (const x of feux) x.el.classList.remove('e5-touchable');
+        resolve(f);
+      };
+      for (const f of feux) {
+        const h = (e) => {
+          if (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') return;
+          if (vue !== 'cafe' || enTransition || fenetreCourante) return;
+          e.preventDefault();
+          finir(f);
+        };
+        for (const [el, type] of [[f.el, 'click'], [f.el, 'keydown'], [f.bouton, 'click']]) {
+          el.addEventListener(type, h);
+          ecoutes.push([el, type, h]);
+        }
+        f.el.classList.add('e5-touchable');
+      }
+    });
+    return { promesse, annuler: () => finir(null) };
+  }
+
+  // La bulle des gestes, au-dessus du fourneau où l'on prépare.
   const bulleFour = (() => {
-    const g = svgEl('g', { class: 'e5-bulle-four' }, calques.bulles);
+    const g = svgEl('g', { class: 'e5-bulle-four', 'pointer-events': 'none' }, calques.bulles);
     g.style.display = 'none';
     g.innerHTML = D.bulleFourneau();
-    placer(g, L.bulleFour.x, L.bulleFour.y);
     const pop = g.firstElementChild;
     const q = (s) => g.querySelector(s);
-    const [titreB, sous, jauge, barre, minuteur, arc, vitesseB] = ['.e5-bf-titre', '.e5-bf-sous', '.e5-bf-jauge', '.e5-bf-barre', '.e5-bf-minuteur', '.e5-bf-arc', '.e5-bf-vitesse'].map(q);
-    vitesseB.setAttribute('aria-label', TEXTES.fourneau.accelerer);
-    let vitesse = 1;
-    const majVitesse = () => vitesseB.setAttribute('aria-pressed', String(vitesse > 1));
-    surToucher(vitesseB, () => {
-      vitesse = vitesse > 1 ? 1 : ACCELERATION;
-      majVitesse();
-      bip(vitesse > 1 ? 'vol' : 'clic', 0.6);
-    });
-    // « 4:59 », ou « 1:04:59 » au-delà d'une heure.
-    const duree = (s) => {
-      const t = Math.max(0, Math.ceil(s));
-      const h = Math.floor(t / 3600);
-      const m = Math.floor((t % 3600) / 60);
-      const ss = String(t % 60).padStart(2, '0');
-      return h ? `${h}:${String(m).padStart(2, '0')}:${ss}` : `${m}:${ss}`;
-    };
-    function afficher(t, s, { avecJauge = false, avecMinuteur = false } = {}) {
-      if (g.style.display === 'none') {
-        g.style.display = '';
-        pop.classList.remove('e5-pop');
-        void pop.getBoundingClientRect();
-        pop.classList.add('e5-pop');
-      }
-      jauge.style.display = avecJauge ? '' : 'none';
-      minuteur.style.display = avecMinuteur ? '' : 'none';
-      const x = avecMinuteur ? 14 : 0;
-      titreB.setAttribute('x', x);
-      sous.setAttribute('x', x);
-      titreB.textContent = t;
-      sous.textContent = s;
-    }
+    const [titreB, sous, jauge, barre, minuteur] = ['.e5-bf-titre', '.e5-bf-sous', '.e5-bf-jauge', '.e5-bf-barre', '.e5-bf-minuteur'].map(q);
+    minuteur.style.display = 'none';
     return {
+      sur(f) { placer(g, f.lieu.bulle.x, f.lieu.bulle.y); },
       etape(t, s) {
-        afficher(t, s, { avecJauge: true });
+        if (g.style.display === 'none') {
+          g.style.display = '';
+          pop.classList.remove('e5-pop');
+          void pop.getBoundingClientRect();
+          pop.classList.add('e5-pop');
+        }
+        jauge.style.display = '';
+        titreB.textContent = t;
+        sous.textContent = s;
         barre.style.transform = 'scaleX(0)';
       },
       remplir(ms) {
         return animer(barre, [{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], { duree: ms, easing: 'ease-in-out' });
       },
-      // Cuisson en vraies minutes ; le bouton 60x accélère (ou ralentit à
-      // nouveau) à tout moment. Chaque plat repart à vitesse normale.
-      minuter(minutes, nom) {
-        const total = minutes * 60;
-        afficher(duree(total), nom, { avecMinuteur: true });
-        vitesse = 1;
-        majVitesse();
-        vitesseB.style.display = '';
-        let fait = 0;
-        let avant = performance.now();
-        return new Promise((resolve) => {
-          const pas = (t) => {
-            if (!vivant) return;
-            fait += ((t - avant) / 1000) * vitesse * V;
-            avant = t;
-            const p = Math.min(1, fait / total);
-            arc.setAttribute('stroke-dashoffset', (69.1 * (1 - p)).toFixed(2));
-            titreB.textContent = duree(total - fait);
-            if (p < 1) { requestAnimationFrame(pas); return; }
-            vitesseB.style.display = 'none';
-            if (document.activeElement === vitesseB) vitesseB.blur();
-            resolve();
-          };
-          requestAnimationFrame(pas);
-        });
-      },
-      pret() { afficher(TEXTES.fourneau.pret, TEXTES.fourneau.toucher); },
       cacher() { g.style.display = 'none'; },
     };
   })();
 
-  async function tomber(k, delai) {
+  async function tomber(f, k, delai) {
     await dormir(delai);
+    const c = f.lieu.casserole;
     const g = svgEl('g', {}, calques.volants);
     g.innerHTML = `<g transform="scale(.62)">${D.ARTICLES[k].dessin()}</g>`;
-    placer(g, L.casserole.x + (Math.random() - 0.5) * 10, L.casserole.y - 30);
-    await aller(g, L.casserole.x, L.casserole.y - 2, 460, 'cubic-bezier(.55,0,1,.45)');
+    placer(g, c.x + (Math.random() - 0.5) * 10, c.y - 30);
+    await aller(g, c.x, c.y - 2, 460, 'cubic-bezier(.55,0,1,.45)');
     g.remove();
   }
 
-  const secouerCasserole = () => animer(casserole, [{ transform: 'rotate(0)' }, { transform: 'rotate(-6deg)' }, { transform: 'rotate(5deg)' }, { transform: 'rotate(0)' }], { duree: 380, garder: false });
+  const secouerCasserole = (f) => animer(f.casserole, [{ transform: 'rotate(0)' }, { transform: 'rotate(-6deg)' }, { transform: 'rotate(5deg)' }, { transform: 'rotate(0)' }], { duree: 380, garder: false });
 
-  async function geste(type) {
+  async function geste(f, type) {
+    const c = f.lieu.casserole;
     if (type === 'remuer' || type === 'melanger') {
       const g = svgEl('g', {}, calques.volants);
       g.innerHTML = `<g class="e5-touille">${D.cuillere()}</g>`;
-      placer(g, L.casserole.x + 2, L.casserole.y - 2);
+      placer(g, c.x + 2, c.y - 2);
       bip('plouf');
       await dormir(900);
       g.remove();
     } else if (type === 'enfourner') {
-      four.classList.add('e5-four-chaud');
+      f.el.classList.add('e5-four-chaud');
       bip('feu');
       await dormir(500);
     } else if (type === 'retourner') {
       const g = svgEl('g', {}, calques.volants);
       const crepe = svgEl('g', { class: 'e5-crepe-volante' }, g);
       crepe.innerHTML = '<ellipse rx="13" ry="4.5" fill="#f6cf8c" stroke="#dea457" stroke-width="1.2"/><ellipse cx="-3" cy="-1" rx="2" ry="1" fill="#dea457"/>';
-      placer(g, L.casserole.x, L.casserole.y - 4);
+      placer(g, c.x, c.y - 4);
       bip('vol');
       await animer(crepe, [
         { transform: 'translateY(0) rotate(0)' },
@@ -1145,7 +1281,7 @@ function demarrer({ scene, son, fx, memoire, debug }) {
       bip('plouf');
     } else {
       bip('plouf');
-      await secouerCasserole();
+      await secouerCasserole(f);
     }
   }
 
@@ -1153,14 +1289,14 @@ function demarrer({ scene, son, fx, memoire, debug }) {
   const occupees = new Set();
   const PLAT = 0.8;   // taille des plats dans la salle
 
-  async function platVersComptoir(r, cmd) {
+  async function platVersComptoir(r, cmd, f) {
     let n = L.comptoir.findIndex((_, k) => !occupees.has(k));
     if (n < 0) n = 0;
     occupees.add(n);
     const place = L.comptoir[n];
     const g = svgEl('g', {}, calques.volants);
     g.innerHTML = `<g transform="scale(${PLAT})">${D.PLATS[r.plat]({ vapeur: false })}</g>`;
-    const de = r.four ? L.four : L.casserole;
+    const de = r.four ? f.lieu.four : f.lieu.casserole;
     placer(g, de.x, de.y - 6);
     await voler(g, place.x, place.y - 7, 650, { hauteur: 30 });
     g.remove();
@@ -1170,10 +1306,14 @@ function demarrer({ scene, son, fx, memoire, debug }) {
     cmd.surComptoir = { n, x: place.x, y: place.y, g: pose };
   }
 
+  // Le contenu de la casserole va sur le fourneau f ; on fait les gestes,
+  // puis la cuisson démarre et on est libre de lancer autre chose.
   let premiereCuisson = true;
-  async function cuisiner(cmd) {
+  async function preparer(f, { cmd, extra }) {
     const r = recette(cmd.recette);
     cmd.etat = 'cuisine';
+    Object.assign(f, { etat: 'gestes', cmd, r, extra, fait: 0, total: r.cuisson * 60, vitesse: 1 });
+    majCarte(f);
     const contenu = [...pot].flatMap(([k, n]) => Array(n).fill(k));
     for (const [k, n] of pot) frigo.set(k, nb(k) - n);
     for (const k of [...frigo.keys()]) if (!nb(k)) frigo.delete(k);
@@ -1181,36 +1321,55 @@ function demarrer({ scene, son, fx, memoire, debug }) {
     majBadge();
 
     dire(TEXTES.preparation);
-    await Promise.all(contenu.map((k, j) => tomber(k, j * 150)));
+    await Promise.all(contenu.map((k, j) => tomber(f, k, j * 150)));
     bip('plouf');
-    secouerCasserole();
+    secouerCasserole(f);
 
-    montrer(L.fourneau.x, L.fourneau.y, L.fourneau.r, false);
+    bulleFour.sur(f);
+    montrer(f.lieu.halo.x, f.lieu.halo.y, f.lieu.halo.r, false);
     for (let i = 0; i < r.gestes.length; i++) {
       bulleFour.etape(TEXTES.gestes[r.gestes[i]], `${TEXTES.fourneau.toucher} (${i + 1}/${r.gestes.length})`);
-      await toucher(four);
+      await toucher(f.el, f.bouton);
       bip('clic', (i + 1) / r.gestes.length);
-      await Promise.all([geste(r.gestes[i]), bulleFour.remplir(700)]);
+      await Promise.all([geste(f, r.gestes[i]), bulleFour.remplir(700)]);
     }
     cacherGuide();
-
-    dire(premiereCuisson ? TEXTES.vraiTemps : r.cuit);
-    premiereCuisson = false;
-    four.classList.add(r.four ? 'e5-four-chaud' : 'e5-feu');
-    bip('feu');
-    await bulleFour.minuter(r.cuisson, r.nom);
-    four.classList.remove('e5-four-chaud', 'e5-feu');
-    bip('ding');
-    bulleFour.pret();
-    montrer(L.fourneau.x, L.fourneau.y, L.fourneau.r, false);
-    dire(cmd.special ? TEXTES.pretSpecial : TEXTES.pret);
-    await toucher(four);
-    cacherGuide();
     bulleFour.cacher();
+
+    f.etat = 'cuisson';
+    f.el.classList.add(r.four ? 'e5-four-chaud' : 'e5-feu');
+    bip('feu');
+    majCarte(f);
+    lancerHorloge();
+    if (premiereCuisson) {
+      premiereCuisson = false;
+      direUnInstant(TEXTES.vraiTemps, 6500);
+    } else {
+      direUnInstant(r.cuit, 2400);
+    }
+  }
+
+  // On touche un fourneau où le plat est prêt : il part au comptoir (ou, pour
+  // la spécialité, la fête commence).
+  async function sortirPlat(f, enFond) {
+    const { cmd, r, extra } = f;
     bip('clic', 1);
-    if (cmd.special) return;
-    await platVersComptoir(r, cmd);
+    if (f.signe) { f.signe.remove(); f.signe = null; }
+    f.el.classList.remove('e5-fourneau-pret');
+    Object.assign(f, { etat: 'libre', cmd: null, r: null, extra: null, vitesse: 1 });
+    majCarte(f);
+    if (cmd.special) {
+      cmd.objets = await fete(cmd, f);
+      cmd.etat = 'partie';
+      return;
+    }
+    await platVersComptoir(r, cmd, f);
     cmd.etat = 'comptoir';
+    enFond.push(servir(cmd).then(async () => {
+      await mangerEtPartir(cmd.client, extra);
+      cmd.etat = 'partie';
+      signaler();
+    }));
   }
 
   /* ------------------------------------------------------------ Le service */
@@ -1369,11 +1528,6 @@ function demarrer({ scene, son, fx, memoire, debug }) {
     c.g.remove();
   }
 
-  // Attendre qu'un client s'installe.
-  const attentes = [];
-  const prevenir = () => attentes.splice(0).forEach((r) => r());
-  const unClientSInstalle = () => new Promise((r) => attentes.push(r));
-
   function lancerArrivees(cmds) {
     return (async () => {
       for (let i = 0; i < cmds.length; i++) {
@@ -1381,56 +1535,88 @@ function demarrer({ scene, son, fx, memoire, debug }) {
         await enCafe();
         await entrer(cmds[i]);
         cmds[i].etat = 'assise';
-        prevenir();
+        signaler();
       }
     })();
   }
 
-  // La boucle du service : toucher le fourneau, choisir la commande, remplir
-  // la casserole, cuisiner ; Pipistrelle sert pendant qu'on continue.
+  // Ce que dit Pipistrelle pendant le service, sans répéter ce qui est déjà
+  // affiché ; une remarque passagère reste le temps d'être lue.
+  function conseiller(t) {
+    if (texteDeFond === t) return;
+    if (ephemereActif) { texteDeFond = t; return; }
+    dire(t);
+  }
+
+  // Le livre s'ouvre au fourneau f : on choisit la commande, on remplit la
+  // casserole, et on peut filer au marché. Renvoie true si un plat est lancé.
+  async function ouvrirLivre(f, cmds) {
+    let choisie = null;
+    for (;;) {
+      const pretes = cmds.filter((c) => c.etat === 'assise');
+      if (!pretes.length) return false;
+      const res = await livreCuisine(pretes, choisie);
+      if (!res) return false;
+      if (res.action === 'marche') {
+        choisie = res.cmd;
+        await allerAuMarche();
+        continue;
+      }
+      await preparer(f, res);
+      return true;
+    }
+  }
+
+  // La boucle du service, comme dans le jeu : on touche un fourneau libre
+  // pour lancer une commande, un fourneau prêt pour poser le plat au
+  // comptoir. Jusqu'à trois plats cuisent en même temps ; Pipistrelle sert.
+  let paralleleDit = false;
   async function service(cmds, { premierTexte, texte }) {
     const enFond = [];
-    let choisie = null;
-    let rouvrir = false;
     let premier = true;
     for (;;) {
-      if (!cmds.some((c) => c.etat === 'dehors' || c.etat === 'assise')) break;
-      const pretes = cmds.filter((c) => c.etat === 'assise');
-      if (!pretes.length) {
-        dire(TEXTES.attenteClient);
-        await unClientSInstalle();
-        continue;
-      }
-      if (!rouvrir) {
-        dire(premier ? premierTexte : texte);
-        montrer(L.fourneau.x, L.fourneau.y, L.fourneau.r, false);
-        await toucher(four);
+      const enAttente = cmds.filter((c) => c.etat === 'assise');
+      const occupes = feux.filter((f) => f.etat !== 'libre');
+      const prets = feux.filter((f) => f.etat === 'pret');
+      const libres = feux.filter((f) => f.etat === 'libre');
+      if (!enAttente.length && !occupes.length && !cmds.some((c) => c.etat === 'dehors')) break;
+
+      if (prets.length) {
+        const f = prets[0];
+        conseiller(f.cmd.special ? TEXTES.pretSpecial(f.k + 1) : TEXTES.pret(f.k + 1));
+        montrer(f.lieu.halo.x, f.lieu.halo.y, f.lieu.halo.r, false);
+      } else if (enAttente.length && libres.length) {
+        if (premier) conseiller(premierTexte);
+        else if (occupes.length && !paralleleDit) { paralleleDit = true; conseiller(TEXTES.enParallele); }
+        else conseiller(texte);
+        const f = libres[0];
+        montrer(f.lieu.halo.x, f.lieu.halo.y, f.lieu.halo.r, false);
+      } else {
+        conseiller(occupes.length ? TEXTES.cuissonEnCours : TEXTES.attenteClient);
         cacherGuide();
+      }
+
+      const attente = attendreFeu();
+      const f = await Promise.race([attente.promesse, unChangement().then(() => null)]);
+      attente.annuler();
+      if (!f) continue;
+      cacherGuide();
+      if (f.etat === 'pret') {
+        await sortirPlat(f, enFond);
+      } else if (f.etat === 'cuisson') {
+        bip('clic', 0.3);
+        direUnInstant(f.vitesse > 1 ? f.r.cuit : `${f.r.cuit} ${TEXTES.astuce60x}`, 3200);
+      } else if (f.etat === 'libre') {
+        if (!enAttente.length) {
+          bip('non');
+          direUnInstant(occupes.length ? TEXTES.rienAPreparer : TEXTES.attenteClient, 2400);
+          continue;
+        }
         bip('clic', 0.5);
+        if (await ouvrirLivre(f, cmds)) premier = false;
       }
-      rouvrir = false;
-      const res = await livreCuisine(pretes, choisie);
-      if (!res) continue;
-      choisie = res.cmd;
-      if (res.action === 'marche') {
-        await allerAuMarche();
-        rouvrir = true;
-        continue;
-      }
-      premier = false;
-      choisie = null;
-      await cuisiner(res.cmd);
-      const cmd = res.cmd;
-      if (cmd.special) {
-        cmd.objets = await fete(cmd);
-        cmd.etat = 'partie';
-        continue;
-      }
-      enFond.push(servir(cmd).then(async () => {
-        await mangerEtPartir(cmd.client, res.extra);
-        cmd.etat = 'partie';
-      }));
     }
+    cacherGuide();
     await Promise.all(enFond);
   }
 
@@ -1468,7 +1654,7 @@ function demarrer({ scene, son, fx, memoire, debug }) {
   // Le gâteau du machaon était pour elle : lumières tamisées, bougies, la
   // chanson, les clients qui reviennent ; elle souffle, puis le machaon
   // dépose le mot et le cadeau.
-  async function fete(cmd) {
+  async function fete(cmd, f) {
     const T = TEXTES.fete;
     const sp = cmd.client;
     if (sp.bulle) { sp.bulle.remove(); sp.bulle = null; }
@@ -1492,7 +1678,9 @@ function demarrer({ scene, son, fx, memoire, debug }) {
 
     // Le gâteau sort du four et vient au centre, en grand.
     dire(T.attends);
-    placer(support, L.casserole.x, L.casserole.y);
+    plateauFeux.hidden = true;
+    ambiance(null);   // la musique se tait : place à la chanson
+    placer(support, f.lieu.casserole.x, f.lieu.casserole.y);
     await Promise.all([
       animer(nuit, [{ opacity: 0 }, { opacity: 0.64 }], { duree: 1000 }),
       aller(support, C.x, C.y, 1200, 'cubic-bezier(.3,.8,.3,1)'),
@@ -1589,6 +1777,7 @@ function demarrer({ scene, son, fx, memoire, debug }) {
     await voler(sp.g, 338, 226, 1100, { hauteur: 30, ondule: 8 });
     sp.ailes.classList.remove('e5-vite');
     calque.append(sp.g, pipi);
+    ambiance('salle');
     return { enveloppe, cadeau, x: E.x, y: E.y };
   }
 
@@ -1790,6 +1979,7 @@ function demarrer({ scene, son, fx, memoire, debug }) {
     }
   }
 
+  ambiance('salle');
   scenario().catch((e) => { if (vivant) console.error(e); });
   if (debug !== null) {
     window.__e5 = {
@@ -1798,6 +1988,8 @@ function demarrer({ scene, son, fx, memoire, debug }) {
       get pot() { return Object.fromEntries(pot); },
       get commandes() { return commandes.map((c) => ({ sorte: c.sorte, etat: c.etat, erreurs: c.erreurs })); },
       get vue() { return vue; },
+      get son() { return son.ambianceCourante ? son.ambianceCourante() : null; },
+      get feux() { return feux.map((f) => ({ etat: f.etat, recette: f.cmd && f.cmd.recette, reste: Math.ceil(f.total - f.fait) })); },
       besoins: (sorte) => Object.fromEntries(besoins(commandes.find((c) => c.sorte === sorte))),
     };
   }
@@ -1805,6 +1997,7 @@ function demarrer({ scene, son, fx, memoire, debug }) {
   return () => {
     vivant = false;
     for (const id of minuteurs) clearTimeout(id);
+    cancelAnimationFrame(horloge);
     observateur.disconnect();
     delete window.__e5;
   };
@@ -1812,6 +2005,6 @@ function demarrer({ scene, son, fx, memoire, debug }) {
 
 export default {
   fond: 'clair',
-  ambiance: 'sons/etape-5.mp3',
+  ambiance: SONS.salle.fichier,
   demarrer,
 };

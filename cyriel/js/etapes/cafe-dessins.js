@@ -713,6 +713,21 @@ const HAUT_TABLE = 16;
 // Le cadre de la vue du café : la salle entière, toujours visible.
 export const CADRE_CAFE = { x: 4, y: 64, l: 392, h: 352 };
 
+// Les quatre fourneaux le long du mur de gauche (j de départ de chacun) :
+// les trois premiers servent, le dernier est pour le décor.
+const FEUX_J = [2.2, 3.9, 5.6, 7.3];
+export const NB_FEUX = 3;
+function lieuxFeu(j0) {
+  const j = j0 + 0.8;
+  const c = pt(0.95, j, 15);
+  return {
+    casserole: c,                                        // la casserole posée dessus
+    four: pt(1.9, j, 8),                                 // la porte du four
+    halo: { x: c.x, y: c.y - 4, r: 24 },                 // le cercle « touche ici »
+    bulle: { x: +(c.x - 4).toFixed(1), y: +(c.y - 81).toFixed(1) },   // la bulle des gestes
+  };
+}
+
 export const LIEUX = {
   echelle: 0.72,                                   // taille des personnages dans la salle
   tables: TABLES_J.map((j) => pt(TABLE_I, j)),     // centre de chaque table, au sol
@@ -723,10 +738,7 @@ export const LIEUX = {
   perchoir: pt(SIEGE_I - 0.3, TABLES_J[1], 26),    // le machaon se pose sur le dossier
   pipi: pt(5.4, 1.6, 46),                          // Pipistrelle au repos
   comptoir: [pt(4.2, 6, 14), pt(4.2, 4, 14), pt(4.2, 8, 14)],   // places des plats prêts
-  fourneau: { ...pt(1, 5.5, 10), r: 56 },
-  casserole: pt(0.95, 4.7, 15),
-  four: pt(1.9, 4.7, 8),
-  bulleFour: { x: 140, y: 136 },
+  feux: FEUX_J.slice(0, NB_FEUX).map(lieuxFeu),     // les fourneaux où l'on cuisine
   frigo: pt(1.6, 1.05, 26),
 };
 
@@ -873,47 +885,59 @@ function frigoIso() {
 
 function fourneauxIso() {
   const blanc = { devant: '#d9dbe1', cote: '#f5f6f8', dessus: '#3b3b45' };
-  const fourneaux = [0, 1, 2, 3].map((k) => {
-    const j0 = 2.2 + k * 1.7;
+  return FEUX_J.map((j0, k) => {
     const J = 1.6;
     const u0 = -15 * (j0 + J);
     const u1 = -15 * j0;
-    const actif = k === 1;
+    const actif = k < NB_FEUX;
     const brule = (i, j) => `<ellipse cx="${qx(i, j).toFixed(1)}" cy="${qy(i, j, 15).toFixed(1)}" rx="5.4" ry="2.7" fill="none" stroke="#5a5a66" stroke-width="1.4"/>`;
     const poele = (i, j, plein) => `<g transform="translate(${qx(i, j).toFixed(1)} ${qy(i, j, 15).toFixed(1)})">
       <ellipse cx="0" cy="-1" rx="6.6" ry="3.3" fill="#c9cdd6"/><ellipse cx="0" cy="-2.2" rx="5.6" ry="2.6" fill="${plein ? '#f2cf5a' : '#aeb3bd'}"/>
       <path d="M5 -1.6 L11 1.4" stroke="#7d8696" stroke-width="2" stroke-linecap="round"/></g>`;
-    return `
+    const corps = `
       ${qboite(0, j0, 1.9, J, 0, 15, blanc)}
       ${brule(0.55, j0 + 0.45)}${brule(1.3, j0 + 1.15)}
-      ${actif ? '' : poele(0.55, j0 + 0.45, k !== 2) + poele(1.3, j0 + 1.15, k === 3)}
+      ${actif ? '' : poele(0.55, j0 + 0.45, true) + poele(1.3, j0 + 1.15, true)}
       <g transform="${murGauche(1.9)}">
         <rect x="${u0 + 2.5}" y="-12" width="${u1 - u0 - 5}" height="9" rx="1.5" fill="#e7e9ee" stroke="#c4c8d1" stroke-width=".7"/>
         <rect ${actif ? 'data-e5="four-vitre"' : ''} x="${u0 + 5}" y="-10.5" width="${u1 - u0 - 10}" height="6" rx="1" fill="#3a3a46"/>
         <rect x="${u0 + 5}" y="-14" width="${u1 - u0 - 10}" height="1.4" rx=".7" fill="#9aa3ad"/>
         <circle cx="${u0 + 6}" cy="-1.8" r="1" fill="#9aa3ad"/><circle cx="${u1 - 6}" cy="-1.8" r="1" fill="#9aa3ad"/>
       </g>`;
+    if (!actif) return corps;
+    const c = lieuxFeu(j0).casserole;
+    const flammes = [-6, -3, 0, 3, 6].map((dx, n) => `
+        <path class="e5-flamme" d="M${(c.x + dx - 1.8).toFixed(1)} ${(c.y + 4).toFixed(1)} Q${(c.x + dx).toFixed(1)} ${(c.y - 3).toFixed(1)} ${(c.x + dx + 1.8).toFixed(1)} ${(c.y + 4).toFixed(1)} Z" fill="${n % 2 ? '#ffd36b' : '#ff8a2a'}" style="animation-delay:-${(n * 0.07).toFixed(2)}s"/>`).join('');
+    // Le numéro du fourneau, comme une plaque au mur, au-dessus de la vapeur.
+    const u = -15 * (j0 + 0.55);
+    return `
+    <g class="e5-fourneau" data-e5="fourneau-${k}" role="button" tabindex="0" aria-label="Fourneau ${k + 1}">
+      <path d="M${Q(0, j0, 0)} L${Q(2.2, j0, 0)} L${Q(2.2, j0 + 1.7, 0)} L${Q(0, j0 + 1.7, 0)} L${Q(0, j0 + 1.7, 62)} L${Q(0, j0, 62)} Z" fill="transparent"/>
+      <g transform="${murGauche(0)}">
+        <circle cx="${u.toFixed(1)}" cy="-52" r="6.6" fill="#fff" stroke="#7a3cf0" stroke-width="1.6"/>
+        <text x="${u.toFixed(1)}" y="-48.8" text-anchor="middle" font-size="9" font-weight="700" fill="#7a3cf0">${k + 1}</text>
+      </g>
+      ${corps}
+      <g class="e5-flammes">${flammes}</g>
+      <g class="e5-casserole" data-e5="casserole-${k}">
+        <rect x="${c.x - 10}" y="${c.y - 12}" width="20" height="12" rx="3" fill="#cfcadd"/>
+        <rect x="${c.x - 11.5}" y="${c.y - 13.5}" width="23" height="3" rx="1.5" fill="#b9b3cb"/>
+        <path d="M${c.x + 11.5} ${c.y - 9} H${c.x + 18}" stroke="#9e98b3" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M${c.x - 6} ${c.y - 9} V${c.y - 4}" stroke="#fff" stroke-opacity=".6" stroke-width="1.6" stroke-linecap="round"/>
+      </g>
+      <g class="e5-vapeur-four e5-vapeur" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round">
+        <path d="M${c.x - 5} ${c.y - 16} q-3 -4 0 -8 q3 -4 0 -8"/>
+        <path d="M${c.x + 1} ${c.y - 18} q-3 -4 0 -8 q3 -4 0 -8" style="animation-delay:-.6s"/>
+        <path d="M${c.x + 7} ${c.y - 16} q-3 -4 0 -8 q3 -4 0 -8" style="animation-delay:-1.2s"/>
+      </g>
+    </g>`;
   }).join('');
-  const c = LIEUX.casserole;
-  const flammes = [-6, -3, 0, 3, 6].map((dx, k) => `
-      <path class="e5-flamme" d="M${(c.x + dx - 1.8).toFixed(1)} ${(c.y + 4).toFixed(1)} Q${(c.x + dx).toFixed(1)} ${(c.y - 3).toFixed(1)} ${(c.x + dx + 1.8).toFixed(1)} ${(c.y + 4).toFixed(1)} Z" fill="${k % 2 ? '#ffd36b' : '#ff8a2a'}" style="animation-delay:-${(k * 0.07).toFixed(2)}s"/>`).join('');
-  return `
-  <g data-e5="fourneau" role="button" tabindex="0" aria-label="Fourneau">
-    <path d="M${Q(0, 2, 0)} L${Q(2.2, 2, 0)} L${Q(2.2, 9.2, 0)} L${Q(0, 9.2, 0)} L${Q(0, 9.2, 46)} L${Q(0, 2, 46)} Z" fill="transparent"/>
-    ${fourneaux}
-    <g class="e5-flammes">${flammes}</g>
-    <g data-e5="casserole" class="e5-casserole">
-      <rect x="${c.x - 10}" y="${c.y - 12}" width="20" height="12" rx="3" fill="#cfcadd"/>
-      <rect x="${c.x - 11.5}" y="${c.y - 13.5}" width="23" height="3" rx="1.5" fill="#b9b3cb"/>
-      <path d="M${c.x + 11.5} ${c.y - 9} H${c.x + 18}" stroke="#9e98b3" stroke-width="2.4" stroke-linecap="round"/>
-      <path d="M${c.x - 6} ${c.y - 9} V${c.y - 4}" stroke="#fff" stroke-opacity=".6" stroke-width="1.6" stroke-linecap="round"/>
-    </g>
-    <g class="e5-vapeur-four e5-vapeur" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round">
-      <path d="M${c.x - 5} ${c.y - 16} q-3 -4 0 -8 q3 -4 0 -8"/>
-      <path d="M${c.x + 1} ${c.y - 18} q-3 -4 0 -8 q3 -4 0 -8" style="animation-delay:-.6s"/>
-      <path d="M${c.x + 7} ${c.y - 16} q-3 -4 0 -8 q3 -4 0 -8" style="animation-delay:-1.2s"/>
-    </g>
-  </g>`;
+}
+
+/** Le plat prêt qui sautille au-dessus de son fourneau. */
+export function signePret(plat) {
+  return `<circle r="13" fill="#fff4c2" stroke="${ENCRE}" stroke-width="2"/>
+    <g transform="translate(0 1.5) scale(.46)">${plat}</g>`;
 }
 
 function comptoirIso() {

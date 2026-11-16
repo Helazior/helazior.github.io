@@ -12,8 +12,9 @@ let maitre = null;       // volume général (coupé / ouvert)
 let busAmbiance = null;
 let busBruitages = null;
 let coupe = lire();
-let voulue = null;       // ambiance demandée par l'étape en cours
-let courante = null;     // ambiance qui joue réellement
+let voulue = null;       // ambiance demandée : { url, volume }, ou null
+let courante = null;     // piste qui joue réellement
+const pistes = new Map(); // pistes déjà ouvertes : elles reprennent où elles en étaient
 
 function lire() {
   try { return localStorage.getItem(CLE_COUPE) === '1'; } catch { return false; }
@@ -50,38 +51,57 @@ export function eveiller() {
 
 /* ------------------------------------------------------------ Ambiance */
 
-/** Demande l'ambiance d'une étape (chemin d'un fichier, ou null pour le silence). */
-export function ambiance(url) {
-  voulue = url || null;
+/**
+ * Demande une ambiance : chemin d'un fichier (ou null pour le silence), et
+ * son volume (1 = normal). Changer de fichier fait un fondu enchaîné ; une
+ * piste déjà entendue reprend là où elle s'était arrêtée.
+ */
+export function ambiance(url, volume = 1) {
+  voulue = url ? { url, volume } : null;
   if (ctx) appliquerAmbiance();
 }
 
-function appliquerAmbiance() {
-  if ((courante ? courante.url : null) === voulue) return;
+/** L'ambiance qui joue (pour les essais) : chemin et volume visé, ou null. */
+export function ambianceCourante() {
+  return courante && voulue ? { url: courante.url, volume: voulue.volume, pause: courante.audio.paused } : null;
+}
 
+function appliquerAmbiance() {
+  const cible = voulue ? voulue.url : null;
+  if (courante && courante.url === cible) {      // même piste : seul le volume change
+    rampe(courante.gain, voulue.volume);
+    return;
+  }
   if (courante) {
     const ancienne = courante;
     rampe(ancienne.gain, 0);
-    setTimeout(() => { ancienne.audio.pause(); ancienne.audio.src = ''; }, FONDU * 1000 + 200);
+    clearTimeout(ancienne.arret);
+    ancienne.arret = setTimeout(() => { if (courante !== ancienne) ancienne.audio.pause(); }, FONDU * 1000 + 200);
     courante = null;
   }
-  if (!voulue) return;
+  if (!cible) return;
 
-  const audio = new Audio();
-  audio.loop = true;
-  audio.preload = 'auto';
-  audio.src = voulue;
-  const gain = ctx.createGain();
-  gain.gain.value = 0;
-  try {
-    ctx.createMediaElementSource(audio).connect(gain);
-    gain.connect(busAmbiance);
-  } catch { /* le fichier jouera quand même, sans fondu */ }
-  // Fichier absent (les musiques seront ajoutées plus tard) : on reste en silence.
-  audio.addEventListener('error', () => {}, { once: true });
-  audio.play().catch(() => {});
-  rampe(gain, 1);
-  courante = { url: voulue, audio, gain };
+  let piste = pistes.get(cible);
+  if (!piste) {
+    const audio = new Audio();
+    audio.loop = true;
+    audio.preload = 'auto';
+    audio.src = cible;
+    const gain = ctx.createGain();
+    gain.gain.value = 0;
+    try {
+      ctx.createMediaElementSource(audio).connect(gain);
+      gain.connect(busAmbiance);
+    } catch { /* le fichier jouera quand même, sans fondu */ }
+    // Fichier absent (les musiques seront ajoutées plus tard) : on reste en silence.
+    audio.addEventListener('error', () => {}, { once: true });
+    piste = { url: cible, audio, gain, arret: 0 };
+    pistes.set(cible, piste);
+  }
+  clearTimeout(piste.arret);
+  piste.audio.play().catch(() => {});
+  rampe(piste.gain, voulue.volume);
+  courante = piste;
 }
 
 function rampe(gain, cible) {
