@@ -1,5 +1,5 @@
 // Clins d'œil : Cyriel et Clément, dessinés d'après leurs photos, à glisser
-// dans les décors du jeu. Placés : duoSpeleo (grotte, 1re salle),
+// dans les décors du jeu. Placés : duoSpeleo (grotte, salle des mammouths),
 // cyrielChapeau et duoCamargue (marais, au bord de l'étang), cyrielClin (photo
 // sur le frigo du café), duoSpeleo et cyrielChapeau (cadres du café, écran
 // large), cyrielNatte (marché). Libres : cyrielColRoule.

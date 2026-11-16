@@ -1507,7 +1507,7 @@ export function marche(etals, joueurs, texteCafe) {
   ${joueur(n5 || '', LOOKS[4], { x: -70, y: 236, flane: true })}
   ${joueur(n6 || '', LOOKS[5], { x: 430, y: 330 })}
   <g transform="translate(126 298)"><ellipse rx="10" ry="3.6" fill="#2a1745" opacity=".16"/><g class="e5-respire">${cyrielNatte()}</g>
-    <g transform="translate(0 -58)"><rect x="-19" y="-8" width="38" height="15" rx="7.5" fill="#7a3cf0" fill-opacity=".85"/><text y="3.2" text-anchor="middle" font-size="9.5" font-weight="600" fill="#fff">Cyriel</text></g></g>
+    <g transform="translate(0 -58)"><rect x="-46" y="-8" width="92" height="15" rx="7.5" fill="#7a3cf0" fill-opacity=".85"/><text y="3.2" text-anchor="middle" font-size="9.5" font-weight="600" fill="#fff">Cycy la famille</text></g></g>
   <g transform="translate(${c.x} ${c.y})">${fontaine()}</g>
   ${joueur(n3 || '', LOOKS[2], { x: 332, y: 292, flane: true })}
   ${joueur(n1 || '', LOOKS[0], { x: 246, y: 348, coucou: true, coeur: true })}

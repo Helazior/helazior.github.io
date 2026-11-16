@@ -122,7 +122,7 @@ async function construire() {
   m.scale(q, q);
   m.drawImage(cFond, 0, 0);
   peindreParois(m);
-  await dessinerSvg(m, duoSpeleo(), 230, 1147, 1.5);   // clin d'œil : Cyriel et Clément en spéléo
+  await dessinerSvg(m, duoSpeleo(), 1204, 591, 1.5);   // clin d'œil : Cyriel et Clément en spéléo, salle des mammouths
   m.drawImage(cRoche, 0, 0);
   cFond.width = cFond.height = cRoche.width = cRoche.height = 1;   // libère la mémoire
 
