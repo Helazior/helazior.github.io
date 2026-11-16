@@ -1423,7 +1423,7 @@ export function marche(etals, joueurs, texteCafe) {
   ${joueur(n3 || '', LOOKS[2], { x: 332, y: 292, flane: true })}
   ${joueur(n1 || '', LOOKS[0], { x: 246, y: 348, coucou: true, coeur: true })}
   ${joueur(n7 || '', LOOKS[6], { x: 74, y: 340 })}
-  ${joueur(n8 || '', LOOKS[7], { x: 298, y: 338 })}
+  ${joueur(n8 || '', LOOKS[7], { x: 318, y: 336 })}
   ${MARCHE.etals.slice(2).map((p, i) => etal(etals[i + 2], p)).join('')}
   ${banc(178, 446)}
   ${joueur(n4 || '', LOOKS[3], { x: 202, y: 460, assis: true })}
