@@ -178,6 +178,35 @@ export function bip(nom, p = 0) {
         ton({ de: f * 2.005, duree: 0.3, volume: 0.04, retard: i * 0.075 });
       });
       break;
+    case 'piece':
+      ton({ type: 'square', de: 988, duree: 0.07, volume: 0.06 });
+      ton({ type: 'square', de: 1319, duree: 0.24, volume: 0.06, retard: 0.07 });
+      break;
+    case 'sonnette':
+      [0, 0.17].forEach((r) => {
+        ton({ de: 1568, duree: 0.9, volume: 0.12, retard: r });
+        ton({ de: 3145, duree: 0.5, volume: 0.04, retard: r });
+      });
+      break;
+    case 'ding':
+      ton({ de: 1046.5, duree: 1.2, volume: 0.16 });
+      ton({ de: 2093, duree: 0.8, volume: 0.06 });
+      ton({ de: 2637, duree: 0.6, volume: 0.035 });
+      break;
+    case 'plouf':
+      ton({ de: 700, a: 180, duree: 0.16, volume: 0.22 });
+      bruit({ duree: 0.08, volume: 0.06, filtre: 'highpass', de: 2000, retard: 0.02 });
+      break;
+    case 'feu':
+      bruit({ duree: 0.6, volume: 0.16, filtre: 'lowpass', de: 900, a: 300 });
+      break;
+    case 'beurk':
+      ton({ type: 'sawtooth', de: 330, a: 140, duree: 0.45, volume: 0.08 });
+      ton({ type: 'triangle', de: 260, a: 105, duree: 0.55, volume: 0.12, retard: 0.05 });
+      break;
+    case 'papier':
+      bruit({ duree: 0.25, volume: 0.12, filtre: 'bandpass', de: 3000, a: 1200, q: 1.2 });
+      break;
     case 'sortie':
       [392, 523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
         ton({ de: f, duree: 2.0, volume: 0.1, attaque: 0.5, retard: i * 0.09 });

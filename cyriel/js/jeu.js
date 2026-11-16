@@ -14,9 +14,16 @@ import * as fx from './fx.js';
 import etape1 from './etapes/etape1.js';
 import etape2 from './etapes/etape2.js';
 import etape3 from './etapes/etape3.js';
-import aVenir from './etapes/a-venir.js';
+import cafe from './etapes/cafe.js';
+import bientot from './etapes/a-venir.js';
 
-const ETAPES = [etape1, etape2, etape3, aVenir];   // étape n° = position + 1
+const ETAPES = [
+  etape1,
+  etape2,
+  etape3,
+  bientot('L’étape des papillons arrive bientôt'),   // étape 4, à venir
+  cafe,
+];   // étape n° = position + 1
 
 const CLE_ETAPE = 'cyriel.etape';
 const scene = document.getElementById('scene');
@@ -70,6 +77,7 @@ function aller(n) {
     scene, son, fx, memoire, fond,
     debug: params.get('debug'),   // null, '' ou 'carte'
     suivante: () => aller(numero + 1),
+    derniere: n === ETAPES.length,
     aller,
   });
 

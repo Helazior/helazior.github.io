@@ -1,8 +1,9 @@
 // Étape 3 — peindre sur la paroi, comme un Homo sapiens.
 //
 // Deux dessins du Pech Merle à faire à la suite : le mammouth, puis la
-// femme. Chaque modèle apparaît quelques secondes, puis disparaît ; elle le
-// refait de mémoire, au doigt, à l'ocre rouge.
+// femme. Chaque modèle reste affiché ; après quelques secondes, un bouton
+// « Reproduire » apparaît. Le toucher efface le modèle, et elle le refait
+// de mémoire, au doigt, à l'ocre rouge.
 //   - n'importe quel dessin est accepté : elle valide quand elle veut ;
 //   - pas de gomme : on ne peut que recommencer le dessin en cours ;
 //   - la lumière est celle d'une lampe à graisse qui suit le doigt, donc
@@ -12,15 +13,17 @@
 //
 // Ses dessins sont gardés en mémoire (clé « dessins ») pour la finale.
 
+import { CODE } from '../code.js';
 import { nuage } from './grotte.js';
 import { mammouth, trait, OCRE_ROUGE } from './peintures.js';
 
 /* ---- Réglages et textes (à modifier librement) ---- */
 
-const CHIFFRE = 2;                 // le chiffre du code révélé à la fin de cette étape
+const CHIFFRE = CODE[1];           // 2e chiffre du code, révélé à la fin (voir js/code.js)
 
 const TEXTES = {
-  regarde: ['Regarde bien ce mammouth…', 'Et maintenant, elle…'],
+  retiens: ['Retiens ce mammouth', 'Retiens cette femme'],
+  reproduire: 'Reproduire',
   peins: ['À toi : peins-le de mémoire, avec ton doigt', 'Peins-la à côté de ton mammouth'],
   fin: 'Ton panneau du Pech Merle',
   recommencer: 'Recommencer',
@@ -28,7 +31,8 @@ const TEXTES = {
   continuer: 'Continuer',
 };
 
-const MONTRE = { entree: 0.8, tenue: 3.6, sortie: 1.0 };   // durée d'affichage d'un modèle (s)
+// En secondes : apparition du modèle, délai avant « Reproduire », effacement.
+const MONTRE = { entree: 0.8, avantBouton: 3, sortie: 0.6 };
 const NOIR = 0.965;                // opacité de l'obscurité pendant qu'elle peint
 const EPAISSEUR = 6.5;             // épaisseur du trait au doigt (px)
 
@@ -44,14 +48,17 @@ function toile(l, h) {
 
 /* ---- Les deux modèles ---- */
 
-// Silhouette de femme penchée en avant, de profil (boîte 150 × 190).
+// Silhouette de femme penchée en avant, de profil (boîte 150 × 190) :
+// poitrine lourde, fesses rondes bien détachées du dos et des jambes.
 function femme(ctx, couleur) {
-  trait(ctx, [[34, 30], [30, 20], [38, 13], [47, 18], [47, 30], [40, 34], [34, 30]], couleur, 2.8);            // tête
-  trait(ctx, [[48, 32], [62, 38], [84, 50], [102, 68], [112, 92], [108, 114], [96, 130], [90, 152], [88, 180]], couleur, 3.4); // dos, fesses, jambe
-  trait(ctx, [[40, 36], [40, 52], [35, 62], [29, 76], [37, 83], [46, 72]], couleur, 3);                        // poitrine
-  trait(ctx, [[46, 72], [45, 92], [48, 110], [60, 124], [74, 126]], couleur, 3.2);                             // ventre
-  trait(ctx, [[74, 126], [76, 146], [78, 164], [80, 180]], couleur, 3);                                        // jambe avant
-  trait(ctx, [[54, 44], [44, 60], [34, 70], [22, 80]], couleur, 2.8);                                          // bras
+  trait(ctx, [[34, 30], [30, 20], [38, 13], [47, 18], [47, 30], [40, 34], [34, 30]], couleur, 2.8);           // tête
+  trait(ctx, [[48, 32], [64, 38], [80, 48], [90, 60], [95, 76]], couleur, 3.4);                               // dos
+  trait(ctx, [[95, 76], [104, 70], [119, 75], [129, 90], [130, 108], [121, 122], [105, 127]], couleur, 3.6);  // fesses
+  trait(ctx, [[105, 127], [100, 143], [94, 162], [91, 182]], couleur, 3.2);                                   // jambe arrière
+  trait(ctx, [[42, 36], [40, 48], [32, 60], [22, 76], [21, 90], [31, 97], [43, 90], [47, 79]], couleur, 3.2); // poitrine
+  trait(ctx, [[47, 79], [45, 97], [50, 113], [62, 124], [78, 128]], couleur, 3.2);                            // ventre
+  trait(ctx, [[78, 128], [80, 148], [81, 166], [83, 182]], couleur, 3);                                      // jambe avant
+  trait(ctx, [[56, 44], [51, 57], [47, 66]], couleur, 2.6);                                                   // bras
 }
 
 const MODELES = [
@@ -77,6 +84,7 @@ function demarrer({ scene, son, memoire, suivante, debug }) {
     actions.append(b);
     return b;
   };
+  const bReproduire = bouton(TEXTES.reproduire);
   const bRecommencer = bouton(TEXTES.recommencer);
   const bValider = bouton(TEXTES.valider);
   const bContinuer = bouton(TEXTES.continuer);
@@ -210,8 +218,8 @@ function demarrer({ scene, son, memoire, suivante, debug }) {
   function entrer(nouvelle) {
     phase = nouvelle;
     tPhase = 0;
-    bRecommencer.hidden = bValider.hidden = true;
-    if (phase === 'montre') { consigne.textContent = TEXTES.regarde[index]; viser(); }
+    bRecommencer.hidden = bValider.hidden = bReproduire.hidden = true;
+    if (phase === 'montre') { consigne.textContent = TEXTES.retiens[index]; viser(); }
     if (phase === 'peint') { consigne.textContent = TEXTES.peins[index]; majBoutons(); }
     if (phase === 'fin') {
       consigne.textContent = TEXTES.fin;
@@ -239,6 +247,12 @@ function demarrer({ scene, son, memoire, suivante, debug }) {
   });
 
   bContinuer.addEventListener('click', () => { son.bip('clic', 0.5); suivante(); });
+
+  bReproduire.addEventListener('click', () => {
+    if (phase !== 'montre') return;
+    son.bip('clic', 0.6);
+    entrer('efface');
+  });
 
   /* ------------------------------------------------------- Pointeur */
 
@@ -281,23 +295,22 @@ function demarrer({ scene, son, memoire, suivante, debug }) {
   /* --------------------------------------------------------- Boucle */
 
   function alphaModele() {
-    if (phase !== 'montre') return 0;
-    const { entree, tenue, sortie } = MONTRE;
-    if (tPhase < entree) return tPhase / entree;
-    if (tPhase < entree + tenue) return 1;
-    return Math.max(0, 1 - (tPhase - entree - tenue) / sortie);
+    if (phase === 'montre') return Math.min(1, tPhase / MONTRE.entree);
+    if (phase === 'efface') return Math.max(0, 1 - tPhase / MONTRE.sortie);
+    return 0;
   }
 
   function avancer(dt) {
     temps += dt;
     tPhase += dt;
-    if (phase === 'montre' && tPhase >= MONTRE.entree + MONTRE.tenue + MONTRE.sortie) entrer('peint');
+    if (phase === 'montre' && bReproduire.hidden && tPhase >= MONTRE.entree + MONTRE.avantBouton) bReproduire.hidden = false;
+    if (phase === 'efface' && tPhase >= MONTRE.sortie) entrer('peint');
 
     // la lampe : large pour montrer le modèle, petite pour peindre, grande ouverte à la fin
     const petit = rayonLampe();
     let rCible = petit;
     let noirCible = NOIR;
-    if (phase === 'montre') {
+    if (phase === 'montre' || phase === 'efface') {
       const z = zone(index);
       rCible = petit + (Math.max(MODELES[index].l, MODELES[index].h) * z.e * 0.95 - petit) * alphaModele();
     } else if (phase === 'fin') {

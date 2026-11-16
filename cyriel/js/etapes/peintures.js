@@ -7,6 +7,7 @@
 // Tout est tracé en pixels du monde ; le contexte reçu est déjà mis à l'échelle.
 
 import { CHIFFRE } from './grotte.js';
+import { tracerChiffre } from '../chiffres.js';
 
 const NOIR = '#17120f';
 export const OCRE_ROUGE = '#a13c22';
@@ -234,19 +235,12 @@ function mainNegative(ctx, x, y, taille = 1, couleur = OCRE_ROUGE, angle = 0) {
 
 // Le chiffre du code : violet lumineux, pour trancher avec l'ocre et le noir.
 function chiffre(ctx) {
-  const { x, y, l, h } = CHIFFRE;
-  const barre = [[x + l * 0.66, y + 2], [x + 3, y + h * 0.62], [x + l - 2, y + h * 0.62]];
-  const mat = [[x + l * 0.66, y + 2], [x + l * 0.66, y + h - 2]];
+  const { valeur, x, y, l, h } = CHIFFRE;
   ctx.save();
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
   const tracer = () => {
-    ctx.beginPath();
-    ctx.moveTo(barre[0][0], barre[0][1]);
-    ctx.lineTo(barre[1][0], barre[1][1]);
-    ctx.lineTo(barre[2][0], barre[2][1]);
-    ctx.moveTo(mat[0][0], mat[0][1]);
-    ctx.lineTo(mat[1][0], mat[1][1]);
+    tracerChiffre(ctx, valeur, x, y, l, h);
     ctx.stroke();
   };
   // halo

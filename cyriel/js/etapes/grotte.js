@@ -9,6 +9,8 @@
 // Ce fichier ne touche pas à l'affichage : il sert aussi au script de
 // vérification (outils/verifier-grotte.mjs).
 
+import { CODE } from '../code.js';
+
 export const MONDE = { l: 1760, h: 1250, pas: 4 };
 
 export const DEPART = { x: 150, y: 1030 };
@@ -16,7 +18,7 @@ export const SORTIE = { x: 1668, y: 104, rayon: 60 };
 
 // Le chiffre du code caché dans cette étape, peint en violet lumineux à
 // côté des chevaux (coin haut-gauche et taille, en pixels du monde).
-export const CHIFFRE = { valeur: 4, x: 978, y: 826, l: 62, h: 86 };
+export const CHIFFRE = { valeur: CODE[0], x: 978, y: 826, l: 62, h: 86 };
 
 export const RAYON_CORPS = 11;   // « épaisseur » de la chauve-souris face à la roche
 

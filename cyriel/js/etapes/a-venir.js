@@ -1,24 +1,30 @@
-// Écran provisoire, affiché après la dernière étape déjà codée.
-// À retirer de la liste ETAPES (js/jeu.js) quand le jeu sera complet.
+// Écran provisoire pour une étape pas encore codée.
+// À retirer de la liste ETAPES (js/jeu.js) quand l'étape existera.
 
-export default {
-  fond: 'clair',
-  ambiance: null,
+export default function bientot(message = 'La suite arrive bientôt') {
+  return {
+    fond: 'clair',
+    ambiance: null,
 
-  demarrer({ scene, aller }) {
-    const bloc = document.createElement('div');
-    bloc.className = 'a-venir';
+    demarrer({ scene, aller, suivante, derniere }) {
+      const bloc = document.createElement('div');
+      bloc.className = 'a-venir';
+      const texte = document.createElement('p');
+      texte.textContent = message;
+      bloc.append(texte);
 
-    const texte = document.createElement('p');
-    texte.textContent = 'La suite arrive bientôt';
+      const bouton = (libelle, action) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = libelle;
+        b.addEventListener('click', action);
+        bloc.append(b);
+      };
+      if (!derniere) bouton('Passer à la suite', suivante);
+      bouton('Rejouer depuis le début', () => aller(1));
 
-    const rejouer = document.createElement('button');
-    rejouer.type = 'button';
-    rejouer.textContent = 'Rejouer depuis le début';
-    rejouer.addEventListener('click', () => aller(1));
-
-    bloc.append(texte, rejouer);
-    scene.append(bloc);
-    return () => {};
-  },
-};
+      scene.append(bloc);
+      return () => {};
+    },
+  };
+}

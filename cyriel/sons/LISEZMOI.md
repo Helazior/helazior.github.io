@@ -7,7 +7,9 @@ d'étape. Il suffit de déposer ici un fichier portant le bon nom :
 | --- | --- |
 | 1 — les deux boutons | `etape-1.mp3` |
 | 2 — la grotte | `etape-2.mp3` (déjà là) |
+| 3 — la peinture | `etape-3.mp3` |
 | 4 — la zone humide | `etape-4.mp3` (déjà là) |
+| 5 — le café | `etape-5.mp3` |
 
 Tant qu'un fichier manque, l'étape se joue simplement sans musique de fond
 (les bruitages, eux, sont fabriqués par le navigateur et marchent déjà).
