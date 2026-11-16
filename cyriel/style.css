@@ -1958,3 +1958,78 @@ button.e5-case:disabled { opacity: .38; cursor: default; box-shadow: none; }
 .cr-partez:active { box-shadow: 0 1px 0 var(--violet-fonce); }
 .cr-partez:focus { outline: none; }
 .cr-partez:focus-visible { outline: 3px solid var(--lilas); outline-offset: 3px; }
+
+/* Le marais en mode arcade : les vies, les loupes, la défaite */
+.e4-vies {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  right: calc(max(10px, env(safe-area-inset-right)) + 48px);
+  z-index: 5;
+  display: flex;
+  gap: 3px;
+  padding: 5px 8px;
+  border: 2px solid var(--encre);
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 3px 0 var(--encre);
+}
+.e4-vies[hidden] { display: none; }
+.e4-coeur { width: 20px; height: 18px; fill: #e04a7a; stroke: var(--encre); stroke-width: 1.6; transition: fill .3s, transform .3s; }
+.e4-coeur-perdu { fill: #e6e0ea; transform: scale(.8); }
+.e4-vies-touche { animation: e4-vies-touche .5s; }
+@keyframes e4-vies-touche { 20% { transform: scale(1.18) rotate(-4deg); background: #ffd9e4; } 60% { transform: rotate(3deg); } }
+.e4-secousse { animation: e4-secousse .35s; }
+@keyframes e4-secousse { 25% { transform: translateX(-5px); } 50% { transform: translateX(4px); } 75% { transform: translateX(-2px); } }
+
+.e4-mini { cursor: pointer; }
+.e4-mini:focus { outline: none; }
+.e4-mini:focus-visible > .e4-mini-pop { filter: drop-shadow(0 0 4px var(--violet)); }
+.e4-mini-pop { transform-box: fill-box; transform-origin: center; animation: e5-pop .34s cubic-bezier(.3, 1.6, .5, 1); }
+.e4-mini-alerte .e4-mini-pop { animation: e4-mini-alerte .5s ease-in-out infinite alternate; }
+@keyframes e4-mini-alerte { from { transform: scale(1); } to { transform: scale(1.12); } }
+.e4-mini-alerte .e4-mini-bord { stroke: #e04a2a; }
+.e4-mini-fini .e4-mini-pop { opacity: .8; }
+.e4-mini-arrive { animation: e4-mini-arrive .5s ease-out; }
+@keyframes e4-mini-arrive { from { transform: translateX(-30px); opacity: 0; } }
+.e4-mini-crue { animation: e4-mini-crue 1.2s ease-in-out infinite alternate; }
+@keyframes e4-mini-crue { from { transform: translateY(18px); } to { transform: translateY(8px); } }
+
+.e4-femelle { cursor: pointer; }
+.e4-patience { transition: stroke .3s; }
+.e4-choisie .e4-zoom { filter: drop-shadow(0 0 5px #f2c14e) drop-shadow(0 0 2px #f2c14e); }
+
+.e4-perdu {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(26, 16, 38, .45);
+  animation: e4-perdu-fond .4s ease-out;
+}
+@keyframes e4-perdu-fond { from { opacity: 0; } }
+.e4-perdu-boite {
+  max-width: 320px;
+  padding: 18px 20px;
+  border: 2px solid var(--encre);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 4px 0 var(--encre);
+  text-align: center;
+  animation: e5-pop .4s cubic-bezier(.3, 1.6, .5, 1);
+}
+.e4-perdu-boite p { margin: 0 0 14px; font-size: 17px; line-height: 1.35; }
+.e4-perdu-boite button {
+  padding: 10px 22px 11px;
+  border: 2px solid var(--violet-fonce);
+  border-radius: 999px;
+  background: var(--violet);
+  color: #fff;
+  font: 600 16px/1.2 var(--police);
+  box-shadow: 0 3px 0 var(--violet-fonce);
+  cursor: pointer;
+}
+@media (prefers-reduced-motion: reduce) {
+  .e4-mini-alerte .e4-mini-pop, .e4-mini-crue, .e4-secousse { animation: none; }
+}
