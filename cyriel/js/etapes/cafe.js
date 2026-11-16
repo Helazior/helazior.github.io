@@ -37,7 +37,7 @@ const TEXTES = {
     jouer: 'Jouer',
     erreur: 'Mauvais mot de passe.',
     oubli: 'Mot de passe oublié ?',
-    indice: 'Ton mot de passe, ce sont les 4 chiffres trouvés en chemin : le premier dans la grotte, le deuxième sur ta peinture, les deux derniers chez les papillons.',
+    indice: 'Ton mot de passe, ce sont les 4 chiffres trouvés en chemin : le premier dans la grotte, le deuxième sur ta peinture, le troisième sur le panneau du marais et le dernier sur l’aile du machaon.',
     coupDePouce: 'Coup de pouce :',
     chargement: 'Chargement du café…',
     version: 'Version 23.11',

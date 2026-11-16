@@ -30,3 +30,16 @@ export function tracerChiffre(ctx, chiffre, x, y, l, h) {
     });
   }
 }
+
+/** Le même tracé, en chemin SVG (attribut d). */
+export function cheminChiffre(chiffre, x, y, l, h) {
+  return (TRAITS[chiffre] || []).map((trait) => trait.map(([u, v], i) => `${i ? 'L' : 'M'}${(x + u * l).toFixed(2)} ${(y + v * h).toFixed(2)}`).join(' ')).join(' ');
+}
+
+/** Chiffre « au néon » violet en SVG, comme celui peint dans la grotte. */
+export function chiffreNeon(chiffre, x, y, l, h) {
+  const d = cheminChiffre(chiffre, x, y, l, h);
+  const k = h / 86;
+  const couche = (couleur, largeur) => `<path d="${d}" stroke="${couleur}" stroke-width="${(largeur * k).toFixed(2)}"/>`;
+  return `<g fill="none" stroke-linecap="round" stroke-linejoin="round">${couche('rgba(170,100,255,.28)', 26)}${couche('rgba(170,100,255,.42)', 17)}${couche('#9a45ff', 10.5)}${couche('#e6ccff', 3)}</g>`;
+}

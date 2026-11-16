@@ -204,6 +204,13 @@ export function bip(nom, p = 0) {
       ton({ type: 'sawtooth', de: 330, a: 140, duree: 0.45, volume: 0.08 });
       ton({ type: 'triangle', de: 260, a: 105, duree: 0.55, volume: 0.12, retard: 0.05 });
       break;
+    case 'croque':
+      [0, 0.12, 0.24].forEach((r) => bruit({ duree: 0.07, volume: 0.24, filtre: 'bandpass', de: 2600, a: 1300, q: 1.4, retard: r }));
+      break;
+    case 'eclosion':
+      [784, 988, 1175, 1568].forEach((f, i) => ton({ de: f, duree: 0.35, volume: 0.09, retard: i * 0.06 }));
+      bruit({ duree: 0.3, volume: 0.05, filtre: 'highpass', de: 4000, retard: 0.05 });
+      break;
     case 'papier':
       bruit({ duree: 0.25, volume: 0.12, filtre: 'bandpass', de: 3000, a: 1200, q: 1.2 });
       break;

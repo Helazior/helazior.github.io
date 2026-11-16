@@ -14,14 +14,14 @@ import * as fx from './fx.js';
 import etape1 from './etapes/etape1.js';
 import etape2 from './etapes/etape2.js';
 import etape3 from './etapes/etape3.js';
+import etape4 from './etapes/etape4.js';
 import cafe from './etapes/cafe.js';
-import bientot from './etapes/a-venir.js';
 
 const ETAPES = [
   etape1,
   etape2,
   etape3,
-  bientot('L’étape des papillons arrive bientôt'),   // étape 4, à venir
+  etape4,
   cafe,
 ];   // étape n° = position + 1
 

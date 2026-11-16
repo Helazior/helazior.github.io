@@ -822,3 +822,158 @@ body[data-fond="sombre"] {
   color: #3f8a4c;
   font-weight: 700;
 }
+
+/* ----------------------------------------------------------- Étape 4 */
+
+.e4 {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #b5dc8f;
+}
+
+.e4-scene {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.e4-svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+.e4-svg text { font-family: var(--police); }
+
+.e4-bas {
+  flex: none;
+  padding: 8px max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+}
+
+.e4-panneau {
+  max-width: 620px;
+  min-height: 70px;
+  margin: 0 auto;
+  padding: 10px 14px 12px;
+  border: 2px solid var(--encre);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 3px 0 var(--encre);
+}
+
+.e4-texte {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+
+.e4-boutons { display: flex; justify-content: flex-end; gap: 8px; }
+.e4-boutons:not(:empty) { margin-top: 10px; }
+.e4-boutons button {
+  padding: 9px 18px 10px;
+  border: 2px solid var(--violet-fonce);
+  border-radius: 999px;
+  background: var(--violet);
+  color: #fff;
+  font: 600 15px/1.2 var(--police);
+  box-shadow: 0 3px 0 var(--violet-fonce);
+  cursor: pointer;
+}
+.e4-boutons button:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--violet-fonce); }
+
+.e4-transition {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  width: 100%;
+  height: 100%;
+}
+
+.e4-chenille { cursor: grab; }
+.e4-chenille:active { cursor: grabbing; }
+.e4-plante { cursor: pointer; }
+.e4-svg [tabindex]:focus { outline: none; }
+.e4-svg [tabindex]:focus-visible .e4-plante-corps { filter: drop-shadow(0 0 4px #7a3cf0); }
+
+.e4-corps {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: e4-respire 1.6s ease-in-out infinite alternate;
+}
+@keyframes e4-respire { from { transform: scaleY(1); } to { transform: scaleY(1.05); } }
+.e4-souleve { animation: none; transform: scale(1.12) rotate(-6deg); }
+
+.e4-seg { transform-box: fill-box; }
+.e4-rampe .e4-seg { animation: e4-ondule .32s ease-in-out infinite alternate; }
+@keyframes e4-ondule { from { transform: translateY(0); } to { transform: translateY(-2.6px); } }
+
+.e4-limace { transform-box: fill-box; transform-origin: 50% 100%; }
+.e4-rampe .e4-limace { animation: e4-glisse .4s ease-in-out infinite alternate; }
+@keyframes e4-glisse { from { transform: scaleX(1); } to { transform: scale(1.08, .92); } }
+
+.e4-tete { transform-box: fill-box; transform-origin: 30% 80%; }
+.e4-mange .e4-tete { animation: e4-mache .18s ease-in-out infinite alternate; }
+@keyframes e4-mache { from { transform: rotate(-10deg); } to { transform: rotate(14deg); } }
+.e4-non .e4-tete { animation: e4-non .14s ease-in-out 6 alternate; }
+@keyframes e4-non { from { transform: translateX(-1.5px) rotate(-8deg); } to { transform: translateX(1.5px) rotate(8deg); } }
+
+.e4-cornes {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: 0% 100%;
+  transform: scale(0);
+  transition: transform .2s cubic-bezier(.3, 1.6, .5, 1), opacity .2s;
+}
+.e4-fache .e4-cornes { opacity: 1; transform: scale(1); }
+
+.e4-plante-corps { transform-box: fill-box; transform-origin: 50% 100%; transition: transform .2s; }
+.e4-survol .e4-plante-corps { transform: scale(1.07); }
+.e4-content .e4-plante-corps { animation: e4-content .45s ease-in-out 2 alternate; }
+@keyframes e4-content { to { transform: scale(1.05, .95); } }
+.e4-secoue-plante .e4-plante-corps { animation: e5-secoue .42s ease-in-out; }
+
+.e4-chrysalide { transform-box: fill-box; transform-origin: 50% 0%; }
+.e4-tremble { animation: e4-tremble .11s ease-in-out 8 alternate; }
+@keyframes e4-tremble { from { transform: rotate(-7deg); } to { transform: rotate(7deg); } }
+
+.e4-eclot {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: e4-eclot .55s cubic-bezier(.3, 1.6, .5, 1);
+}
+@keyframes e4-eclot { from { transform: scale(0) rotate(-20deg); } }
+.e4-zoom { transform-box: fill-box; transform-origin: 50% 50%; }
+
+.e4-ailes {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: e5-papillon .9s ease-in-out infinite;
+}
+.e4-vite .e4-ailes { animation-duration: .28s; }
+.e4-lent .e4-ailes { animation: e4-ailes-ouvertes 2.6s ease-in-out infinite alternate; }
+@keyframes e4-ailes-ouvertes { from { transform: scaleX(1); } to { transform: scaleX(.86); } }
+
+.e4-chiffre-panneau,
+.e4-chiffre-aile { animation: e4-luit 1.3s ease-in-out infinite alternate; }
+@keyframes e4-luit { from { opacity: .75; } to { opacity: 1; } }
+
+.e4-halo-anim {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: e5-halo 1.4s ease-out infinite;
+}
+
+.e4-fourmi { transform-box: fill-box; }
+.e4-marche-fourmi .e4-fourmi { animation: e4-fourmi .12s linear infinite alternate; }
+@keyframes e4-fourmi { from { transform: translateY(0); } to { transform: translateY(-.8px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .e4-corps, .e4-rampe .e4-seg, .e4-rampe .e4-limace, .e4-marche-fourmi .e4-fourmi { animation: none; }
+  .e4-ailes { animation-duration: 2.4s; }
+}
