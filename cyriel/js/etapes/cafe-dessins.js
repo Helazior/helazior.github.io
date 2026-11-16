@@ -7,6 +7,7 @@
 // largement pour remplir les écrans plus larges ou plus hauts.
 
 import { cheminChiffre } from '../chiffres.js';
+import { duoSpeleo, cyrielChapeau, cyrielClin, cyrielNatte } from './clins-doeil.js';
 
 export const LARGEUR = 400;
 export const HAUTEUR = 560;
@@ -689,10 +690,11 @@ function decorLointain() {
   return `
   <g transform="translate(-86 92)">
     <rect x="-36" y="-32" width="72" height="60" rx="3" fill="#9a6438"/>
-    <rect x="-30" y="-26" width="60" height="48" fill="#d6e6f3"/>
-    <path d="M-30 22 L-12 -2 L-2 9 L10 -9 L30 22 Z" fill="#7aa36b"/>
-    <path d="M10 -9 L4 0 L16 0 Z" fill="#fff"/>
-    <circle cx="19" cy="-15" r="4" fill="#f5d33f"/>
+    ${portrait(duoSpeleo({ lueur: true }), -30, -26, 60, 48, '-30 -54 60 48', '#2a2140')}
+  </g>
+  <g transform="translate(-196 112) rotate(3)">
+    <rect x="-22" y="-28" width="44" height="54" rx="2" fill="#fffaf2" stroke="#d9c8a8" stroke-width="1.5"/>
+    ${portrait(cyrielChapeau(), -18, -24, 36, 40, '-17 -52 34 38', '#cfe7f5')}
   </g>
   ${plante(-70, 340, 1.15)}
   <g transform="translate(476 120)">
@@ -702,6 +704,11 @@ function decorLointain() {
     <ellipse cx="0" cy="110" rx="14" ry="3" fill="#86552e"/>
   </g>
   ${plante(540, 340, 1.15)}`;
+}
+
+// Un portrait recadré (clin d'œil) dans une fenêtre l × h.
+function portrait(dessin, x, y, l, h, boite, fond = '#e9dcff') {
+  return `<svg x="${x}" y="${y}" width="${l}" height="${h}" viewBox="${boite}" preserveAspectRatio="xMidYMid slice"><rect x="-200" y="-200" width="400" height="400" fill="${fond}"/>${dessin}</svg>`;
 }
 
 function frigo() {
@@ -722,8 +729,7 @@ function frigo() {
       <path d="M28 108 C24 104.5 23.4 102.2 25.4 101.4 C26.6 100.9 27.6 101.6 28 102.3 C28.4 101.6 29.4 100.9 30.6 101.4 C32.6 102.2 32 104.5 28 108 Z" fill="#8f5cf7"/>
       <g transform="translate(36 156) rotate(-6)">
         <rect x="-11" y="-12" width="22" height="25" fill="#fff" stroke="#e3dccd"/>
-        <rect x="-8.5" y="-9.5" width="17" height="15" fill="#cfe3f2"/>
-        <path d="M-8.5 5.5 L-3 -2 L1 2 L4.5 -3 L8.5 5.5 Z" fill="#7aa36b"/>
+        ${portrait(cyrielClin(), -8.5, -9.5, 17, 15, '-13 -49 26 23', '#ffe3ef')}
       </g>
     </g>
   </g>`;
@@ -1095,7 +1101,7 @@ function poteauCafe(x, y, texte) {
 
 const LOOKS = [
   { clement: true },   // Clément, dessiné à part : corpsClement()
-  { peau: '#f0c9a4', cheveux: '#e4e0ee', haut: '#f06fa4', bas: '#6b4a8f', coiffe: 'chignon' },
+  null,                // (ancienne Mamie_Confiture, remplacée par Cyriel)
   { chachoux: true },  // Chachoux, dessinée à part : corpsChachoux()
   { estel: true },     // Estel, dessinée à part : corpsEstel()
   { peau: '#e8b48f', cheveux: '#8a1c34', haut: '#f5d33f', bas: '#3b3550', coiffe: 'courts' },
@@ -1400,7 +1406,7 @@ function papillonVolant(x, y, couleur, delai) {
 export function marche(etals, joueurs, texteCafe) {
   const { centre: c, demi } = MARCHE;
   const place = `M${c.x} ${c.y - demi.h} L${c.x + demi.l} ${c.y} L${c.x} ${c.y + demi.h} L${c.x - demi.l} ${c.y} Z`;
-  const [n1, n2, n3, n4, n5, n6, n7, n8] = joueurs;
+  const [n1, n3, n4, n5, n6, n7, n8] = joueurs;
   return `
   <rect x="-1400" y="-1400" width="3200" height="3360" fill="url(#e5-herbe)"/>
   <path d="${place}" fill="#cdbb98" stroke="#cdbb98" stroke-width="16" stroke-linejoin="round"/>
@@ -1418,7 +1424,8 @@ export function marche(etals, joueurs, texteCafe) {
   ${caisses(470, 250, 'lait', 'farine')}${tonneau(500, 352)}
   ${joueur(n5 || '', LOOKS[4], { x: -70, y: 236, flane: true })}
   ${joueur(n6 || '', LOOKS[5], { x: 430, y: 330 })}
-  ${joueur(n2 || '', LOOKS[1], { x: 126, y: 298 })}
+  <g transform="translate(126 298)"><ellipse rx="10" ry="3.6" fill="#2a1745" opacity=".16"/><g class="e5-respire">${cyrielNatte()}</g>
+    <g transform="translate(0 -58)"><rect x="-19" y="-8" width="38" height="15" rx="7.5" fill="#7a3cf0" fill-opacity=".85"/><text y="3.2" text-anchor="middle" font-size="9.5" font-weight="600" fill="#fff">Cyriel</text></g></g>
   <g transform="translate(${c.x} ${c.y})">${fontaine()}</g>
   ${joueur(n3 || '', LOOKS[2], { x: 332, y: 292, flane: true })}
   ${joueur(n1 || '', LOOKS[0], { x: 246, y: 348, coucou: true, coeur: true })}

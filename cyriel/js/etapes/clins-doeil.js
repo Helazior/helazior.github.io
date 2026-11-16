@@ -1,5 +1,8 @@
 // Clins d'œil : Cyriel et Clément, dessinés d'après leurs photos, à glisser
-// plus tard dans les décors du jeu. Rien n'est encore placé.
+// dans les décors du jeu. Placés : duoSpeleo (grotte, 1re salle),
+// cyrielChapeau et duoCamargue (marais, au bord de l'étang), cyrielClin (photo
+// sur le frigo du café), duoSpeleo et cyrielChapeau (cadres du café, écran
+// large), cyrielNatte (marché). Libres : cyrielColRoule.
 //
 // Chaque fonction renvoie un morceau de SVG (texte), origine aux pieds, pour
 // un personnage d'environ 20 × 50 :

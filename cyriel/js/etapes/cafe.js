@@ -39,7 +39,7 @@ const TEXTES = {
   // Les pseudos des joueurs qui flânent au marché : Clément près de la
   // fontaine, Chachoux qui se promène, Estel sur le banc, Gaston et Bichette
   // (visibles seulement sur écran large), puis Angelouné et Rachou.
-  joueurs: ['Clément', 'Mamie_Confiture', 'Xx-Chachoux-xX', 'Estelou du Luxou', 'Gaston_du_43', 'Bichette', 'Angelouné', 'Rachou'],
+  joueurs: ['Clément', 'Xx-Chachoux-xX', 'Estelou du Luxou', 'Gaston_du_43', 'Bichette', 'Angelouné', 'Rachou'],
 
   connexion: {
     pseudo: 'Pseudo',

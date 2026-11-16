@@ -6,6 +6,7 @@
 // pour remplir les écrans plus larges ou plus hauts.
 
 import { chiffreNeon } from '../chiffres.js';
+import { cyrielChapeau, duoCamargue } from './clins-doeil.js';
 
 export const LARGEUR = 400;
 export const HAUTEUR = 560;
@@ -416,6 +417,8 @@ export function decor() {
     <path d="M330 217 a5 2.4 0 1 0 1 -2.2 l-3 1.1 Z"/>
   </g>
   <circle cx="249" cy="226" r="2.4" fill="#ffb3d1"/><circle cx="249" cy="226" r="1" fill="#f6e27a"/>
+  <g transform="translate(372 216) scale(.62)">${cyrielChapeau()}</g>
+  <g transform="translate(126 213) scale(.5)">${duoCamargue()}</g>
   ${massette(212, 232, 0.95)}${massette(390, 230, 1.05)}${massette(-40, 236, 1.1)}${massette(470, 240, 1.15)}${massette(-130, 250, 0.9)}${massette(540, 250, 0.95)}
   ${touffes}${fleurettes}`;
 }

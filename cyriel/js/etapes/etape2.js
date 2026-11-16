@@ -14,6 +14,7 @@
 import { chauveSouris, yeux } from '../dessin.js';
 import { creerGrotte, MONDE, DEPART, SORTIE, CHIFFRE, MOUSTIQUES } from './grotte.js';
 import { peindreParois } from './peintures.js';
+import { duoSpeleo } from './clins-doeil.js';
 
 const TAU = Math.PI * 2;
 
@@ -121,10 +122,29 @@ async function construire() {
   m.scale(q, q);
   m.drawImage(cFond, 0, 0);
   peindreParois(m);
+  await dessinerSvg(m, duoSpeleo(), 230, 1147, 1.5);   // clin d'œil : Cyriel et Clément en spéléo
   m.drawImage(cRoche, 0, 0);
   cFond.width = cFond.height = cRoche.width = cRoche.height = 1;   // libère la mémoire
 
   return { grotte, monde, q };
+}
+
+// Dessine un morceau de SVG (origine aux pieds) sur la toile, à l'échelle k.
+async function dessinerSvg(ctx, dessin, x, y, k) {
+  const l = 80;
+  const h = 90;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-40 -84 ${l} ${h}" width="${l * k * 2}" height="${h * k * 2}">${dessin}</svg>`;
+  const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
+  try {
+    const img = new Image();
+    img.src = url;
+    await img.decode();
+    ctx.drawImage(img, x - 40 * k, y - 84 * k, l * k, h * k);
+  } catch {
+    // pas grave : la grotte reste sans le clin d'œil
+  } finally {
+    URL.revokeObjectURL(url);
+  }
 }
 
 /* ============================================================
