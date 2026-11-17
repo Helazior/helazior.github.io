@@ -432,10 +432,11 @@ const PRIX = {
   poivron: 2, aubergine: 2, gingembre: 2, coriandre: 1, balsamique: 4, vin: 5, champagne: 9, huitres: 6,
 };
 
-// Les sons de fond du café (dans sons/) et leur volume (1 = normal) : le
-// piano de la salle, doucement, et les oiseaux et la fontaine du marché.
+// Les sons de fond du café (dans sons/) et leur volume (1 = normal) : la
+// musique du jeu d'origine dans la salle, et les oiseaux et la fontaine du
+// marché.
 const SONS = {
-  salle: { fichier: 'sons/cafe-salle.mp3', volume: 0.14 },
+  salle: { fichier: 'sons/cafe-salle.mp3', volume: 0.12 },
   marche: { fichier: 'sons/cafe-marche.mp3', volume: 1 },
 };
 

@@ -12,8 +12,8 @@ let maitre = null;       // volume général (coupé / ouvert)
 let busAmbiance = null;
 let busBruitages = null;
 let coupe = lire();
-let voulue = null;       // ambiance demandée : { url, volume }, ou null
-let courante = null;     // piste qui joue réellement
+let voulue = [];         // couches demandées : [{ url, volume }] (vide : silence)
+const courantes = new Map(); // url → piste qui joue réellement
 const pistes = new Map(); // pistes déjà ouvertes : elles reprennent où elles en étaient
 
 function lire() {
@@ -53,34 +53,47 @@ export function eveiller() {
 
 /**
  * Demande une ambiance : chemin d'un fichier (ou null pour le silence), et
- * son volume (1 = normal). Changer de fichier fait un fondu enchaîné ; une
- * piste déjà entendue reprend là où elle s'était arrêtée.
+ * son volume (1 = normal). On peut aussi superposer plusieurs sons : une
+ * liste de chemins ou de { url, volume } (l'étape 4 : la forêt et le piano).
+ * Changer de fichier fait un fondu enchaîné ; une piste déjà entendue reprend
+ * là où elle s'était arrêtée.
  */
 export function ambiance(url, volume = 1) {
-  voulue = url ? { url, volume } : null;
+  if (!url) voulue = [];
+  else if (Array.isArray(url)) voulue = url.map((c) => (typeof c === 'string' ? { url: c, volume: 1 } : { url: c.url, volume: c.volume ?? 1 }));
+  else voulue = [{ url, volume }];
   if (ctx) appliquerAmbiance();
 }
 
-/** L'ambiance qui joue (pour les essais) : chemin et volume visé, ou null. */
+/** L'ambiance qui joue (pour les essais) : la première couche (chemin,
+ *  volume visé, en pause ou non) et toutes les couches, ou null. */
 export function ambianceCourante() {
-  return courante && voulue ? { url: courante.url, volume: voulue.volume, pause: courante.audio.paused } : null;
+  const couches = voulue.filter((c) => courantes.has(c.url))
+    .map((c) => ({ url: c.url, volume: c.volume, pause: courantes.get(c.url).audio.paused }));
+  return couches.length ? { ...couches[0], couches } : null;
 }
 
 function appliquerAmbiance() {
-  const cible = voulue ? voulue.url : null;
-  if (courante && courante.url === cible) {      // même piste : seul le volume change
-    rampe(courante.gain, voulue.volume);
-    return;
-  }
-  if (courante) {
-    const ancienne = courante;
+  const voulues = new Set(voulue.map((c) => c.url));
+  for (const [url, ancienne] of courantes) {    // ce qui n'est plus demandé s'éteint
+    if (voulues.has(url)) continue;
     rampe(ancienne.gain, 0);
     clearTimeout(ancienne.arret);
-    ancienne.arret = setTimeout(() => { if (courante !== ancienne) ancienne.audio.pause(); }, FONDU * 1000 + 200);
-    courante = null;
+    ancienne.arret = setTimeout(() => { if (!courantes.has(url)) ancienne.audio.pause(); }, FONDU * 1000 + 200);
+    courantes.delete(url);
   }
-  if (!cible) return;
+  for (const c of voulue) {
+    const deja = courantes.get(c.url);
+    if (deja) { rampe(deja.gain, c.volume); continue; }   // même piste : seul le volume change
+    const piste = ouvrir(c.url);
+    clearTimeout(piste.arret);
+    piste.audio.play().catch(() => {});
+    rampe(piste.gain, c.volume);
+    courantes.set(c.url, piste);
+  }
+}
 
+function ouvrir(cible) {
   let piste = pistes.get(cible);
   if (!piste) {
     const audio = new Audio();
@@ -98,10 +111,7 @@ function appliquerAmbiance() {
     piste = { url: cible, audio, gain, arret: 0 };
     pistes.set(cible, piste);
   }
-  clearTimeout(piste.arret);
-  piste.audio.play().catch(() => {});
-  rampe(piste.gain, voulue.volume);
-  courante = piste;
+  return piste;
 }
 
 function rampe(gain, cible) {

@@ -22,7 +22,7 @@ export const CHIFFRE = { valeur: CODE[0], x: 978, y: 826, l: 62, h: 86 };
 
 export const RAYON_CORPS = 11;   // « épaisseur » de la chauve-souris face à la roche
 
-const GRAINE = 2311;             // 23/11 :)
+const GRAINE = 2411;             // 24/11 :)
 
 /* ------------------------------------------------------------ Le plan */
 

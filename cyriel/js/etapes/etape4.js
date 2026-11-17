@@ -2032,6 +2032,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
 
 export default {
   fond: 'clair',
-  ambiance: 'sons/etape-4.mp3',
+  // La forêt sous la pluie, et en plus le piano (l'ancienne musique du café).
+  ambiance: ['sons/etape-4.mp3', { url: 'sons/etape-4-piano.mp3', volume: 0.18 }],
   demarrer,
 };
