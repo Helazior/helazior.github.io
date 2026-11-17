@@ -33,7 +33,7 @@ const PORTEE_LUEUR = 300;    // jusqu'où porte la lumière de la sortie
 const CASE_VU = 16;          // maille de la grille « déjà révélé »
 const NOIR_APRES = 3;        // secondes de lumière après le passage d'une onde…
 const NOIR_DUREE = 3;        // …puis l'obscurité revient petit à petit
-const NOIR_MAX = 0.9;        // un souvenir très faible de la roche reste
+const NOIR_MAX = 1;          // noir complet, comme au début
 
 const VIOLET = '#8f5cf7';
 
