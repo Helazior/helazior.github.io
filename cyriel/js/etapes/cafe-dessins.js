@@ -802,18 +802,71 @@ export const LIEUX = {
   frigo: pt(1.6, 1.05, 26),
 };
 
+// Autour du café, comme sur la maquette de Clément (et le jeu d'origine) :
+// l'herbe partout, la dalle claire sous la salle (avec sa tranche devant),
+// les trottoirs dallés, et les deux rues qui se croisent derrière le coin du
+// fond (bordures arrondies, tirets blancs). Devant à droite, la dalle
+// s'agrandit en terrasse : le camion du chef pâtissier y est garé.
 function rue() {
-  const ligne = (a, b) => `<path d="M${Q(...a)} L${Q(...b)}" stroke="#c3beb5" stroke-width="2.4" stroke-linecap="round"/>`;
-  const tirets = [-9, -6, -3, 0, 3, 6, 9, 12, 15, 18].map((i) => `<path d="M${Q(i, -6.5)} L${Q(i + 1.4, -6.5)}" stroke="#f4f2ee" stroke-width="3"/>`).join('')
-    + [-9, -6, -3, 0, 3, 6, 9, 12, 15, 18].map((j) => `<path d="M${Q(-6.5, j)} L${Q(-6.5, j + 1.4)}" stroke="#f4f2ee" stroke-width="3"/>`).join('');
+  const n = CA.n;
+  const R0 = -9.4;
+  const R1 = -3.6;           // la chaussée, de R0 à R1 (derrière chaque mur)
+  const T0 = -10.8;          // le trottoir d'en face s'arrête là
+  const C = (R0 + R1) / 2;   // l'axe des rues
+  const L = 60;
+  const r = 1.8;             // l'arrondi des coins de trottoir
+  const ASPHALTE = '#c2b6a6';
+  const TROTTOIR = '#e3dacc';
+  const JOINT = '#cfc2ae';
+  const BORD = '#ad9f8c';
+  const DALLE = '#e6ddd1';
+  const TRANCHE = '#cdc2b2';
+  const TRANCHE2 = '#c2b6a5';
+  const herbe = 'url(#e5-herbe)';
+  const arc = (ci, cj, a0, a1) => Array.from({ length: 7 }, (_, k) => {
+    const a = ((a0 + ((a1 - a0) * k) / 6) * Math.PI) / 180;
+    return [ci + Math.cos(a) * r, cj + Math.sin(a) * r];
+  });
+  // la chaussée en croix, coins intérieurs arrondis
+  const croix = [
+    [R1, L], ...arc(R1 + r, R1 + r, 180, 270), [L, R1], [L, R0],
+    ...arc(R1 + r, R0 - r, 90, 180), [R1, -L], [R0, -L],
+    ...arc(R0 - r, R0 - r, 0, 90), [-L, R0], [-L, R1],
+    ...arc(R0 - r, R1 + r, 270, 360), [R0, L],
+  ];
+  const ligne = (a, b, c = JOINT, w = 1) => `<path d="M${Q(...a)} L${Q(...b)}" stroke="${c}" stroke-width="${w}"/>`;
+  // les joints des dalles du trottoir, en travers et dans la longueur
+  let joints = '';
+  for (let k = -24; k <= 24; k++) {
+    const u = k * 1.5;
+    if (u > R0 - r - 0.2 && u < R1 + r + 0.2) continue;   // pas dans le carrefour
+    joints += ligne([T0, u], [R0, u]) + ligne([u, T0], [u, R0]);
+    if (u < -0.6 || u > n + 1.2) joints += ligne([R1, u], [-0.6, u]) + ligne([u, R1], [u, -0.6]);
+  }
+  joints += ligne([-2.1, -L], [-2.1, R0 - r]) + ligne([-2.1, R1 + r], [-2.1, -0.6]) + ligne([-2.1, n + 1.2], [-2.1, L]);
+  joints += ligne([-L, -2.1], [R0 - r, -2.1]) + ligne([R1 + r, -2.1], [-0.6, -2.1]) + ligne([n + 1.2, -2.1], [L, -2.1]);
+  // les tirets blancs, au milieu des rues (pas dans le carrefour)
+  const tirets = [-30, -27, -24, -21, -18, -15, -12, -1, 2, 5, 8, 11, 14, 17, 20, 23, 26, 29]
+    .map((u) => ligne([C, u], [C, u + 1.6], '#faf7f1', 3) + ligne([u, C], [u + 1.6, C], '#faf7f1', 3)).join('');
+  // la terrasse du camion, devant à droite
+  const t = { i0: n + 1.2, i1: n + 10.5, j0: 5.4, j1: n + 1.2 };
+  let dallesTerrasse = '';
+  for (let u = t.i0 + 1.5; u < t.i1; u += 1.5) dallesTerrasse += ligne([u, t.j0], [u, t.j1]);
+  for (let v = t.j0 + 1.5; v < t.j1; v += 1.5) dallesTerrasse += ligne([t.i0, v], [t.i1, v]);
   return `
-  <rect x="-1400" y="-1400" width="3200" height="3400" fill="#c9c5bd"/>
-  ${qf([[-3.2, -3.2], [40, -3.2], [40, 40], [-3.2, 40]], '#dcd8d0')}
-  ${tirets}
-  ${qf([[14.5, -40], [120, -40], [120, 120], [14.5, 120]], '#bfe07e')}
-  ${qf([[-60, 14.5], [14.5, 14.5], [14.5, 120], [-60, 120]], '#bfe07e')}
-  ${ligne([14.5, -3.2], [14.5, 14.5])}${ligne([-3.2, 14.5], [14.5, 14.5])}
-  ${ligne([-3.2, -3.2], [40, -3.2])}${ligne([-3.2, -3.2], [-3.2, 40])}`;
+  <rect x="-1400" y="-1400" width="3200" height="3400" fill="${herbe}"/>
+  ${qf([[T0, -L], [-0.6, -L], [-0.6, L], [T0, L]], TROTTOIR)}
+  ${qf([[-L, T0], [L, T0], [L, -0.6], [-L, -0.6]], TROTTOIR)}
+  ${qf(croix, ASPHALTE)}
+  <path d="M${croix.map((q) => Q(...q)).join(' L')} Z" fill="none" stroke="${BORD}" stroke-width="1.4" stroke-linejoin="round"/>
+  ${joints}${tirets}
+  ${qf([[t.i0 - 0.1, t.j0], [t.i1, t.j0], [t.i1, t.j1 + 0.01], [t.i0 - 0.1, t.j1 + 0.01]], DALLE)}
+  ${dallesTerrasse}
+  ${qf([[t.i1, t.j0, 0], [t.i1, t.j1, 0], [t.i1, t.j1, -4], [t.i1, t.j0, -4]], TRANCHE)}
+  ${qf([[t.i0, t.j1, 0], [t.i1, t.j1, 0], [t.i1, t.j1, -4], [t.i0, t.j1, -4]], TRANCHE2)}
+  ${qf([[-0.6, -0.6], [n + 1.2, -0.6], [n + 1.2, n + 1.2], [-0.6, n + 1.2]], DALLE)}
+  ${qf([[n + 1.2, -0.6, 0], [n + 1.2, n + 1.2, 0], [n + 1.2, n + 1.2, -4], [n + 1.2, -0.6, -4]], TRANCHE)}
+  ${qf([[-0.6, n + 1.2, 0], [n + 1.2, n + 1.2, 0], [n + 1.2, n + 1.2, -4], [-0.6, n + 1.2, -4]], TRANCHE2)}`;
 }
 
 function sol() {
