@@ -2020,7 +2020,7 @@ export function marche(etals, joueurs, texteCafe, texteRoue) {
   const C = MARCHE.centre;
   const R = MARCHE.R;
   const e = Object.fromEntries(etals.map((x) => [x.cle, x]));
-  // (Gaston et Inesquiressemblepas, 4e et 5e, ne viennent qu'au café.)
+  // (Maximeunpeudifferent et Inesquiressemblepas, 4e et 5e, ne viennent qu'au café.)
   const [nClement, nChachoux, nEstel, , , nAngel, nRachou] = joueurs;
   const place = `M${C.x} ${C.y - R * 14} L${C.x + R * 28} ${C.y} L${C.x} ${C.y + R * 14} L${C.x - R * 28} ${C.y} Z`;
   const touffes = [[-120, 250], [-40, 200], [30, 300], [120, 160], [280, 160], [380, 300], [470, 230], [520, 340], [-90, 360], [10, 420],

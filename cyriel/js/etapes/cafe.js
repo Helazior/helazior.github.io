@@ -53,8 +53,8 @@ const TEXTES = {
 
   // Les pseudos des joueurs : au marché, Clément près de la fontaine,
   // Chachoux qui se promène, Estel sur le banc, Angelounette et Rachou ;
-  // Gaston et Inesquiressemblepas ne viennent qu'au café, pour manger.
-  joueurs: ['Clément', 'Xx-Chachoux-xX', 'Esteloux', 'Gaston_du_43', 'Inesquiressemblepas', 'Angelounette', 'Rachou'],
+  // Maximeunpeudifferent et Inesquiressemblepas ne viennent qu'au café, pour manger.
+  joueurs: ['Clément', 'Xx-Chachoux-xX', 'Esteloux', 'Maximeunpeudifferent', 'Inesquiressemblepas', 'Angelounette', 'Rachou'],
 
   // L'écran de connexion : l'image de Clément (images/connexion-cafe.webp),
   // avec les vrais champs posés exactement sur ceux du dessin. Les textes
