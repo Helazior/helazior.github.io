@@ -1,9 +1,9 @@
-// La petite course entre le marais et le café (environ 5 secondes).
+// La petite course entre le marais et le café (environ 6 secondes).
 //
-// Cyriel et Clément courent jusqu'au café. En touchant à droite puis à
-// gauche, très vite (ou avec les flèches du clavier), Cyriel accélère et
-// dépasse Clément. Sans rien toucher, Clément arrive le premier… puis
-// l'attend et l'encourage : on ne peut pas rester coincée.
+// Cyriel et Clément courent jusqu'au café. Cyriel n'avance que si on la fait
+// marcher : chaque toucher d'un pied (bouton ou flèche du clavier) est un pas.
+// En martelant droite, gauche, très vite, elle dépasse Clément. Sinon il
+// arrive le premier… puis l'attend et l'encourage jusqu'à ce qu'elle arrive.
 
 import { clementTrail } from './cafe-dessins.js';
 import { cyrielNatte } from './clins-doeil.js';
@@ -11,10 +11,10 @@ import { cyrielNatte } from './clins-doeil.js';
 /* ======================================================= Textes à modifier */
 
 const TEXTES = {
-  consigne: 'Course jusqu’au café ! Touche à droite, puis à gauche, très vite !',
+  consigne: 'Course jusqu’au café ! Martèle droite, gauche !',
   partez: 'C’est parti !',
-  gauche: 'Gauche',
-  droite: 'Droite',
+  gauche: 'Pied gauche',
+  droite: 'Pied droit',
   gagne: 'Gagné ! Tu cours plus vite que Clément !',
   attend: 'Clément est arrivé le premier… il t’encourage !',
   enseigne: 'Café de Cyriel',
@@ -24,8 +24,7 @@ const TEXTES = {
 
 const ARRIVEE = 205;        // distance à courir, en unités du décor
 const DUREE = 6;            // Clément arrive 6 secondes après le départ
-const BASE = 18;            // vitesse de Cyriel sans toucher
-const BONUS = 24;           // vitesse ajoutée par élan
+const PAS = 9.5;            // un toucher = un pas (environ 22 pas pour arriver)
 const NS = 'http://www.w3.org/2000/svg';
 
 function decor() {
@@ -79,8 +78,8 @@ export function course(racine, { son, fx, V = 1, calme = false, debug = null }) 
       <p class="cr-texte" aria-live="polite">${TEXTES.consigne}</p>
       <button type="button" class="cr-partez" data-cr="partez">${TEXTES.partez}</button>
       <div class="cr-boutons cr-cache">
-        <button type="button" class="cr-bouton" data-cr="gauche" aria-label="${TEXTES.gauche}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 L8 12 L15 19"/></svg></button>
-        <button type="button" class="cr-bouton" data-cr="droite" aria-label="${TEXTES.droite}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 L16 12 L9 19"/></svg></button>
+        <button type="button" class="cr-bouton" data-cr="gauche" aria-label="${TEXTES.gauche}"><svg viewBox="0 0 40 48" aria-hidden="true"><g transform=""><path d="M17 46 C10 46 9 39 9 33 C9 27 7 22 9 17 C11 12 25 10 29 15 C31 19 27 26 26 33 C25 41 23 46 17 46 Z"/><circle cx="27" cy="7" r="4"/><circle cx="20.4" cy="4.6" r="2.9"/><circle cx="15" cy="5.8" r="2.5"/><circle cx="10.6" cy="8.6" r="2.1"/><circle cx="7.6" cy="12.6" r="1.8"/></g></svg><span>${TEXTES.gauche}</span></button>
+        <button type="button" class="cr-bouton" data-cr="droite" aria-label="${TEXTES.droite}"><svg viewBox="0 0 40 48" aria-hidden="true"><g transform="translate(40 0) scale(-1 1)"><path d="M17 46 C10 46 9 39 9 33 C9 27 7 22 9 17 C11 12 25 10 29 15 C31 19 27 26 26 33 C25 41 23 46 17 46 Z"/><circle cx="27" cy="7" r="4"/><circle cx="20.4" cy="4.6" r="2.9"/><circle cx="15" cy="5.8" r="2.5"/><circle cx="10.6" cy="8.6" r="2.1"/><circle cx="7.6" cy="12.6" r="1.8"/></g></svg><span>${TEXTES.droite}</span></button>
       </div>`;
     racine.append(el);
     const svg = el.querySelector('.cr-svg');
@@ -96,20 +95,18 @@ export function course(racine, { son, fx, V = 1, calme = false, debug = null }) 
     const cafeG = $('.cr-cafe');
     const coureurs = {
       clement: { g: $('.cr-clement'), corps: $('.cr-clement .cr-corps'), x: 0, v: ARRIVEE / DUREE, y: 232, k: 1.9, phase: 0, fini: false },
-      cyriel: { g: $('.cr-cyriel'), corps: $('.cr-cyriel .cr-corps'), x: 0, v: BASE, y: 260, k: 2.05, phase: 1.4, fini: false },
+      cyriel: { g: $('.cr-cyriel'), corps: $('.cr-cyriel .cr-corps'), x: 0, cible: 0, v: 0, y: 260, k: 2.05, phase: 1.4, fini: false },
     };
 
-    // Les élans : un toucher du côté opposé au précédent en donne un.
-    let elan = 0;
-    let dernier = null;
+    // Un toucher = un pas.
+    let nbPas = 0;
     let encourage = false;
     let depart = false;
     function toucher(cote) {
       if (fin || !depart) return;
-      const bon = cote !== dernier;
-      dernier = cote;
-      elan = Math.min(1.7, elan + (bon ? 0.42 : 0.08));
-      bip('clic', Math.min(1, 0.2 + elan * 0.45));
+      nbPas++;
+      coureurs.cyriel.cible = Math.min(ARRIVEE, coureurs.cyriel.cible + PAS);
+      bip('clic', cote === 'droite' ? 0.55 : 0.4);
       const b = el.querySelector(`[data-cr="${cote}"]`);
       b.classList.remove('cr-presse');
       void b.offsetWidth;
@@ -147,15 +144,17 @@ export function course(racine, { son, fx, V = 1, calme = false, debug = null }) 
       const dt = Math.min(0.05, (t - avant) / 1000) * V;
       avant = t;
       if (depart && !fin) {
-        elan *= Math.exp(-dt / 0.45);
         const cy = coureurs.cyriel;
         const cl = coureurs.clement;
-        cy.v = (encourage ? BASE * 3.5 : BASE) + BONUS * elan;
-        for (const c of [cl, cy]) {
-          if (c.fini) continue;
-          c.x = Math.min(ARRIVEE, c.x + c.v * dt);
-          if (c.x >= ARRIVEE) c.fini = true;
+        if (!cl.fini) {
+          cl.x = Math.min(ARRIVEE, cl.x + cl.v * dt);
+          if (cl.x >= ARRIVEE) cl.fini = true;
         }
+        // elle rattrape doucement l'endroit où ses pas la mènent
+        const avance = Math.min(cy.cible - cy.x, (cy.cible - cy.x) * 14 * dt + 0.01);
+        cy.v = avance / Math.max(dt, 0.001);
+        cy.x += avance;
+        if (cy.x >= ARRIVEE - 0.05) { cy.x = ARRIVEE; cy.fini = true; }
         if (cl.fini && !cy.fini && !encourage) { encourage = true; texte.textContent = TEXTES.attend; bip('ding'); }
         if (cy.fini) {
           fin = true;
@@ -169,8 +168,8 @@ export function course(racine, { son, fx, V = 1, calme = false, debug = null }) 
       pres.style.transform = `translateX(${(-moyenne * 0.6).toFixed(1)}px)`;
       cafeG.setAttribute('transform', `translate(${X0 + ARRIVEE + 28} 214) scale(1.1)`);
       for (const c of Object.values(coureurs)) {
-        const court = depart && !c.fini;
-        c.phase += dt * (court ? 4 + c.v / 12 : 1.5);
+        const court = depart && !c.fini && (c === coureurs.clement || c.v > 4);
+        c.phase += dt * (court ? 4 + Math.min(c.v, 90) / 12 : 1.5);
         const saut = court ? Math.abs(Math.sin(c.phase)) * 9 : Math.abs(Math.sin(c.phase)) * (c === coureurs.clement && encourage ? 6 : 0);
         const penche = court ? 7 + Math.sin(c.phase * 2) * 3 : 0;
         c.g.setAttribute('transform', `translate(${(X0 + c.x).toFixed(1)} ${(c.y - saut).toFixed(1)}) rotate(${penche.toFixed(1)}) scale(${c.k})`);
@@ -196,6 +195,6 @@ export function course(racine, { son, fx, V = 1, calme = false, debug = null }) 
       }, 1300 / V);
     }
 
-    if (debug !== null) window.__course = { get elan() { return elan; }, get fin() { return fin; }, coureurs };
+    if (debug !== null) window.__course = { get pas() { return nbPas; }, get fin() { return fin; }, coureurs };
   });
 }

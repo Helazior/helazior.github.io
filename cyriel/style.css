@@ -1933,7 +1933,8 @@ button.e5-case:disabled { opacity: .38; cursor: default; box-shadow: none; }
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
-.cr-bouton svg { width: 46px; height: 46px; fill: none; stroke: var(--violet); stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; }
+.cr-bouton { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--violet-fonce); font: 600 14px/1 var(--police); }
+.cr-bouton svg { width: 38px; height: 46px; fill: var(--violet); stroke: none; }
 .cr-presse { animation: cr-presse .16s ease-out; }
 @keyframes cr-presse { 50% { transform: translateY(4px) scale(.96); box-shadow: 0 0 0 var(--encre); background: #efe4ff; } }
 .cr-bouton:focus { outline: none; }
