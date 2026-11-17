@@ -16,7 +16,7 @@
 //      bouton 60x au-dessus du fourneau. Il y a trois fourneaux : pendant
 //      qu'un plat cuit, on en lance un autre ;
 //   5. Pipistrelle sert. Le dernier client, Clément, commande la spécialité,
-//      puis laisse son mot et le cadeau.
+//      puis laisse son mot.
 //
 // La roue de la fortune (au marché) et le camion du chef pâtissier (à droite
 // du café) font gagner des pièces ou des ingrédients : de quoi se débloquer.
@@ -32,8 +32,8 @@
 // découpés dans images/hud/ et posés aux mêmes places (voir HUD plus bas).
 // Pipistrelle parle dans le Café chat, en bas à gauche.
 //
-// Tous les textes sont regroupés juste en dessous. Le mot et le cadeau
-// sont à écrire par Clément : TEXTES.lettre et TEXTES.cadeau.
+// Tous les textes sont regroupés juste en dessous. Le mot de Clément est
+// dans TEXTES.lettre.
 //
 // Pour les essais :  ?etape=6&debug=vite  (tout va 4 fois plus vite).
 
@@ -118,8 +118,8 @@ const TEXTES = {
     pourMoi: 'Pour moi ?!',
     allumer: 'Je m’occupe des bougies…',
     souffler: 'Joyeux anniversaire, Cyriel ! Fais un vœu, puis souffle tes bougies : touche les flammes.',
-    bravo: 'Bravo ! Et ce n’est pas fini : Clément t’a apporté autre chose…',
-    objets: 'Une enveloppe et un cadeau, rien que pour toi.',
+    bravo: 'Bravo ! Et ce n’est pas fini : Clément t’a laissé un mot…',
+    objets: 'Une enveloppe, rien que pour toi.',
     banniere: ['Joyeux anniversaire', 'Cyriel !'],
     ariaGateau: 'Ton gâteau d’anniversaire : touche les bougies pour les souffler',
   },
@@ -247,7 +247,7 @@ const TEXTES = {
       carte: 'Une carte du quartier ? Ce soir, tout se passe ici, au café !',
       reglages: 'Les réglages ? Tout est déjà parfait, cheffe.',
       porte: 'Tu pars déjà ? Pas avant la fin du service !',
-      cadeau: 'Les cadeaux ? Patience… c’est pour la fin de la soirée.',
+      cadeau: 'Les cadeaux ? Patience… une surprise t’attend à la fin de la soirée.',
       toques: 'L’équipe au complet : toi en cuisine, moi en salle !',
       marmite: 'Pour cuisiner, touche un fourneau.',
       noeud: 'Le nœud papillon, c’est mon uniforme de serveuse !',
@@ -318,7 +318,6 @@ const TEXTES = {
   },
 
   ariaEnveloppe: 'Enveloppe laissée par le client',
-  ariaCadeau: 'Cadeau laissé par le client',
 
   fourneau: {
     toucher: 'touche le fourneau',
@@ -342,26 +341,18 @@ const TEXTES = {
     rejouer: 'Rejouer',
     recommencer: 'Recommencer la partie',
     continuer: 'Continuer',
-    ouvrirCadeau: 'Ouvrir le cadeau',
-    relireMot: 'Relire le mot',
     fermer: 'Fermer',
   },
 
-  // À ÉCRIRE PAR CLÉMENT : chaque élément de « paragraphes » devient un paragraphe.
+  // Le mot de Clément : chaque élément de « paragraphes » devient un paragraphe.
   lettre: {
     titre: 'Pour Cyriel',
     paragraphes: [
-      '(Ton mot pour Cyriel, à écrire ici, dans js/etapes/cafe.js.)',
+      'Bon anniversaire ma caille, ma poulette, ma dinde, ma tourterelle turque, ma grande aigrette que je ne raigrette pas.',
+      'Cette année va être belle et radieuse comme le soleil que tu es.',
+      'J’ai hâte de te revoir,',
     ],
     signature: 'Clément',
-  },
-
-  // À ÉCRIRE PAR CLÉMENT : ce qui s'affiche quand elle ouvre le cadeau.
-  cadeau: {
-    titre: 'Ton cadeau',
-    lignes: [
-      '(Ce que tu lui offres, à écrire ici. Par exemple : « Tu peux ouvrir ton colis ! »)',
-    ],
   },
 };
 
@@ -2719,7 +2710,7 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
 
   // Le gâteau de Clément était pour elle : lumières tamisées, bougies, la
   // chanson, les clients qui reviennent ; elle souffle, puis Clément dépose
-  // son mot et le cadeau.
+  // son mot.
   async function fete(cmd, f) {
     const T = TEXTES.fete;
     const sp = cmd.client;
@@ -2829,24 +2820,20 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
     monterNiveau();
     await dormir(1500);
 
-    // Clément dépose son mot et le cadeau, de part et d'autre du gâteau.
-    const E = { x: C.x - 66, y: C.y + 12 };
-    const K = { x: C.x + 68, y: C.y + 8 };
+    // Clément dépose son mot au pied du gâteau.
+    const E = { x: C.x + 62, y: C.y + 12 };
     await marcher(sp, [[S.x, S.y + 22], [E.x + 14, S.y + 22], [E.x + 14, E.y + 10]]);
     const enveloppe = objetSurTable(D.enveloppe(), E.x, E.y, 'enveloppe', TEXTES.ariaEnveloppe, calque);
     bip('papier');
-    await marcher(sp, [[E.x + 14, S.y + 22], [K.x + 18, S.y + 22], [K.x + 18, K.y + 10]]);
-    const cadeau = objetSurTable(D.cadeau(), K.x, K.y, 'cadeau', TEXTES.ariaCadeau, calque);
-    bip('chiffre');
-    const q = versEcran(K.x, K.y - 8);
+    const q = versEcran(E.x, E.y - 8);
     if (vivant) fx.etincelles(q.x, q.y, 16, '#d7b3ff', 140);
     await marcher(sp, [[S.x, S.y]]);
     calque.append(sp.g, pipi);
     ambiance('salle');
-    return { enveloppe, cadeau, x: E.x, y: E.y };
+    return { enveloppe, x: E.x, y: E.y };
   }
 
-  /* ------------------------------------------------- Le mot et le cadeau */
+  /* ---------------------------------------------------------- Le mot */
 
   function finale() {
     return new Promise((resolve) => {
@@ -2863,42 +2850,14 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
             ${T.lettre.paragraphes.map((p) => `<p>${esc(p)}</p>`).join('')}
             <p class="e5-signature">${esc(T.lettre.signature)}</p>
           </article>
-          <section class="e5-surprise" hidden>
-            <svg class="e5-boite" viewBox="-36 -50 72 76" aria-hidden="true"><g transform="scale(2)">${D.cadeau()}</g></svg>
-            <h2>${esc(T.cadeau.titre)}</h2>
-            ${T.cadeau.lignes.map((p) => `<p>${esc(p)}</p>`).join('')}
-          </section>
         </div>
         <div class="e5-finale-boutons">
-          <button type="button" class="e5-fermer">${esc(T.boutons.fermer)}</button>
-          <button type="button" class="e5-bascule e5-principal">${esc(T.boutons.ouvrirCadeau)}</button>
+          <button type="button" class="e5-fermer e5-principal">${esc(T.boutons.fermer)}</button>
         </div>`;
       racine.append(f);
       const feuille = f.querySelector('.e5-feuille');
-      const lettre = f.querySelector('.e5-lettre');
-      const surprise = f.querySelector('.e5-surprise');
-      const boite = f.querySelector('.e5-boite');
-      const bascule = f.querySelector('.e5-bascule');
       animer(f, [{ opacity: 0 }, { opacity: 1 }], { duree: 300 });
       animer(feuille, [{ transform: 'translateY(18px) rotate(-1deg) scale(.96)' }, { transform: 'translateY(0) rotate(-1deg) scale(1)' }], { duree: 420, easing: 'cubic-bezier(.2,.9,.3,1.1)', garder: false });
-      let surCadeau = false;
-      let ouvert = false;
-      bascule.addEventListener('click', () => {
-        surCadeau = !surCadeau;
-        lettre.hidden = surCadeau;
-        surprise.hidden = !surCadeau;
-        bascule.textContent = surCadeau ? T.boutons.relireMot : T.boutons.ouvrirCadeau;
-        feuille.scrollTop = 0;
-        if (surCadeau && !ouvert) {
-          ouvert = true;
-          bip('sortie');
-          requestAnimationFrame(() => {
-            boite.classList.add('e5-ouverte');
-            const c = centre(boite);
-            coeurs(c.x, c.y, 16);
-          });
-        }
-      });
       let ferme = false;
       const fermer = async () => {
         if (ferme) return;
@@ -2909,7 +2868,7 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
       };
       f.querySelector('.e5-fermer').addEventListener('click', fermer);
       f.addEventListener('keydown', (e) => { if (e.key === 'Escape') fermer(); });
-      bascule.focus({ preventScroll: true });
+      f.querySelector('.e5-fermer').focus({ preventScroll: true });
     });
   }
 
@@ -3124,10 +3083,10 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
     commandes = [cmdSpeciale];
     bip('eclat');
     await service(commandes, { premierTexte: TEXTES.special, texte: TEXTES.commandeSpeciale });
-    const { enveloppe, cadeau, x, y } = cmdSpeciale.objets;
+    const { enveloppe, x, y } = cmdSpeciale.objets;
     dire(TEXTES.fete.objets);
     montrer(x, y, 24, true);
-    await toucher(enveloppe, cadeau);
+    await toucher(enveloppe);
     cacherGuide();
     bip('papier');
     memoire.ecrire('cafe-fini', true);
