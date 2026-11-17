@@ -11,6 +11,15 @@
   font-display: swap;
 }
 
+/* Le nom dans le bandeau du restaurant (étape 6). */
+@font-face {
+  font-family: "Patua One";
+  src: url("polices/patua-one-latin-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --papier: #fbf8ff;
   --encre: #1a1026;
@@ -84,6 +93,7 @@ body[data-fond="sombre"] {
   transition: opacity 0.2s;
 }
 #son:hover, #son:focus-visible { opacity: 1; }
+body.e5-en-jeu #son { display: none; }
 #son svg { display: block; width: 100%; height: 100%; }
 #son .hp { fill: currentColor; }
 #son .ondes, #son .croix {
@@ -306,48 +316,12 @@ body[data-fond="sombre"] {
 .e5-jeu {
   position: absolute;
   inset: 0;
-  display: flex;
-  flex-direction: column;
 }
 
-.e5-haut {
-  flex: none;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 58px;
-  padding: max(8px, env(safe-area-inset-top)) 62px 6px max(12px, env(safe-area-inset-left));
-}
-
-.e5-pieces {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 12px 4px 5px;
-  border: 2px solid var(--encre);
-  border-radius: 999px;
-  background: #fff;
-  box-shadow: 0 2px 0 var(--encre);
-  font-size: 16px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
-.e5-pieces svg { width: 24px; height: 24px; display: block; }
-
-.e5-nom {
-  flex: 1;
-  min-width: 0;
-  margin: 0;
-  color: var(--violet-fonce);
-  font-size: 19px;
-  font-weight: 700;
-  text-align: center;
-}
-
+/* La scène prend tout l'écran ; la salle se cadre entre les menus. */
 .e5-scene {
-  position: relative;
-  flex: 1;
-  min-height: 0;
+  position: absolute;
+  inset: 0;
 }
 
 .e5-svg {
@@ -368,167 +342,432 @@ body[data-fond="sombre"] {
   pointer-events: none;
 }
 
-.e5-bas {
-  flex: none;
-  padding: 8px max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
-}
-
-.e5-guide {
-  display: flex;
-  align-items: flex-end;
-  gap: 10px;
-  max-width: 620px;
-  margin: 0 auto;
-}
-
-/* Les trois fourneaux : une carte chacun, au-dessus de Pipistrelle. */
-.e5-feux {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 9px;
-  max-width: 620px;
-  margin: 4px auto 10px;
-}
-.e5-feux[hidden] { display: none; }
-.e5-feu-carte {
-  position: relative;
-  min-width: 0;
-  height: 58px;
-  border: 2px solid var(--encre);
-  border-radius: 14px;
-  background: #fff;
-  box-shadow: 0 2px 0 var(--encre);
-}
-.e5-feu-bouton {
+/* Les menus du restaurant, découpés dans la maquette de Clément (912 × 1724,
+   images/hud/) et posés aux mêmes places. --u : un pixel de la maquette, en
+   pixels d'écran (calculé par le jeu). Les zones (.e5-z) se placent avec
+   --x, --y, --l, --h, en pixels de la maquette. */
+.e5 { --u: .4276px; }
+.e5-hud {
   position: absolute;
   inset: 0;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 0 8px 0 9px;
-  border: 0;
-  border-radius: 12px;
-  background: none;
-  color: var(--encre);
-  font: 700 16px/1 var(--police);
-  font-variant-numeric: tabular-nums;
-  text-align: left;
+  z-index: 4;
+  pointer-events: none;
+  font-family: Arial, Helvetica, sans-serif;
 }
-.e5-feu-bouton:focus { outline: none; }
-.e5-feu-bouton:focus-visible { outline: 3px solid var(--lilas); outline-offset: 2px; }
-.e5-feu-icone { flex: none; width: 32px; height: 32px; }
-.e5-feu-texte { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.e5-feu-num {
+.e5-bloc { position: absolute; }
+.e5-bloc-img {
   position: absolute;
-  top: -9px;
-  left: -7px;
-  width: 21px;
-  height: 21px;
-  border: 2px solid var(--encre);
-  border-radius: 50%;
-  background: #fff;
-  color: var(--violet-fonce);
-  font: 700 12px/17px var(--police);
-  text-align: center;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+.e5-bloc-gauche {
+  left: env(safe-area-inset-left, 0px);
+  top: env(safe-area-inset-top, 0px);
+  width: calc(var(--u) * 262);
+  height: calc(var(--u) * 412);
+}
+.e5-bloc-centre {
+  left: calc(50% - var(--u) * 206);
+  top: calc(env(safe-area-inset-top, 0px) + var(--u) * 2);
+  width: calc(var(--u) * 382);
+  height: calc(var(--u) * 166);
+  pointer-events: auto;
+}
+.e5-bloc-droite {
+  right: env(safe-area-inset-right, 0px);
+  top: calc(env(safe-area-inset-top, 0px) + var(--u) * 16);
+  width: calc(var(--u) * 282);
+  height: calc(var(--u) * 74);
+  pointer-events: auto;
+}
+/* Debout : le chat et les plateaux d'actions à leur place de la maquette,
+   les plateaux par-dessus le coin du chat. */
+.e5-bloc-chat {
+  z-index: 1;
+  left: env(safe-area-inset-left, 0px);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + var(--u) * 164);
+  width: calc(var(--u) * 548);
+  height: calc(var(--u) * 488);
+}
+.e5-bloc-actions {
+  z-index: 2;
+  left: calc(env(safe-area-inset-left, 0px) + var(--u) * 398);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + var(--u) * 52);
+  width: calc(var(--u) * 514);
+  height: calc(var(--u) * 288);
+}
+/* Écran plus large que la maquette : les plateaux d'actions continuent
+   jusqu'au bord droit. */
+.e5-rallonge {
+  position: absolute;
+  z-index: 2;
+  left: calc(env(safe-area-inset-left, 0px) + var(--u) * 912 - 1px);
+  right: 0;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + var(--u) * 52);
+  height: calc(var(--u) * 288);
+  background: url("images/hud/actions-bord.webp") 0 0 / calc(var(--u) * 8) 100% repeat-x;
+  pointer-events: auto;
+}
+/* Couché (paysage), comme dans le jeu d'origine : le chat dans le coin en
+   bas à gauche, les plateaux d'actions dans le coin en bas à droite. */
+.e5[data-mise="paysage"] .e5-bloc-chat { bottom: env(safe-area-inset-bottom, 0px); }
+.e5[data-mise="paysage"] .e5-bloc-actions {
+  left: auto;
+  right: env(safe-area-inset-right, 0px);
+  bottom: env(safe-area-inset-bottom, 0px);
+}
+.e5[data-mise="paysage"] .e5-rallonge { display: none; }
+.e5-z {
+  position: absolute;
+  left: calc(var(--x) * var(--u));
+  top: calc(var(--y) * var(--u));
+  width: calc(var(--l) * var(--u));
+  height: calc(var(--h) * var(--u));
+}
+.e5-bloqueur { pointer-events: auto; }
+.e5-repere { pointer-events: none; }
+
+/* Le niveau, l'expérience, les pièces, le nom */
+.e5-niveau { overflow: visible; pointer-events: none; transform-origin: 50% 60%; }
+.e5-niveau text {
+  font: 700 42px var(--police);
+  fill: #3b2414;
+  stroke: #fff;
+  stroke-width: 5px;
+  stroke-linejoin: round;
+  paint-order: stroke;
+}
+.e5-xp {
+  overflow: hidden;
+  border-radius: calc(var(--u) * 7);
   pointer-events: none;
 }
-.e5-feu-vite {
+.e5-xp-plein {
   position: absolute;
-  right: 6px;
-  bottom: 7px;
-  display: inline-flex;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  background: linear-gradient(#d2f45f, #bfe844 58%, #9fcb25 60%, #a8d22d);
+  transition: width .7s ease;
+}
+.e5-xp-texte {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font: 400 max(10px, calc(var(--u) * 29))/1 Arial, Helvetica, sans-serif;
+  text-shadow: 0 1px 2px rgba(40, 25, 10, .55);
+  white-space: nowrap;
+}
+.e5-pieces {
+  display: flex;
   align-items: center;
-  gap: 3px;
-  height: 23px;
-  padding: 0 8px 0 7px;
-  border: 2px solid var(--encre);
-  border-radius: 999px;
-  background: #ffd23f;
-  color: var(--encre);
-  font: 700 12px/1 var(--police);
-  box-shadow: 0 2px 0 var(--encre);
+  padding-left: calc(var(--u) * 14);
+  color: #43301c;
+  font: 400 max(11px, calc(var(--u) * 31))/1 Arial, Helvetica, sans-serif;
+  font-variant-numeric: tabular-nums;
+  transform-origin: 15% 50%;
+  pointer-events: none;
 }
-.e5-feu-vite[hidden] { display: none; }
-.e5-feu-vite svg { width: 11px; height: 9px; fill: currentColor; }
-.e5-feu-vite[aria-pressed="false"] { animation: e5-vitesse 1.1s ease-in-out infinite; }
-.e5-feu-vite[aria-pressed="true"] { background: var(--violet); color: #fff; box-shadow: none; transform: translateY(2px); }
-.e5-feu-vite:focus { outline: none; }
-.e5-feu-vite:focus-visible { outline: 3px solid var(--lilas); outline-offset: 2px; }
-.e5-feu-barre {
-  position: absolute;
-  left: 9px;
-  right: 9px;
-  bottom: 3px;
-  display: none;
-  height: 3px;
-  border-radius: 2px;
-  background: #efe6ff;
-  overflow: hidden;
-}
-.e5-feu-barre span { display: block; width: 0; height: 100%; background: var(--violet); }
-.e5-feu-carte[data-etat="cuisson"] .e5-feu-bouton { align-items: flex-start; padding-top: 9px; }
-.e5-feu-carte[data-etat="cuisson"] .e5-feu-icone { align-self: center; }
-.e5-feu-carte[data-etat="cuisson"] .e5-feu-barre { display: block; }
-.e5-feu-carte[data-etat="libre"] { border-style: dashed; background: #faf6ff; box-shadow: none; }
-.e5-feu-carte[data-etat="libre"] .e5-feu-bouton { color: #7c6c99; font-size: 15px; font-weight: 600; }
-.e5-feu-carte[data-etat="libre"] .e5-feu-icone { opacity: .7; }
-.e5-feu-carte[data-etat="gestes"] { border-color: var(--violet); box-shadow: 0 2px 0 var(--violet-fonce); }
-.e5-feu-carte[data-etat="gestes"] .e5-feu-bouton { color: var(--violet-fonce); }
-.e5-feu-carte[data-etat="pret"] {
-  border-color: #a8780a;
-  background: #fff4c2;
-  box-shadow: 0 2px 0 #a8780a;
-  animation: e5-feu-pret .9s ease-in-out infinite;
-}
-@keyframes e5-feu-pret { 50% { transform: translateY(-3px); } }
-
-/* Dans la salle : le plat prêt sautille au-dessus de son fourneau. */
-.e5-pret-saute { animation: e5-pret-saute .9s ease-in-out infinite; }
-@keyframes e5-pret-saute { 50% { transform: translateY(-5px); } }
-.e5-fourneau-pret .e5-casserole { filter: drop-shadow(0 0 3px #ffd23f); }
-
-@media (prefers-reduced-motion: reduce) {
-  .e5-feu-vite[aria-pressed="false"], .e5-feu-carte[data-etat="pret"], .e5-pret-saute { animation: none; }
-}
-
-.e5-avatar {
-  flex: none;
-  width: 58px;
-  height: 58px;
-  border: 2px solid var(--encre);
-  border-radius: 50%;
-  background: #e6d8ff;
-  overflow: hidden;
-}
-
-.e5-bulle {
-  position: relative;
-  flex: 1;
-  min-width: 0;
-  min-height: 82px;
-  padding: 10px 14px 12px;
-  border: 2px solid var(--encre);
-  border-radius: 18px 18px 18px 6px;
-  background: #fff;
-  box-shadow: 0 3px 0 var(--encre);
-}
-
-.e5-texte {
+.e5-pieces-icone { pointer-events: none; }
+.e5-joueuse {
   margin: 0;
-  font-size: 16px;
-  line-height: 1.35;
-  text-wrap: pretty;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4b321c;
+  font: 400 calc(var(--u) * 46)/1 "Patua One", Georgia, serif;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
-.e5-boutons {
+/* Les zones qu'on touche, posées sur les icônes de la maquette */
+.e5-zone {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: calc(var(--u) * 16);
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color .12s;
+}
+@media (hover: hover) {
+  .e5-zone:hover { background: rgba(255, 255, 255, .18); }
+}
+.e5-zone:active { background: rgba(70, 35, 0, .16); }
+.e5-zone:focus { outline: none; }
+.e5-zone:focus-visible { outline: 3px solid #fff; outline-offset: 1px; box-shadow: 0 0 0 6px rgba(122, 60, 240, .55); }
+/* Son coupé : la note est barrée. */
+.e5-zone[data-hud="son"][aria-pressed="true"]::after {
+  content: "";
+  position: absolute;
+  inset: 14% 8%;
+  background: linear-gradient(to top right, transparent calc(50% - 2px), #d92b3a calc(50% - 2px), #d92b3a calc(50% + 2px), transparent calc(50% + 2px));
+  pointer-events: none;
+}
+.e5-panier { pointer-events: none; transform-origin: 50% 65%; }
+.e5-hud .e5-badge {
+  position: absolute;
+  top: 0;
+  right: 2%;
+  min-width: max(18px, calc(var(--u) * 34));
+  height: max(18px, calc(var(--u) * 34));
+  padding: 0 4px;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: #f06fa4;
+  color: #fff;
+  font: 700 max(10px, calc(var(--u) * 19))/1 var(--police);
+  display: grid;
+  place-items: center;
+  font-variant-numeric: tabular-nums;
+}
+.e5-hud .e5-badge[hidden] { display: none; }
+
+/* Le Café chat */
+.e5-chat {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  padding: calc(var(--u) * 4) calc(var(--u) * 8) calc(var(--u) * 6);
+  color: #2f2f2f;
+  font: 400 max(12px, calc(var(--u) * 26))/1.3 Arial, Helvetica, sans-serif;
+  pointer-events: auto;
+  -webkit-user-select: text;
+  user-select: text;
+}
+.e5-chat::-webkit-scrollbar { display: none; }
+.e5-chat:focus { outline: none; }
+.e5-chat:focus-visible { outline: 2px solid #7a3cf0; outline-offset: 2px; }
+.e5-ligne { margin: 0 0 .32em; overflow-wrap: anywhere; border-radius: 3px; }
+.e5-ligne b { font-weight: 700; }
+.e5-systeme b { font-weight: 400; margin-right: .35em; }
+.e5-de-pipi b { color: #6a2fe0; }
+.e5-de-moi b { color: #b04a1a; }
+.e5-flash { animation: e5-flash .7s ease; }
+@keyframes e5-flash { 30% { background: #ffe9a8; } }
+.e5-choix {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 8px;
+  gap: .4em;
+  margin: .3em 0 .35em;
+  -webkit-user-select: none;
+  user-select: none;
 }
-.e5-boutons:not(:empty) { margin-top: 10px; }
+.e5-choix button {
+  padding: .38em .9em .42em;
+  border: 2px solid #9a7a52;
+  border-radius: 999px;
+  background: linear-gradient(#fffaf0, #f0dfbd);
+  color: #5a3d20;
+  font: 700 max(12px, calc(var(--u) * 25))/1.15 Arial, Helvetica, sans-serif;
+  box-shadow: 0 2px 0 #9a7a52, inset 0 1px 0 #fff;
+  cursor: pointer;
+}
+.e5-choix .e5-principal {
+  border-color: #4f7d12;
+  background: linear-gradient(#dcf563, #a6d531 55%, #86ba1c);
+  color: #2e4a07;
+  box-shadow: 0 2px 0 #4f7d12, inset 0 1px 0 rgba(255, 255, 255, .7);
+}
+.e5-choix button:active { transform: translateY(2px); box-shadow: 0 0 0 #4f7d12; }
+.e5-saisie { margin: 0; pointer-events: auto; }
+.e5-saisie input {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0 calc(var(--u) * 10);
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #2f2f2f;
+  font: 400 16px/1 Arial, Helvetica, sans-serif;
+  -webkit-user-select: text;
+  user-select: text;
+}
+.e5-saisie input::placeholder { color: #a99d92; }
+.e5-saisie input:focus { outline: none; box-shadow: 0 0 0 2px rgba(122, 60, 240, .45); }
 
-.e5-boutons button,
+/* Au-dessus des fourneaux : la bulle parchemin (le fourneau demande quelque
+   chose, ou le plat est prêt) et la barre à segments (une étape, ou la
+   cuisson avec son minuteur et son 60x). --z suit le zoom de la salle. */
+.e5-surfeux { position: absolute; inset: 0; pointer-events: none; --z: 1; }
+.e5-surfeux[hidden] { display: none; }
+.e5-sf {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: none;
+  pointer-events: auto;
+  cursor: pointer;
+}
+.e5-sf[data-etat="demande"],
+.e5-sf[data-etat="pret"],
+.e5-sf[data-etat="action"],
+.e5-sf[data-etat="cuisson"] { display: block; }
+.e5-sf-bulle,
+.e5-sf-minuteur { display: none; }
+.e5-sf[data-etat="demande"] .e5-sf-bulle,
+.e5-sf[data-etat="pret"] .e5-sf-bulle { display: block; }
+.e5-sf[data-etat="action"] .e5-sf-minuteur,
+.e5-sf[data-etat="cuisson"] .e5-sf-minuteur { display: block; }
+
+.e5-sf-bulle {
+  position: relative;
+  margin: 0;
+  padding: calc(var(--z) * 6px) calc(var(--z) * 8px);
+  border: calc(var(--z) * 2.5px) solid #4b3a28;
+  border-radius: calc(var(--z) * 9px);
+  background: #f3e5c6;
+  box-shadow: 0 calc(var(--z) * 2px) 0 rgba(60, 35, 10, .25);
+  color: inherit;
+  cursor: pointer;
+  transform-origin: 80% 100%;
+}
+.e5-sf-bulle::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--z) * 5px);
+  right: calc(var(--z) * 5px);
+  top: calc(var(--z) * 3px);
+  bottom: calc(var(--z) * 3px);
+  border-top: calc(var(--z) * 1.6px) dashed #cdb48a;
+  border-bottom: calc(var(--z) * 1.6px) dashed #cdb48a;
+  pointer-events: none;
+}
+.e5-sf-bulle:focus { outline: none; }
+.e5-sf-bulle:focus-visible { outline: 3px solid var(--lilas); outline-offset: 2px; }
+.e5-sf-icones {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--n, 1), auto);
+  gap: calc(var(--z) * 1px);
+}
+.e5-sf-icones svg { display: block; width: calc(var(--z) * 24px); height: calc(var(--z) * 24px); overflow: visible; }
+.e5-sf-icones.e5-sf-une svg { width: calc(var(--z) * 32px); height: calc(var(--z) * 32px); }
+.e5-sf-icones .e5-sf-plat { width: calc(var(--z) * 32px); height: calc(var(--z) * 29px); }
+.e5-sf[data-etat="pret"] .e5-sf-bulle { background: #fff4c2; animation: e5-sf-saute .9s ease-in-out infinite; }
+@keyframes e5-sf-saute { 50% { transform: translateY(calc(var(--z) * -4px)); } }
+.e5-sf-pop { animation: e5-sf-pop .32s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes e5-sf-pop { from { transform: scale(.2); } }
+.e5-sf-pointe {
+  position: absolute;
+  left: calc(100% - var(--z) * 26px);
+  top: calc(100% - var(--z) * .5px);
+  width: calc(var(--z) * 16px);
+  height: calc(var(--z) * 11px);
+  overflow: visible;
+}
+.e5-sf-bulle .e5-sf-pointe path {
+  fill: #f3e5c6;
+  stroke: #4b3a28;
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+.e5-sf[data-etat="pret"] .e5-sf-pointe path { fill: #fff4c2; }
+
+.e5-sf-minuteur {
+  position: relative;
+  width: calc(var(--z) * 82px);
+  padding: calc(var(--z) * 4px) calc(var(--z) * 4px) calc(var(--z) * 3px);
+  border-radius: calc(var(--z) * 7px);
+  background: rgba(34, 40, 44, .86);
+  box-shadow: 0 calc(var(--z) * 2px) calc(var(--z) * 4px) rgba(0, 0, 0, .25);
+}
+/* pendant une étape, la barre s'élargit pour que son nom tienne en entier */
+.e5-sf[data-etat="action"] .e5-sf-minuteur { width: auto; min-width: calc(var(--z) * 82px); }
+.e5-sf[data-etat="action"] .e5-sf-legende { overflow: visible; padding: 0 calc(var(--z) * 3px); }
+.e5-sf-minuteur .e5-sf-pointe path { fill: rgba(34, 40, 44, .86); }
+.e5-sf-barre {
+  display: flex;
+  gap: calc(var(--z) * 2px);
+  height: calc(var(--z) * 12px);
+  padding: calc(var(--z) * 2px);
+  border: calc(var(--z) * 1.6px) solid #9aa4a9;
+  border-radius: calc(var(--z) * 5px);
+  background: #20272b;
+}
+.e5-sf-barre span {
+  flex: 1;
+  overflow: hidden;
+  border-radius: calc(var(--z) * 2px);
+  background: #3a4449;
+}
+.e5-sf-barre i {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: linear-gradient(#8ee3f2, #3db3cf 55%, #2b93ae);
+}
+.e5-sf-pied {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--z) * 4px);
+  min-height: calc(var(--z) * 18px);
+  margin-top: calc(var(--z) * 2px);
+}
+.e5-sf-legende {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: #e9f1f3;
+  font: 700 calc(var(--z) * 11px)/1.15 Arial, Helvetica, sans-serif;
+  text-align: center;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+.e5-sf[data-etat="cuisson"] .e5-sf-legende { text-align: left; font-size: calc(var(--z) * 12px); }
+.e5-sf-vite {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--z) * 2px);
+  height: calc(var(--z) * 17px);
+  padding: 0 calc(var(--z) * 6px) 0 calc(var(--z) * 5px);
+  border: calc(var(--z) * 1.6px) solid var(--encre);
+  border-radius: 999px;
+  background: #ffd23f;
+  color: var(--encre);
+  font: 700 calc(var(--z) * 10.5px)/1 var(--police);
+  box-shadow: 0 calc(var(--z) * 1.6px) 0 var(--encre);
+  cursor: pointer;
+}
+.e5-sf-vite[hidden] { display: none; }
+.e5-sf-vite svg { width: calc(var(--z) * 9px); height: calc(var(--z) * 7px); fill: currentColor; }
+.e5-sf-vite[aria-pressed="false"] { animation: e5-vitesse 1.1s ease-in-out infinite; }
+.e5-sf-vite[aria-pressed="true"] { background: var(--violet); color: #fff; box-shadow: none; transform: translateY(calc(var(--z) * 1.6px)); }
+.e5-sf-vite:focus { outline: none; }
+.e5-sf-vite:focus-visible { outline: 3px solid var(--lilas); outline-offset: 2px; }
+@keyframes e5-vitesse { 50% { transform: scale(1.08); } }
+.e5-sf-tige {
+  position: absolute;
+  display: none;
+  width: 2px;
+  border-radius: 1px;
+  background: rgba(50, 35, 20, .6);
+  pointer-events: none;
+}
+
+/* Dans la salle : la casserole du plat prêt brille. */
+.e5-fourneau-pret .e5-casserole { filter: drop-shadow(0 0 3px #ffd23f); }
+
+@media (prefers-reduced-motion: reduce) {
+  .e5-sf-vite[aria-pressed="false"], .e5-sf[data-etat="pret"] .e5-sf-bulle, .e5-sf-pop { animation: none; }
+}
+
+/* Le mot de la fin : ses boutons */
 .e5-finale-boutons button {
   padding: 9px 16px 10px;
   border: 2px solid var(--encre);
@@ -540,14 +779,12 @@ body[data-fond="sombre"] {
   line-height: 1.2;
   box-shadow: 0 3px 0 var(--encre);
 }
-.e5-boutons .e5-principal,
 .e5-finale-boutons .e5-principal {
   border-color: var(--violet-fonce);
   background: var(--violet);
   color: #fff;
   box-shadow: 0 3px 0 var(--violet-fonce);
 }
-.e5-boutons button:active,
 .e5-finale-boutons button:active {
   transform: translateY(2px);
   box-shadow: 0 1px 0 var(--encre);
@@ -650,18 +887,6 @@ body[data-fond="sombre"] {
 .e5-porte,
 .e5-porte-frigo { transform-box: fill-box; transform-origin: 0% 50%; }
 .e5-pancarte { transform-box: fill-box; transform-origin: 50% 50%; }
-
-.e5-bf-barre { transform-box: fill-box; transform-origin: 0% 50%; }
-.e5-bf-titre { font-variant-numeric: tabular-nums; }
-.e5-bf-vitesse { cursor: pointer; }
-.e5-bf-vitesse:focus { outline: none; }
-.e5-bf-vitesse:focus-visible .e5-vitesse-fond { stroke: var(--violet); stroke-width: 3; }
-.e5-vitesse-corps { transform-box: fill-box; transform-origin: 50% 50%; }
-.e5-bf-vitesse[aria-pressed="false"] .e5-vitesse-corps { animation: e5-vitesse 1.1s ease-in-out infinite; }
-.e5-bf-vitesse[aria-pressed="true"] .e5-vitesse-corps { transform: translateY(2.5px); }
-.e5-bf-vitesse[aria-pressed="true"] .e5-vitesse-fond { fill: var(--violet); }
-.e5-bf-vitesse[aria-pressed="true"] .e5-vitesse-texte { fill: #fff; }
-@keyframes e5-vitesse { 50% { transform: scale(1.08); } }
 
 .e5-touchable,
 .e5-etal,
@@ -950,50 +1175,6 @@ body[data-fond="sombre"] {
 }
 .e5-relance-boutons .e5-principal { background: var(--violet); color: #fff; box-shadow: 0 3px 0 var(--violet-fonce); }
 
-/* Boutons du haut : livre de recettes et frigo */
-
-.e5-outils { display: flex; flex: none; gap: 6px; }
-.e5-outils[hidden] { display: none; }
-.e5-outil {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 11px 4px 6px;
-  border: 2px solid var(--encre);
-  border-radius: 999px;
-  background: #fff;
-  color: var(--encre);
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.2;
-  box-shadow: 0 2px 0 var(--encre);
-}
-.e5-outil svg { width: 22px; height: 22px; display: block; }
-.e5-outil:active { transform: translateY(2px); box-shadow: 0 0 0 var(--encre); }
-.e5-badge {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 5px;
-  border: 2px solid #fff;
-  border-radius: 10px;
-  background: #f06fa4;
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 16px;
-  text-align: center;
-  font-variant-numeric: tabular-nums;
-}
-.e5-badge[hidden] { display: none; }
-@media (max-width: 600px) {
-  .e5-nom { display: none; }
-  .e5-outils { margin-left: auto; }
-}
-
 /* Fenêtres de jeu (vitrines, frigo, livre) */
 
 .e5-fenetre {
@@ -1102,43 +1283,6 @@ body[data-fond="sombre"] {
   font-weight: 700;
 }
 
-/* Les vitrines du marché : un auvent rayé en guise de titre */
-.e5-boutique .e5-cadre-tete {
-  background: repeating-linear-gradient(90deg, var(--couleur) 0 26px, color-mix(in srgb, var(--couleur) 70%, #fff) 26px 52px);
-}
-.e5-produits {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 10px;
-}
-.e5-produit {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  padding: 8px 6px;
-  border: 2px solid #e8dcff;
-  border-radius: 14px;
-  background: #faf6ff;
-  text-align: center;
-}
-.e5-produit > svg { width: 52px; height: 52px; display: block; overflow: visible; }
-.e5-produit-nom { margin: 2px 0 0; font-size: 13.5px; font-weight: 700; line-height: 1.15; min-height: 2.3em; display: flex; align-items: center; }
-.e5-prix { display: inline-flex; align-items: center; gap: 4px; margin: 0; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
-.e5-prix svg { width: 17px; height: 17px; display: block; }
-.e5-stock { margin: 0 0 4px; color: #6b5a88; font-size: 12px; }
-.e5-acheter {
-  width: 100%;
-  padding: 6px 4px 7px;
-  border: 2px solid var(--violet-fonce);
-  border-radius: 999px;
-  background: var(--violet);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 700;
-  box-shadow: 0 3px 0 var(--violet-fonce);
-}
-.e5-acheter:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--violet-fonce); }
 
 /* Grille du frigo */
 .e5-grille {
@@ -1201,20 +1345,6 @@ button.e5-case:disabled { opacity: .38; cursor: default; box-shadow: none; }
 .e5-ing svg { width: 22px; height: 22px; flex: none; overflow: visible; }
 .e5-ing b { color: var(--violet-fonce); }
 
-.e5-recettes { display: grid; gap: 8px; }
-.e5-recette {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  border: 2px solid #ecdcc4;
-  border-radius: 14px;
-  background: #fff;
-}
-.e5-recette h4 { margin: 0 0 5px; font-size: 15px; line-height: 1.15; }
-.e5-recette .e5-note { margin-top: 5px; }
-.e5-plat { flex: none; width: 54px; height: 54px; overflow: visible; }
-.e5-secrete { border-style: dashed; background: #faf6ff; }
 
 .e5-demande {
   display: flex;
@@ -1312,20 +1442,47 @@ button.e5-case:disabled { opacity: .38; cursor: default; box-shadow: none; }
 }
 .e5-alerte:empty { display: none; }
 
-/* Le marché */
+/* Le marché (les promeneurs ne gênent pas les clics sur les étals) */
 .e5-etal { transform-box: fill-box; transform-origin: 50% 85%; }
+.e5-promeneur, .e5-vol-papillon { pointer-events: none; }
 .e5-jets path { stroke-dasharray: 6 5; animation: e5-eau .5s linear infinite; }
 @keyframes e5-eau { to { stroke-dashoffset: -11; } }
 .e5-ronds ellipse { transform-box: fill-box; transform-origin: center; animation: e5-rond 2.2s ease-out infinite; }
 @keyframes e5-rond { from { transform: scale(.3); opacity: .9; } to { transform: scale(1.3); opacity: 0; } }
 .e5-respire { transform-box: fill-box; transform-origin: 50% 100%; animation: e5-respire 1.3s ease-in-out infinite alternate; }
 @keyframes e5-respire { to { transform: translateY(-1.2px); } }
-.e5-flane { animation: e5-flane 16s ease-in-out infinite; }
-@keyframes e5-flane {
-  0%, 10% { transform: translate(0, 0); }
-  45%, 60% { transform: translate(-56px, -28px); }
-  95%, 100% { transform: translate(0, 0); }
+/* Les joueurs du marché : ceux qui se promènent (animés par le jeu), celui
+   qui sautille, celle qui se balance sur le banc. */
+.e5-sautille { transform-box: fill-box; transform-origin: 50% 100%; animation: e5-sautille 2.8s ease-in-out infinite; }
+@keyframes e5-sautille {
+  0%, 62%, 100% { transform: translateY(0) scale(1); }
+  68% { transform: translateY(0) scale(1.06, .92); }
+  76% { transform: translateY(-10px) scale(.96, 1.05); }
+  84% { transform: translateY(0) scale(1.05, .94); }
+  90% { transform: translateY(0) scale(1); }
 }
+.e5-balance { transform-box: fill-box; transform-origin: 50% 100%; animation: e5-balance 3.4s ease-in-out infinite; }
+@keyframes e5-balance { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(2.5deg) translateY(-.8px); } }
+/* Les petites vies du marché */
+.e5-oiseau { transform-box: fill-box; transform-origin: 50% 100%; animation: e5-oiseau 3.6s ease-in-out infinite; }
+@keyframes e5-oiseau {
+  0%, 36%, 100% { transform: none; }
+  40% { transform: translateY(-5px); }
+  44% { transform: none; }
+  48% { transform: translateY(-3px); }
+  52% { transform: none; }
+  70% { transform: rotate(20deg); }
+  76%, 80% { transform: rotate(20deg); }
+  86% { transform: none; }
+}
+.e5-girouette { transform-box: fill-box; transform-origin: 50% 50%; animation: e5-girouette 9s ease-in-out infinite; }
+@keyframes e5-girouette { 0%, 100% { transform: scaleX(1); } 35%, 50% { transform: scaleX(.45); } 70% { transform: scaleX(.85); } }
+.e5-fanion { transform-box: fill-box; transform-origin: 0% 50%; animation: e5-fanion 1.5s ease-in-out infinite; }
+@keyframes e5-fanion { 0%, 100% { transform: skewY(0) scaleX(1); } 50% { transform: skewY(-9deg) scaleX(.88); } }
+.e5-ballon { transform-box: fill-box; transform-origin: 50% 100%; animation: e5-ballon 3.2s ease-in-out infinite; }
+@keyframes e5-ballon { 0%, 100% { transform: translateY(0) rotate(-5deg); } 50% { transform: translateY(-4px) rotate(5deg); } }
+.e5-lumiere { animation: e5-lumiere 1.6s ease-in-out infinite; }
+@keyframes e5-lumiere { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
 .e5-coucou { transform-box: fill-box; transform-origin: 0% 100%; animation: e5-coucou .5s ease-in-out infinite alternate; }
 @keyframes e5-coucou { from { transform: rotate(-14deg); } to { transform: rotate(16deg); } }
 .e5-petit-coeur { transform-box: fill-box; transform-origin: center; animation: e5-petit-coeur 2.6s ease-out infinite; }
@@ -1350,109 +1507,6 @@ button.e5-case:disabled { opacity: .38; cursor: default; box-shadow: none; }
 .e5-fenetre .e5-titres { flex: 1; min-width: 0; }
 .e5-sous-titre { margin: 2px 0 0; font-size: 12.5px; font-weight: 600; opacity: .85; }
 
-.e5-boutique .e5-cadre {
-  width: min(440px, 100%);
-  padding: 8px;
-  border: 3px solid #5e3a1d;
-  border-radius: 18px;
-  background:
-    repeating-linear-gradient(90deg, rgba(0,0,0,.06) 0 2px, transparent 2px 46px),
-    linear-gradient(#d9a066, #c98f55);
-  box-shadow: 0 5px 0 #3d2410, inset 0 0 0 2px #e8bb84;
-}
-.e5-boutique .e5-cadre-tete {
-  min-height: 54px;
-  margin-bottom: 8px;
-  padding: 6px 8px 6px 14px;
-  border: 2px solid #8a5a33;
-  border-radius: 12px;
-  background: linear-gradient(#fbf1d8, #f1e0b8);
-  color: #5e3a1d;
-  box-shadow: 0 3px 0 rgba(61,36,16,.35);
-}
-.e5-boutique .e5-cadre-tete::before {
-  content: '';
-  flex: none;
-  width: 8px;
-  align-self: stretch;
-  border-radius: 4px;
-  background: repeating-linear-gradient(180deg, var(--couleur) 0 8px, #fffaf2 8px 16px);
-}
-.e5-boutique .e5-cadre-tete h2 { color: #5e3a1d; font-size: 22px; text-shadow: none; }
-.e5-boutique .e5-cadre-corps { padding: 4px 2px 6px; background: none; }
-.e5-boutique .e5-croix, .e5-livre .e5-croix {
-  border: 2px solid #8a2f3a;
-  border-radius: 9px;
-  background: linear-gradient(#f7a7a0, #e4746c);
-  color: #fff;
-  box-shadow: 0 2px 0 #8a2f3a;
-  text-shadow: 0 1px 0 rgba(0,0,0,.25);
-}
-
-.e5-boutique .e5-produits { grid-template-columns: repeat(auto-fill, minmax(98px, 1fr)); gap: 9px; }
-.e5-boutique .e5-produit {
-  gap: 4px;
-  padding: 0 0 7px;
-  border: 2px solid #8a5a33;
-  border-radius: 12px;
-  background: #fbf1d8;
-  box-shadow: 0 3px 0 rgba(61,36,16,.35);
-  overflow: hidden;
-}
-.e5-boutique .e5-produit-nom {
-  align-self: stretch;
-  justify-content: center;
-  min-height: 0;
-  margin: 0;
-  padding: 4px 4px 3px;
-  background: linear-gradient(#f3dfb2, #ead09a);
-  border-bottom: 1.5px solid #c9a46c;
-  color: #4a2c14;
-  font-size: 12.5px;
-}
-.e5-assiette {
-  display: grid;
-  place-items: center;
-  width: 64px;
-  height: 46px;
-  border-radius: 50%;
-  background: radial-gradient(ellipse at 50% 45%, #fff 0 55%, #e9e3d8 56% 62%, #fff 63%);
-  box-shadow: 0 2px 0 rgba(61,36,16,.18);
-}
-.e5-assiette svg { width: 46px; height: 46px; overflow: visible; }
-.e5-boutique .e5-produit > .e5-assiette > svg { width: 44px; height: 44px; }
-.e5-boutique .e5-stock {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  align-self: flex-end;
-  margin: 0 6px 0 0;
-  padding: 1px 3px 1px 7px;
-  border: 1.5px solid #d4c7ae;
-  border-radius: 6px;
-  background: #fff;
-  color: #4a2c14;
-  font-size: 12px;
-}
-.e5-boutique .e5-stock svg { width: 15px; height: 15px; }
-.e5-achat { display: flex; align-items: center; justify-content: space-between; align-self: stretch; padding: 0 6px; gap: 4px; }
-.e5-boutique .e5-prix { color: #4a2c14; font-size: 15px; }
-.e5-boutique .e5-acheter {
-  width: 38px;
-  height: 30px;
-  padding: 0;
-  display: grid;
-  place-items: center;
-  border: 2px solid #3f7a1f;
-  border-radius: 8px;
-  background: linear-gradient(#9ad65a, #6db43a);
-  box-shadow: 0 3px 0 #3f7a1f;
-}
-.e5-boutique .e5-acheter svg { width: 22px; height: 22px; }
-.e5-boutique .e5-acheter:active { box-shadow: 0 1px 0 #3f7a1f; }
-
-.e5-fen-frigo .e5-case { border-color: #c9a46c; background: #fbf1d8; color: #4a2c14; }
-.e5-fen-frigo .e5-vide { color: #fbf1d8; text-shadow: 0 1px 0 #5e3a1d; }
 
 /* Le livre de recettes */
 .e5-livre .e5-cadre {
@@ -1504,47 +1558,6 @@ button.e5-case:disabled { opacity: .38; cursor: default; box-shadow: none; }
 .e5-page > * + * { margin-top: 9px; }
 .e5-titre-page { margin: 0 0 6px; color: #7a2a22; font-size: 14px; font-weight: 700; text-align: center; }
 
-.e5-livre .e5-recette {
-  display: block;
-  padding: 0 0 7px;
-  border: 1.5px solid #b98a55;
-  border-radius: 8px;
-  background: #fbf3df;
-  overflow: hidden;
-}
-.e5-livre .e5-recette h4 {
-  margin: 0;
-  padding: 4px 6px 3px;
-  border-bottom: 1.5px solid #d3b17b;
-  background: linear-gradient(#f3dfb2, #ead09a);
-  color: #4a2c14;
-  font-size: 12.5px;
-  text-align: center;
-}
-.e5-recette-haut { display: flex; align-items: center; gap: 6px; padding: 6px 6px 4px; }
-.e5-livre .e5-assiette { flex: none; width: 54px; height: 40px; }
-.e5-livre .e5-assiette svg { width: 40px; height: 40px; }
-.e5-infos { margin: 0; padding: 0; list-style: none; color: #4a2c14; font-size: 11px; line-height: 1.35; }
-.e5-infos .e5-note { font-size: 10.5px; color: #8a6a48; }
-.e5-par-portion { display: inline-flex; align-items: center; gap: 3px; font-weight: 700; }
-.e5-par-portion svg { width: 13px; height: 13px; }
-.e5-emplacements { display: grid; grid-template-columns: repeat(auto-fill, minmax(34px, 1fr)); gap: 4px; padding: 0 6px; }
-.e5-empl {
-  position: relative;
-  display: grid;
-  place-items: center;
-  height: 30px;
-  border: 1.5px solid #d4c3a1;
-  border-radius: 6px;
-  background: #efe6d2;
-  color: #b59a73;
-  font-size: 13px;
-  font-weight: 700;
-}
-.e5-empl svg { width: 24px; height: 24px; overflow: visible; }
-.e5-empl b { position: absolute; right: 1px; bottom: -1px; color: #4a2c14; font-size: 10px; }
-.e5-empl-vide { background: #f3ecdc; }
-.e5-livre .e5-secrete { border-style: dashed; }
 
 .e5-livre .e5-demande { padding: 7px; border-color: #d3b17b; background: #fffaf0; }
 .e5-livre .e5-visage { width: 38px; height: 38px; }
@@ -1587,15 +1600,424 @@ button.e5-case:disabled { opacity: .38; cursor: default; box-shadow: none; }
 .e5-pense-bete .e5-demande { padding: 5px; background: #fffbe0; }
 .e5-pense-bete .e5-visage { width: 32px; height: 32px; }
 .e5-pense-bete .e5-citation { font-size: 12px; }
+
+/* À la manière des maquettes de Clément : la croix rose, le livre ouvert
+   aux cartes de recettes, la boutique sur sa table en bois. */
+.e5-livre .e5-croix {
+  width: 36px;
+  height: 36px;
+  border: 2px solid #8a2f3a;
+  border-radius: 9px;
+  background: linear-gradient(#f7a7a0, #e4746c);
+  color: #fff;
+  box-shadow: 0 2px 0 #8a2f3a;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, .25);
+}
+
+/* Le livre ouvert : deux pages crème (une seule sur un écran étroit) */
+.e5-gglivre:not(.e5-cuisine) .e5-cadre { width: min(400px, 100%); }
+.e5-gglivre.e5-deux-pages .e5-cadre { width: min(780px, 100%); }
+.e5-gl { position: relative; flex: 1; display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+.e5-gl-pages {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--pages), minmax(0, 1fr));
+  border-radius: 10px;
+  background: #f6e9cc;
+  box-shadow: inset 0 0 0 2px #e2cfa4;
+  overflow: hidden;
+}
+.e5-gl-page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 16px 14px;
+  background: linear-gradient(90deg, #f8eed6 0, #f4e6c6 88%, #dcc595 100%);
+}
+.e5-gl-page.e5-gl-droite { background: linear-gradient(90deg, #d8c191 0, #f2e3c2 12%, #f8eed6 100%); }
+.e5-gl-page:only-child { background: linear-gradient(90deg, #f8eed6, #f4e6c6); }
+.e5-gl-fleche {
+  position: absolute;
+  top: 46%;
+  z-index: 2;
+  width: 38px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  background: none;
+  filter: drop-shadow(0 2px 0 rgba(26, 60, 90, .45));
+}
+.e5-gl-fleche::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(#9fe0f5, #4fb6e0);
+  clip-path: polygon(0 32%, 52% 32%, 52% 4%, 100% 50%, 52% 96%, 52% 68%, 0 68%);
+}
+.e5-gl-apres { right: -10px; }
+.e5-gl-avant { left: -10px; transform: scaleX(-1); }
+.e5-gl-num { margin: -4px 0 0; color: #fbe3dc; font-size: 12px; font-weight: 700; text-align: center; }
+.e5-gl .e5-pense-bete { max-height: 30vh; }
+
+/* Une carte de recette */
+.e5-rcarte {
+  --bord: #8a7354;
+  position: relative;
+  flex: none;
+  width: min(330px, 100%);
+  margin: 10px auto 0;
+  padding: 0 0 9px;
+  border: 2px solid var(--bord);
+  border-radius: 9px;
+  background: linear-gradient(#efe1c1, #e9d8b4);
+  box-shadow: inset 0 0 0 2px #f7edd6, 0 2px 0 rgba(61, 36, 16, .2);
+  color: #3d2c1c;
+  font-family: Arial, Helvetica, sans-serif;
+}
+.e5-retoiles {
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  display: flex;
+  gap: 2px;
+  padding: 3px 14px 1px;
+  border: 2px solid var(--bord);
+  border-bottom: 0;
+  border-radius: 40px 40px 0 0;
+  background: #efe1c1;
+  transform: translateX(-50%);
+}
+.e5-retoiles svg { width: 17px; height: 17px; display: block; overflow: visible; }
+.e5-retoiles path { fill: #4d4033; stroke: #2a2018; stroke-width: 1; stroke-linejoin: round; }
+.e5-retoiles .e5-bronze { fill: #e0874a; }
+.e5-retoiles .e5-argent { fill: #e6ebef; }
+.e5-retoiles .e5-or { fill: #ffd23f; }
+.e5-rcarte h4 {
+  position: relative;
+  margin: 0 8px;
+  padding: 5px 0 3px;
+  border-bottom: 2px solid #4d3a26;
+  font: 400 17px/1.15 "Patua One", Georgia, serif;
+  text-align: center;
+}
+.e5-rmilieu { display: flex; gap: 6px; padding: 6px 8px 0; }
+.e5-rplat {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 104px;
+  height: 86px;
+  border-radius: 5px;
+  background: radial-gradient(ellipse at 50% 55%, #fff 0 38%, #f5ead3 70%, #eadbb9 100%);
+  box-shadow: inset 0 0 0 1px #d8c49e;
+}
+.e5-rplat > svg { width: 74px; height: 74px; overflow: visible; }
+.e5-rquestion { color: #a58e6c; font: 400 40px/1 "Patua One", Georgia, serif; }
+.e5-rcat {
+  position: absolute;
+  left: -16px;
+  top: 50%;
+  width: 30px;
+  height: 30px;
+  border: 2px solid #6b5640;
+  border-radius: 50%;
+  background: #fbf3e2;
+  transform: translateY(-50%);
+}
+.e5-rcat svg { width: 100%; height: 100%; display: block; }
+.e5-rinfos {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  line-height: 1.25;
+}
+.e5-rinfos li:nth-child(-n+2) { padding: 1px 4px; }
+.e5-rinfos li:nth-child(2) { margin-bottom: 4px; }
+.e5-rgain {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 4px;
+  background: rgba(255, 250, 238, .7);
+}
+.e5-rgain:nth-of-type(3) { border-radius: 5px 5px 0 0; }
+.e5-rgain:nth-of-type(4) { border-radius: 0 0 5px 5px; }
+.e5-rgain svg { flex: none; width: 20px; height: 20px; }
+.e5-rnote { padding: 2px 4px; color: #7a6248; font-size: 12px; }
+.e5-xp-ico {
+  flex: none;
+  width: 22px;
+  color: #6cc3e8;
+  font: italic 900 15px/1 Arial Black, Arial, sans-serif;
+  letter-spacing: -1px;
+  text-align: center;
+  -webkit-text-stroke: 1px #2b6a88;
+}
+.e5-rbas { display: flex; align-items: flex-end; gap: 6px; padding: 8px 8px 0; }
+.e5-ringr { flex: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+.e5-ri {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  height: 30px;
+  border-radius: 6px;
+  background: rgba(255, 250, 238, .75);
+  font-size: 12px;
+  font-weight: 700;
+  color: #4d3a26;
+}
+.e5-ri svg { width: 25px; height: 25px; overflow: visible; }
+.e5-ri b { font-size: 11.5px; }
+.e5-ri-vide { background: rgba(255, 250, 238, .45); color: #b59a73; }
+.e5-ri.e5-manque svg { filter: grayscale(1) brightness(1.05) contrast(.7); opacity: .75; }
+.e5-ri-epice {
+  background:
+    radial-gradient(circle at 18% 50%, #fff 0 9px, transparent 10px),
+    radial-gradient(circle at 50% 22%, #fff 0 8px, transparent 9px),
+    radial-gradient(circle at 50% 80%, #fff 0 8px, transparent 9px),
+    radial-gradient(circle at 82% 50%, #fff 0 9px, transparent 10px),
+    radial-gradient(ellipse at 50% 50%, #fff 0 38%, transparent 40%);
+}
+.e5-rbouton {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  border: 2px solid #4d3a26;
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .45), 0 2px 0 rgba(61, 36, 16, .3);
+}
+.e5-rbouton img { width: 52px; height: 52px; display: block; }
+.e5-rbouton svg { width: 46px; height: 46px; }
+.e5-rpanier { background: linear-gradient(#ffe27a, #f4bb33); }
+.e5-rfouet { background: linear-gradient(#b4e05a, #7fb52a); }
+.e5-rbouton-vide { background: #efe3c8; border-style: dashed; box-shadow: none; }
+.e5-rsecrete { border-style: dashed; }
+/* Téléphone couché : une carte par page, un peu plus serrée */
+.e5[data-mise="paysage"] .e5-gl-page { padding: 14px 12px 10px; }
+.e5[data-mise="paysage"] .e5-rcarte { margin-top: 12px; }
+
+/* Le livre au fourneau : la carte de la recette, et les boutons du pied */
+.e5-cuisine .e5-rcarte { width: 100%; margin-top: 18px; }
+.e5-cuisine .e5-rcarte h4 { font-size: 15px; }
+.e5-cuisine .e5-rmilieu { gap: 5px; padding: 5px 6px 0; }
+.e5-cuisine .e5-rplat { width: 58px; height: 54px; }
+.e5-cuisine .e5-rplat > svg { width: 46px; height: 46px; }
+.e5-cuisine .e5-rcat { display: none; }
+.e5-cuisine .e5-rinfos { font-size: 10.5px; white-space: nowrap; }
+.e5-cuisine .e5-rinfos li:first-child { display: none; }
+.e5-cuisine .e5-rinfos li:nth-child(2) { margin-bottom: 2px; padding: 0 2px; }
+.e5-cuisine .e5-rgain { gap: 4px; padding: 1px 3px; }
+.e5-cuisine .e5-rgain svg { width: 15px; height: 15px; }
+.e5-cuisine .e5-xp-ico { width: 16px; font-size: 11px; }
+.e5-cuisine .e5-rbas { padding: 6px 6px 0; }
+.e5-cuisine .e5-ringr { gap: 4px; }
+.e5-cuisine .e5-ri { height: 27px; font-size: 11px; }
+.e5-cuisine .e5-ri svg { width: 21px; height: 21px; }
+.e5-ggbouton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px 6px 8px;
+  border: 2px solid #4d3a26;
+  border-radius: 9px;
+  color: #3d2c1c;
+  font: 700 16px/1.1 var(--police);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .45), 0 3px 0 #3b120c;
+}
+.e5-ggbouton img { width: 34px; height: 34px; margin: -6px 0; }
+.e5-ggbouton svg { width: 28px; height: 28px; }
+.e5-ggbouton:active { transform: translateY(2px); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .45), 0 1px 0 #3b120c; }
+.e5-ggjaune { background: linear-gradient(#ffe27a, #f4bb33); }
+.e5-ggvert { background: linear-gradient(#b4e05a, #7fb52a); }
+.e5-livre .e5-cadre-pied { display: flex; justify-content: space-between; gap: 10px; padding: 8px 2px 2px; }
+
+/* La boutique (maquette « obchod s přísadami ») : en-tête en parchemin,
+   onglets des étals, cartes sur la table en bois. */
+.e5-ggboutique .e5-cadre { width: min(720px, 100%); }
+.e5-gb { flex: 1; display: flex; flex-direction: column; min-height: 0; max-height: 100%; border-radius: 10px; overflow: hidden; box-shadow: inset 0 0 0 2px #e2cfa4; }
+.e5-gb-tete {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 64px;
+  padding: 8px 52px 6px 12px;
+  background: linear-gradient(#fbf3de, #f1e3c3);
+}
+.e5-gb-bourse {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 3px 12px 3px 4px;
+  border: 1.5px solid #b9a37c;
+  border-radius: 7px;
+  background: #fffaf0;
+  color: #5a5048;
+  font: 700 15px/1 Arial, Helvetica, sans-serif;
+}
+.e5-gb-bourse svg { width: 22px; height: 22px; }
+.e5-gb-icone { flex: none; width: 70px; height: 60px; margin: -6px 0; }
+.e5-gb-icone svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.e5-gb-titres { flex: 1; min-width: 0; }
+.e5-gb-titres h3 {
+  margin: 0;
+  padding-bottom: 2px;
+  border-bottom: 2px dashed #6b5640;
+  color: #3d2c1c;
+  font: 400 26px/1.1 "Patua One", Georgia, serif;
+}
+.e5-gb-titres p { margin: 3px 0 0; color: #4d3a26; font: 600 12.5px/1.2 Arial, Helvetica, sans-serif; }
+.e5-gb-onglets {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 6px 10px 0;
+  background: linear-gradient(#a8743f, #9a6634);
+  border-top: 3px solid #6f4520;
+}
+.e5-gb-etals { flex: 1; display: flex; gap: 4px; min-width: 0; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
+.e5-gb-etal {
+  position: relative;
+  flex: none;
+  width: 58px;
+  height: 46px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+}
+.e5-gb-etal span { position: absolute; width: 30px; height: 30px; top: calc(4px + var(--i) * 3px); left: calc(2px + var(--i) * 12px); }
+.e5-gb-etal span svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 1px 0 rgba(0, 0, 0, .3)); }
+.e5-gb-etal[aria-selected="true"] { background: radial-gradient(closest-side, rgba(255, 255, 255, .95), rgba(255, 255, 255, .55) 70%, rgba(255, 255, 255, 0)); }
+.e5-gb-vues { flex: none; display: flex; gap: 4px; }
+.e5-gb-vue {
+  width: 52px;
+  height: 46px;
+  padding: 2px;
+  border: 2px solid #6b5640;
+  border-bottom: 0;
+  border-radius: 8px 8px 0 0;
+  background: #d9c59e;
+  opacity: .8;
+}
+.e5-gb-vue[aria-pressed="true"] { background: #f4e6c6; opacity: 1; }
+.e5-gb-vue img, .e5-gb-vue svg { width: 100%; height: 100%; display: block; object-fit: contain; }
+.e5-gb-etagere {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 12px 10px 14px;
+  background:
+    repeating-linear-gradient(176deg, rgba(90, 50, 20, .1) 0 2px, transparent 2px 9px),
+    repeating-linear-gradient(90deg, rgba(255, 220, 170, .08) 0 40px, rgba(90, 50, 20, .06) 40px 41px, transparent 41px 120px),
+    linear-gradient(#b98149, #a96f3b);
+}
+.e5-gb-grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 10px; }
+.e5-gb-vide { margin: 20px 10px; color: #fff4dc; font: 600 15px/1.4 Arial, Helvetica, sans-serif; text-align: center; text-shadow: 0 1px 0 #5e3a1d; }
+.e5-gb-carte {
+  display: flex;
+  flex-direction: column;
+  padding: 0 6px 6px;
+  border: 2px solid #7a6040;
+  border-radius: 8px;
+  background: linear-gradient(#f4e8cc, #ead9b3);
+  box-shadow: inset 0 0 0 2px #fbf3e0, 0 3px 0 rgba(61, 36, 16, .35);
+  color: #3d2c1c;
+  font-family: Arial, Helvetica, sans-serif;
+}
+.e5-gb-nom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.3em;
+  margin: 0;
+  padding: 3px 0 2px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
+}
+.e5-gb-plat {
+  display: grid;
+  place-items: center;
+  height: 70px;
+  border: 1.5px solid #c9b48a;
+  border-radius: 5px;
+  background: radial-gradient(ellipse at 50% 50%, #fff 0 34%, #f6ecd6 70%, #ede0c2 100%);
+}
+.e5-gb-plat svg { width: 54px; height: 54px; overflow: visible; }
+.e5-gb-stock {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+  margin: 4px 0 0;
+  padding: 1px 2px 1px 6px;
+  border-radius: 4px;
+  background: rgba(255, 250, 238, .8);
+  font-size: 14px;
+  font-weight: 600;
+  color: #5a5048;
+}
+.e5-gb-stock svg { width: 20px; height: 22px; margin: -3px 0; }
+.e5-gb-prix {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 4px 0 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #4d3a26;
+}
+.e5-gb-prix svg { width: 20px; height: 20px; }
+.e5-gb-cadeau { color: #8a6a48; font-size: 12px; font-style: italic; }
+.e5-gb-boutons { display: flex; justify-content: flex-end; gap: 4px; margin-top: 4px; }
+.e5-gb-boutons:empty { display: none; }
+.e5-gb-acheter, .e5-gb-vendre {
+  width: 36px;
+  height: 32px;
+  padding: 2px;
+  border: 2px solid #3b4a1c;
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .45), 0 2px 0 rgba(40, 30, 10, .45);
+}
+.e5-gb-acheter { background: linear-gradient(#b4e05a, #7fb52a); }
+.e5-gb-vendre { border-color: #6b3518; background: linear-gradient(#f7a46a, #e5763a); }
+.e5-gb-vendre:disabled { border-color: #6c7179; background: linear-gradient(#d2d6dc, #a9afb8); box-shadow: none; opacity: .9; }
+.e5-gb-acheter svg, .e5-gb-vendre svg { width: 100%; height: 100%; display: block; }
+.e5-gb-acheter:active, .e5-gb-vendre:active:not(:disabled) { transform: translateY(2px); box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .45); }
 @media (max-width: 420px) {
-  .e5-page { padding: 8px 6px 10px; }
-  .e5-livre .e5-plan-travail { margin: 10px -6px -10px; bottom: -10px; }
-  .e5-infos { font-size: 10px; }
-  .e5-livre .e5-assiette { width: 44px; height: 34px; }
-  .e5-livre .e5-assiette svg { width: 34px; height: 34px; }
-  .e5-emplacements { grid-template-columns: repeat(auto-fill, minmax(30px, 1fr)); }
-  .e5-empl { height: 27px; }
-  .e5-empl svg { width: 21px; height: 21px; }
+  .e5-gb-tete { gap: 6px; padding-left: 8px; }
+  .e5-gb-icone { width: 54px; height: 48px; }
+  .e5-gb-titres h3 { font-size: 22px; }
+  .e5-gb-grille { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+  .e5-gb-plat { height: 58px; }
+  .e5-gb-plat svg { width: 46px; height: 46px; }
+  .e5-gb-nom { font-size: 12px; }
+}
+.e5[data-mise="paysage"] .e5-gb-tete { min-height: 52px; padding-top: 4px; padding-bottom: 4px; }
+.e5[data-mise="paysage"] .e5-gb-grille { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); }
+.e5[data-mise="paysage"] .e5-gb-plat { height: 56px; }
+.e5[data-mise="paysage"] .e5-gb-plat svg { width: 44px; height: 44px; }
+/* Grand écran : quatre cartes par rangée, comme sur la maquette */
+@media (min-width: 700px) and (min-height: 620px) {
+  .e5-ggboutique .e5-cadre { width: min(640px, 100%); }
+  .e5 .e5-gb-grille { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+  .e5 .e5-gb-plat { height: 76px; }
+  .e5 .e5-gb-plat svg { width: 58px; height: 58px; }
 }
 
 /* La fête d'anniversaire */
@@ -1670,8 +2092,9 @@ button.e5-case:disabled { opacity: .38; cursor: default; box-shadow: none; }
 
 @media (prefers-reduced-motion: reduce) {
   .e5-pluie line, .e5-vapeur path, .e5-flamme, .e5-brille { animation: none; }
-  .e5-bf-vitesse .e5-vitesse-corps, .e5-flamme-bougie { animation: none; }
-  .e5-jets path, .e5-ronds ellipse, .e5-flane, .e5-respire, .e5-coucou, .e5-petit-coeur, .e5-vol-papillon, .e5-clignote { animation: none; }
+  .e5-flamme-bougie { animation: none; }
+  .e5-jets path, .e5-ronds ellipse, .e5-respire, .e5-coucou, .e5-petit-coeur, .e5-vol-papillon, .e5-clignote { animation: none; }
+  .e5-sautille, .e5-balance, .e5-oiseau, .e5-girouette, .e5-fanion, .e5-ballon, .e5-lumiere { animation: none; }
   .e5 .e5-aile, .e5-ailes-machaon, .e5-flotte { animation-duration: 2.4s; }
   .e5-marche, .e5-content { animation: none; }
 }
@@ -1682,6 +2105,121 @@ button.e5-case:disabled { opacity: .38; cursor: default; box-shadow: none; }
   animation: e5-beurk .11s ease-in-out 12 alternate;
 }
 @keyframes e5-beurk { from { transform: rotate(-5deg); } to { transform: rotate(5deg); } }
+
+/* Les fenêtres d'après les maquettes de Clément (images/fenetres/) : l'image,
+   et par-dessus les textes et les boutons, placés en % de l'image (voir
+   maquette() dans cafe.js). --t : taille du texte en % de la largeur. */
+.e5-fen-maq { padding: 8px; }
+.e5-fen-maq.e5-sur { z-index: 11; background: rgba(42, 23, 69, .22); }
+.e5-maq {
+  position: relative;
+  flex: none;
+  width: min(calc(var(--zl, 100vw) - 16px), calc((var(--zh, 100vh) - 16px) * var(--l) / var(--h)), calc(var(--l) * 1.2px));
+  aspect-ratio: var(--l) / var(--h);
+  container-type: inline-size;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #3a2c22;
+  filter: drop-shadow(0 6px 12px rgba(26, 16, 38, .35));
+  user-select: none;
+  -webkit-user-select: none;
+}
+.e5-maq:focus { outline: none; }
+.e5-maq-fond {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+.e5-m {
+  position: absolute;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .3em;
+  text-align: center;
+  font-size: calc(var(--t, 4) * 1cqw);
+  line-height: 1.15;
+}
+svg.e5-m { display: block; overflow: visible; }
+.e5-mtitre { font-family: "Patua One", Georgia, serif; font-weight: 400; color: #33200f; }
+.e5-rouge {
+  color: #e2483a;
+  text-shadow: .35cqw .35cqw 0 #fff6de, -.35cqw .35cqw 0 #fff6de, .35cqw -.35cqw 0 #fff6de, -.35cqw -.35cqw 0 #fff6de, 0 .9cqw .4cqw rgba(120, 40, 20, .25);
+}
+.e5-gras { font-weight: 700; }
+.e5-mcroix {
+  padding: 0;
+  border: 0;
+  border-radius: 30%;
+  background: transparent;
+  cursor: pointer;
+}
+.e5-mbouton {
+  padding: 0;
+  border: .35cqw solid #34361d;
+  border-radius: .9cqw;
+  background: linear-gradient(#c6e24e, #96c52b 55%, #80b220);
+  box-shadow: inset 0 .45cqw 0 rgba(255, 255, 255, .45), 0 .55cqw 0 rgba(40, 30, 10, .5);
+  color: #2b3a0c;
+  font: 700 calc(var(--t, 4) * 1cqw)/1 Arial, Helvetica, sans-serif;
+  cursor: pointer;
+}
+.e5-mbouton.e5-orange { background: linear-gradient(#f89d50, #ef7b2d 55%, #e2661c); color: #4a1e06; }
+.e5-mbouton:active:not(:disabled) { transform: translateY(.45cqw); box-shadow: inset 0 .45cqw 0 rgba(255, 255, 255, .45); }
+.e5-mbouton:disabled { filter: grayscale(.6) brightness(.96); cursor: default; }
+.e5-mcroix:focus-visible, .e5-mbouton:focus-visible, .e5-mtoque:focus-visible, .e5-gchoix:focus-visible, .e5-roue:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+
+/* La roue de la fortune */
+.e5-mnote { transform: rotate(-5deg); font-weight: 600; line-height: 1.2; }
+.e5-roue { cursor: pointer; }
+.e5-roue-disque { transform-box: view-box; transform-origin: 0 0; }
+.e5-roue-part.e5-gagnant { animation: e5-gagnant .36s steps(1, end) infinite; }
+@keyframes e5-gagnant { 50% { fill: #fff6b8; } }
+
+/* L'épice et « Cuisiner tout de suite » */
+.e5-mplaque { border: .3cqw solid #8a7350; border-radius: 1.4cqw; background: #ecdcbc; }
+.e5-mplaque svg { width: 80%; height: 92%; }
+.e5-mgain, .e5-mfois, .e5-mcompte { justify-content: flex-start; font-weight: 700; }
+.e5-mcompte { color: #4d4a46; }
+.e5-mtoque {
+  padding: 0;
+  border: 0;
+  border-radius: 16%;
+  background: transparent;
+  cursor: pointer;
+  animation: e5-invite 1.5s ease-in-out infinite;
+}
+@keyframes e5-invite { 50% { box-shadow: 0 0 0 .9cqw rgba(255, 233, 130, .8); } }
+
+/* « Trouve la garniture » */
+.e5-gscene { pointer-events: none; }
+.e5-gchoix {
+  padding: 0;
+  border: 0;
+  border-radius: 42% 42% 14% 14%;
+  background: transparent;
+  cursor: pointer;
+  transition: background .2s;
+}
+.e5-gchoix.e5-choisi { background: radial-gradient(closest-side, rgba(255, 252, 230, .55), rgba(255, 252, 230, 0)); }
+.e5-gsaut { animation: e5-gsaut 1s ease-in-out infinite; animation-delay: calc(var(--i) * -.33s); }
+@keyframes e5-gsaut { 50% { transform: translateY(-7px); } }
+.e5-gfleche { transition: opacity .2s; }
+.e5-gjoue .e5-gfleche { opacity: 0; }
+.e5-gconfiture { opacity: 0; transition: opacity .25s; }
+.e5-gconfiture.e5-montre { opacity: 1; }
+.e5-gcoule { transform-box: fill-box; transform-origin: 50% 0; }
+.e5-montre .e5-gcoule { animation: e5-coule .7s cubic-bezier(.3, 1.4, .5, 1) both; }
+@keyframes e5-coule { from { transform: scale(.25, .1); } }
+.e5-gprix svg { width: 1.15em; height: 1.15em; }
+
+@media (prefers-reduced-motion: reduce) {
+  .e5-gsaut, .e5-mtoque, .e5-montre .e5-gcoule, .e5-roue-part.e5-gagnant { animation: none; }
+}
 
 
 /* ----------------------------------------------------------- Étape 4 */

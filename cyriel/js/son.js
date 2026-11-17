@@ -184,6 +184,9 @@ export function bip(nom, p = 0) {
       bruit({ duree: 0.09, volume: 0.1, de: 620, a: 240 });
       bruit({ duree: 0.09, volume: 0.08, de: 560, a: 220, retard: 0.13 });
       break;
+    case 'tic':         // l'aiguille de la roue de la fortune passe une case
+      ton({ type: 'square', de: 2300, a: 1500, duree: 0.025, volume: 0.05 });
+      break;
     case 'poc':
       ton({ de: 170, a: 62, duree: 0.13, volume: 0.42 });
       bruit({ duree: 0.035, volume: 0.16, filtre: 'highpass', de: 1400 });
