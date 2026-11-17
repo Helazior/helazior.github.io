@@ -188,6 +188,17 @@ export function bip(nom, p = 0) {
       ton({ de: 170, a: 62, duree: 0.13, volume: 0.42 });
       bruit({ duree: 0.035, volume: 0.16, filtre: 'highpass', de: 1400 });
       break;
+    case 'craque':      // une stalactite tremble (p : proximité)
+      for (let i = 0; i < 3; i++) bruit({ duree: 0.04, volume: 0.09 * p, filtre: 'highpass', de: 2400 + i * 500, retard: i * 0.07 });
+      break;
+    case 'caillou':     // elle s'écrase au sol
+      ton({ de: 210, a: 70, duree: 0.12, volume: 0.25 * p });
+      bruit({ duree: 0.12, volume: 0.12 * p, filtre: 'bandpass', de: 1500, a: 500, q: 0.7 });
+      break;
+    case 'aie':
+      ton({ type: 'triangle', de: 700, a: 300, duree: 0.18, volume: 0.26 });
+      bruit({ duree: 0.1, volume: 0.18, filtre: 'bandpass', de: 1200, a: 400, q: 0.8 });
+      break;
     case 'miam':
       ton({ type: 'triangle', de: 620, a: 930, duree: 0.07, volume: 0.2 });
       ton({ type: 'triangle', de: 930, a: 1400, duree: 0.09, volume: 0.2, retard: 0.08 });

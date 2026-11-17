@@ -12,7 +12,7 @@
 // Pour les essais :  ?etape=2&debug=carte  révèle toute la grotte.
 
 import { chauveSouris, yeux } from '../dessin.js';
-import { creerGrotte, MONDE, DEPART, SORTIE, CHIFFRE, MOUSTIQUES } from './grotte.js';
+import { creerGrotte, MONDE, DEPART, SORTIE, CHIFFRE, MOUSTIQUES, RAYON_CORPS } from './grotte.js';
 import { peindreParois } from './peintures.js';
 import { speleoClement, speleoCyriel } from './clins-doeil.js';
 
@@ -36,6 +36,25 @@ const NOIR_DUREE = 3;        // …puis l'obscurité revient petit à petit
 const NOIR_MAX = 0.9;        // un souvenir très faible de la roche reste
 
 const VIOLET = '#8f5cf7';
+
+// Le passage vers les spéléos (galerie D → F) : des stalactites et des
+// pierres se décrochent du plafond, chacune à son rythme. Elles tremblent
+// (avec un petit craquement) avant de tomber. La chauve-souris a des cœurs :
+// 1 au départ, +1 par moustique gobé, 3 au plus. Touchée, elle en perd un ;
+// à zéro, elle repart du début du passage avec 1 cœur.
+const COEURS = { depart: 1, max: 3, invulnerable: 1.4 };
+const CHUTES = [
+  // x : colonne de chute ; periode et decalage en secondes ; genre
+  { x: 742, periode: 1.6, decalage: 0.0, genre: 'stalactite' },
+  { x: 792, periode: 1.25, decalage: 0.55, genre: 'pierre' },
+  { x: 846, periode: 1.8, decalage: 1.1, genre: 'stalactite' },
+  { x: 952, periode: 1.45, decalage: 0.3, genre: 'stalactite' },
+  { x: 1000, periode: 1.15, decalage: 0.85, genre: 'pierre' },
+  { x: 1050, periode: 1.7, decalage: 1.35, genre: 'stalactite' },
+];
+const CHUTE_ALERTE = 0.5;     // secondes de tremblement avant la chute
+const GRAVITE = 900;          // px du monde par seconde²
+const REPRISE = { x: 650, y: 400 };   // le début du passage
 const calme = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const borner = (v, a, b) => Math.min(b, Math.max(a, v));
 const pause = () => new Promise((r) => setTimeout(r, 0));
@@ -347,6 +366,162 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
     const echos = [];        // petits points brillants là où l'onde touche la roche
     const etincelles = [];
     const moustiques = MOUSTIQUES.map((m, i) => ({ ...m, vivant: true, phase: i * 1.7 }));
+
+    // Les chutes : plafond et sol de chaque colonne, calculés une fois.
+    const chutes = CHUTES.map((def) => {
+      // un point dans l'air de la galerie, à cette abscisse
+      let y0 = 330;
+      for (let y = 250; y < 420; y += 4) if (!grotte.bloque(def.x, y)) { y0 = y + 20; break; }
+      const haut = y0 - grotte.rayon(def.x, y0, 0, -1, 200).d;
+      const bas = y0 + grotte.rayon(def.x, y0, 0, 1, 200).d;
+      const plafond = haut + 6;
+      const longueur = def.genre === 'stalactite' ? 24 : 9;
+      const sol = bas - (def.genre === 'stalactite' ? 2 : 7);
+      const duree = Math.sqrt((2 * Math.max(10, sol - plafond - longueur)) / GRAVITE);
+      return { ...def, plafond, sol, longueur, largeur: def.genre === 'stalactite' ? 7 : 8, duree, tau: 0, y: plafond, tombe: false, tremble: 0 };
+    });
+    const poussieres = [];   // grains qui tombent pendant le tremblement (décor)
+    let coeurs = COEURS.depart;
+    let invulnerable = 0;
+    let reprise = -10;       // instant du dernier retour au début du passage
+
+    // Les cœurs, en haut à gauche.
+    const zoneCoeurs = document.createElement('div');
+    zoneCoeurs.className = 'e2-coeurs';
+    zoneCoeurs.setAttribute('aria-label', 'Cœurs');
+    const COEUR_SVG = '<svg viewBox="0 0 24 22" aria-hidden="true"><path d="M12 20.5 C5 15.5 1.5 12 1.5 7.4 C1.5 4.2 4 1.8 7 1.8 C9.2 1.8 11 3.1 12 4.9 C13 3.1 14.8 1.8 17 1.8 C20 1.8 22.5 4.2 22.5 7.4 C22.5 12 19 15.5 12 20.5 Z"/></svg>';
+    for (let i = 0; i < COEURS.max; i++) {
+      const s = document.createElement('span');
+      s.className = 'e2-coeur';
+      s.innerHTML = COEUR_SVG;
+      zoneCoeurs.append(s);
+    }
+    scene.append(zoneCoeurs);
+    function majCoeurs(effet = null) {
+      zoneCoeurs.querySelectorAll('.e2-coeur').forEach((el, i) => {
+        el.classList.toggle('e2-coeur-plein', i < coeurs);
+        if (effet === 'gagne' && i === coeurs - 1) { el.classList.remove('e2-coeur-pop'); void el.offsetWidth; el.classList.add('e2-coeur-pop'); }
+      });
+      zoneCoeurs.setAttribute('aria-label', `${coeurs} cœur${coeurs > 1 ? 's' : ''} sur ${COEURS.max}`);
+      if (effet === 'perd') { zoneCoeurs.classList.remove('e2-coeurs-touche'); void zoneCoeurs.offsetWidth; zoneCoeurs.classList.add('e2-coeurs-touche'); }
+    }
+    majCoeurs();
+
+    function touchee(ch) {
+      coeurs--;
+      invulnerable = COEURS.invulnerable;
+      bat.secousse = 0.35;
+      son.bip('aie');
+      for (let i = 0; i < 10; i++) eclat(bat.x, bat.y, '#ffb3c8', 120, 0.6);
+      ch.tombe = false;
+      ch.y = ch.sol + 100;   // la pierre éclate sur elle
+      majCoeurs('perd');
+      if (coeurs <= 0) {
+        // retour au début du passage
+        coeurs = COEURS.depart;
+        reprise = temps;
+        bat.vol = null;
+        bat.x = REPRISE.x;
+        bat.y = REPRISE.y;
+        invulnerable = 2;
+        son.bip('non');
+        setTimeout(() => majCoeurs(), 350);
+      }
+    }
+
+    function avancerChutes(dt) {
+      for (const ch of chutes) {
+        const avantTau = ch.tau;
+        ch.tau = (temps + ch.decalage) % ch.periode;
+        const debutChute = ch.periode - ch.duree;
+        const debutAlerte = debutChute - CHUTE_ALERTE;
+        const proche = Math.abs(bat.x - ch.x) < 360 && Math.abs(bat.y - ch.sol) < 300;
+        // elle commence à trembler
+        if (avantTau < debutAlerte && ch.tau >= debutAlerte && proche) {
+          son.bip('craque', Math.max(0.15, 1 - Math.abs(bat.x - ch.x) / 360));
+        }
+        ch.tremble = ch.tau >= debutAlerte && ch.tau < debutChute ? 1 : 0;
+        if (ch.tremble && poussieres.length < 40 && Math.random() < dt * 14) {
+          poussieres.push({ x: ch.x + (Math.random() - 0.5) * 10, y: ch.plafond + 2, vy: 30, age: 0 });
+        }
+        // elle tombe
+        if (ch.tau >= debutChute) {
+          const t = ch.tau - debutChute;
+          if (!ch.tombe && avantTau < debutChute) ch.tombe = true;
+          if (ch.tombe) ch.y = ch.plafond + 0.5 * GRAVITE * t * t;
+        } else ch.y = ch.plafond;
+        // elle s'écrase au sol (le cycle recommence)
+        if (ch.tau < avantTau) {
+          if (ch.tombe) {
+            for (let i = 0; i < 6; i++) eclat(ch.x, ch.sol, '#b9a6e8', 80, 0.45);
+            if (proche) son.bip('caillou', Math.max(0.15, 1 - Math.abs(bat.x - ch.x) / 360));
+          }
+          ch.tombe = false;
+          ch.y = ch.plafond;
+        }
+        // la chauve-souris est-elle touchée ?
+        if (ch.tombe && invulnerable <= 0 && victoire < 0) {
+          const dy = bat.y < ch.y - ch.longueur ? ch.y - ch.longueur - bat.y : bat.y > ch.y ? bat.y - ch.y : 0;
+          const dx = Math.abs(bat.x - ch.x);
+          if (dx < ch.largeur + RAYON_CORPS && dy < RAYON_CORPS) touchee(ch);
+        }
+      }
+      for (let i = poussieres.length - 1; i >= 0; i--) {
+        const p = poussieres[i];
+        p.age += dt;
+        p.vy += GRAVITE * 0.5 * dt;
+        p.y += p.vy * dt;
+        if (p.age > 0.6) poussieres.splice(i, 1);
+      }
+      invulnerable = Math.max(0, invulnerable - dt);
+    }
+
+    function dessinerChutes() {
+      const vx0 = cam.x - 30;
+      const vx1 = cam.x + vl / z + 30;
+      for (const ch of chutes) {
+        if (ch.x < vx0 || ch.x > vx1) continue;   // hors de l'écran
+        // visible surtout là où une onde vient de passer
+        const lu = debug === 'carte' ? 1 : lumiere(ch.x, ch.tombe ? ch.y : ch.plafond + 8);
+        const a = 0.16 + 0.84 * lu;
+        // repousse en haut après une chute
+        const pousse = ch.tombe ? 1 : Math.min(1, ch.tau / 0.35);
+        if (pousse <= 0.02) continue;
+        const tx = ch.tremble ? Math.sin(temps * 90 + ch.x) * 1.4 : 0;
+        const x = ch.x + tx;
+        const y = ch.y;
+        c.globalAlpha = a;
+        c.fillStyle = '#5d4a82';
+        c.strokeStyle = '#d2c3fa';
+        c.lineWidth = 1.4;
+        c.beginPath();
+        if (ch.genre === 'stalactite') {
+          const l = ch.longueur * pousse;
+          const w = ch.largeur * pousse;
+          const haut = ch.tombe ? y - ch.longueur : ch.plafond - 4;
+          const bas = ch.tombe ? y : ch.plafond - 4 + l;
+          c.moveTo(x - w, haut);
+          c.quadraticCurveTo(x - w * 0.4, (haut + bas) / 2, x, bas);
+          c.quadraticCurveTo(x + w * 0.4, (haut + bas) / 2, x + w, haut);
+          c.closePath();
+        } else {
+          const r = ch.largeur * pousse;
+          const cy = ch.tombe ? y - r : ch.plafond + r * 0.4;
+          c.moveTo(x + r, cy);
+          c.ellipse(x, cy, r, r * 0.82, 0.3, 0, TAU);
+        }
+        c.fill();
+        c.stroke();
+      }
+      if (poussieres.length) {
+        c.fillStyle = '#b9a6e8';
+        for (const p of poussieres) {
+          c.globalAlpha = 0.5 * (1 - p.age / 0.6);
+          c.fillRect(p.x - 0.8, p.y - 0.8, 1.6, 1.6);
+        }
+      }
+      c.globalAlpha = 1;
+    }
     const centreChiffre = { x: CHIFFRE.x + CHIFFRE.l / 2, y: CHIFFRE.y + CHIFFRE.h / 2 };
 
     let temps = 0;
@@ -636,6 +811,7 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
       }
 
       avancerVol(dt);
+      avancerChutes(dt);
       bat.phase += dt * (bat.vol ? 24 : 9.5 + bat.joie * 40);
       bat.secousse = Math.max(0, bat.secousse - dt);
       bat.joie = Math.max(0, bat.joie - dt);
@@ -651,6 +827,7 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
           m.vivant = false;
           gobes++;
           memoire.ecrire('moustiques', gobes);
+          if (coeurs < COEURS.max) { coeurs++; majCoeurs('gagne'); }
           bat.joie = 0.5;
           son.bip('miam');
           for (let i = 0; i < 9; i++) eclat(mx, my, '#e9dcff', 110, 0.5);
@@ -825,11 +1002,15 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
       }
       c.globalAlpha = 1;
 
+      dessinerChutes();
+
       // la chauve-souris
       const tremble = bat.secousse > 0 ? Math.sin(temps * 70) * bat.secousse * 9 : 0;
       const bx = bat.x + tremble;
       const by = bat.y + (bat.vol ? 0 : Math.sin(temps * 3) * 2.2);
-      const apparition = Math.min(1, temps / 1.2);
+      // clignote après un coup ; réapparaît en douceur au début du passage
+      const clignote = invulnerable > 0 && Math.floor(invulnerable * 12) % 2 === 0 ? 0.35 : 1;
+      const apparition = Math.min(1, temps / 1.2, Math.max(0, (temps - reprise) / 0.6)) * clignote;
 
       // petite invitation, tant qu'aucune onde n'a été envoyée
       if (nbOndes === 0 && temps > 6 && !bat.vol) {
@@ -895,6 +1076,9 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
         get zoom() { return z; },
         get chiffreVu() { return chiffreVu >= 0; },
         get gobes() { return gobes; },
+        get coeurs() { return coeurs; },
+        get invulnerable() { return invulnerable; },
+        chutes,
         estVu,
         versEcran: (x, y) => ({ x: (x - cam.x) * z, y: (y - cam.y) * z }),
       };
@@ -905,6 +1089,7 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
     vivant = false;
     cancelAnimationFrame(image);
     for (const [cible, nom, f, opt] of ecouteurs) cible.removeEventListener(nom, f, opt);
+    scene.querySelector('.e2-coeurs')?.remove();
     delete window.__e2;
   };
 }

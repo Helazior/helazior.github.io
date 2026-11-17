@@ -2056,3 +2056,22 @@ button.e5-case:disabled { opacity: .38; cursor: default; box-shadow: none; }
 
 /* Les bulles de parole des loupes et des femelles */
 .e4-parole { pointer-events: none; transition: opacity .3s; }
+
+/* Les cœurs de la chauve-souris (grotte) */
+.e2-coeurs {
+  position: absolute;
+  top: max(14px, env(safe-area-inset-top));
+  left: max(14px, env(safe-area-inset-left));
+  z-index: 3;
+  display: flex;
+  gap: 5px;
+  pointer-events: none;
+}
+.e2-coeur { display: block; width: 22px; height: 20px; transition: transform .3s; }
+.e2-coeur svg { width: 100%; height: 100%; fill: none; stroke: #6b5a8e; stroke-width: 1.8; transition: fill .3s, stroke .3s; }
+.e2-coeur-plein svg { fill: #f06b9b; stroke: #ffd2e2; filter: drop-shadow(0 0 4px rgba(240, 107, 155, .7)); }
+.e2-coeur-pop { animation: e2-coeur-pop .45s cubic-bezier(.3, 1.8, .5, 1); }
+@keyframes e2-coeur-pop { from { transform: scale(.3); } }
+.e2-coeurs-touche { animation: e2-coeurs-touche .45s; }
+@keyframes e2-coeurs-touche { 20% { transform: translateX(-5px); } 45% { transform: translateX(5px); } 70% { transform: translateX(-3px); } }
+@media (prefers-reduced-motion: reduce) { .e2-coeur-pop, .e2-coeurs-touche { animation: none; } }
