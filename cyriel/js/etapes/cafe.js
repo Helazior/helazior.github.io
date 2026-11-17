@@ -1,7 +1,8 @@
 // Étape 6 — le café de Cyriel.
 //
 // Un petit jeu de café, en hommage à celui qu'elle adorait :
-//   1. connexion (« GoodCyriel Café ») : le mot de passe est le code à 4
+//   1. connexion : l'écran est l'image images/connexion-cafe.webp, avec les
+//      vrais champs posés par-dessus ; le mot de passe est le code à 4
 //      chiffres trouvé en chemin ; l'écran apparaît ligne par ligne ;
 //   2. le livre de recettes dit quoi acheter ; au marché, on touche un étal
 //      pour ouvrir sa vitrine et acheter à l'unité (tout va au frigo) ;
@@ -46,22 +47,20 @@ const TEXTES = {
   // (visibles seulement sur écran large), puis Angelounette et Rachou.
   joueurs: ['Clément', 'Xx-Chachoux-xX', 'Estelou du Luxou', 'Gaston_du_43', 'Bichette', 'Angelounette', 'Rachou'],
 
-  // L'écran de connexion, façon jeu de café en ligne d'autrefois.
+  // L'écran de connexion : l'image de Clément (images/connexion-cafe.webp),
+  // avec les vrais champs posés exactement sur ceux du dessin. Les textes
+  // ci-dessous servent aux lecteurs d'écran et aux messages.
   connexion: {
-    marque: 'GoodCyriel',
-    mot: 'Café',
+    image: 'images/connexion-cafe.webp',
     titre: 'GoodCyriel Café',
-    edition: 'Édition anniversaire',
-    jouerMaintenant: 'Jouer maintenant',
-    inscrire: 'S’inscrire',
-    pseudo: 'Pseudo ou e-mail',
+    jouerMaintenant: 'Jouer maintenant !',
+    pseudo: 'Nom d’utilisateur / E-mail',
     pseudoValeur: 'Cyriel',
     motDePasse: 'Mot de passe',
     souvenir: 'Se souvenir de moi',
     jouer: 'Connexion',
     erreur: 'Mauvais mot de passe.',
     dAbord: 'Entre d’abord ton mot de passe, juste en dessous.',
-    dejaInscrite: 'Tu es déjà inscrite, Cyriel ! Il ne manque que ton mot de passe.',
     oubli: 'Mot de passe oublié ?',
     indice: '4 chiffres violets qui apparaissent dans le jeu.',
     coupDePouce: 'Coup de pouce :',
@@ -69,7 +68,6 @@ const TEXTES = {
     connecte: 'Connectée !',
     transfert: (p) => `Téléchargement de l’écran d’accueil… ${p} %`,
     chargement: 'Chargement du café…',
-    version: 'Client v23.11',
   },
 
   // Ce que dit Pipistrelle, la serveuse.
@@ -371,30 +369,26 @@ function gabarit() {
     </footer>
   </div>
   <div class="e5-login gc gc-en-charge">
-    <svg class="gc-decor" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMin slice" aria-hidden="true">${D.decorLogin()}</svg>
-    <div class="gc-contenu">
-      <h1 class="gc-cache">${esc(C.titre)}</h1>
-      <svg class="gc-affiche" viewBox="-190 -150 380 300" role="img" aria-label="${esc(C.titre)}">${D.afficheLogin({ marque: C.marque, mot: C.mot, edition: C.edition })}</svg>
-      <div class="gc-gros-boutons">
-        <button type="button" class="gc-bouton gc-jouer" data-e5="jouer-maintenant">${esc(C.jouerMaintenant)}</button>
-        <button type="button" class="gc-bouton gc-inscrire" data-e5="inscrire">${esc(C.inscrire)}</button>
+    <img class="gc-flou" src="${esc(C.image)}" alt="" aria-hidden="true">
+    <div class="gc-cadre">
+      <img class="gc-image" src="${esc(C.image)}" alt="" decoding="async">
+      <div class="gc-contenu">
+        <h1 class="gc-cache">${esc(C.titre)}</h1>
+        <span class="gc-affiche" aria-hidden="true"></span>
+        <button type="button" class="gc-zone gc-jouer" data-e5="jouer-maintenant" aria-label="${esc(C.jouerMaintenant)}"></button>
+        <form class="e5-carte gc-panneau" novalidate autocomplete="off">
+          <input class="gc-champ gc-pseudo" type="text" placeholder=" " readonly tabindex="-1" aria-label="${esc(C.pseudo)}">
+          <input class="gc-champ e5-mdp" type="text" placeholder=" " inputmode="numeric" maxlength="4" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="${esc(C.motDePasse)}" aria-describedby="e5-erreur">
+          <label class="gc-zone gc-souvenir"><input type="checkbox" aria-label="${esc(C.souvenir)}"><span class="gc-coche" aria-hidden="true"></span></label>
+          <button type="submit" class="gc-zone e5-jouer gc-connexion" aria-label="${esc(C.jouer)}"></button>
+          <button type="button" class="gc-zone e5-oubli" aria-label="${esc(C.oubli)}"></button>
+          <div class="gc-messages">
+            <p class="e5-erreur" id="e5-erreur" role="alert"></p>
+            <p class="e5-indice" hidden></p>
+          </div>
+        </form>
       </div>
-      <form class="e5-carte gc-panneau" novalidate autocomplete="off">
-        <div class="gc-store" aria-hidden="true"></div>
-        <label class="gc-champ"><span>${esc(C.pseudo)}</span>
-          <input type="text" value="${esc(C.pseudoValeur)}" readonly tabindex="-1"></label>
-        <label class="gc-champ"><span>${esc(C.motDePasse)}</span>
-          <input class="e5-mdp" type="text" inputmode="numeric" maxlength="4" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="e5-erreur"></label>
-        <div class="gc-ligne">
-          <label class="gc-souvenir"><input type="checkbox"><span>${esc(C.souvenir)}</span></label>
-          <button type="submit" class="e5-jouer gc-connexion">${esc(C.jouer)}</button>
-        </div>
-        <p class="e5-erreur" id="e5-erreur" role="alert"></p>
-        <button type="button" class="e5-oubli">${esc(C.oubli)}</button>
-        <p class="e5-indice" hidden></p>
-      </form>
     </div>
-    <p class="gc-version">${esc(C.version)}</p>
     <div class="gc-rideau" aria-hidden="true">
       <div class="gc-serveur">
         <p class="gc-serveur-texte">${esc(C.serveur)}</p>
@@ -1931,12 +1925,16 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
   /* ------------------------------------------------------------ Connexion */
 
   async function chargement(carte) {
-    carte.innerHTML = `
+    // un parchemin posé sur le panneau du dessin, avec la barre de chargement
+    const boite = document.createElement('div');
+    boite.className = 'gc-charge';
+    boite.innerHTML = `
       <p class="e5-charge-texte">${esc(TEXTES.connexion.chargement)}</p>
       <div class="e5-barre"><div></div></div>
       <p class="e5-pourcent">0 %</p>`;
-    const barre = carte.querySelector('.e5-barre div');
-    const pourcent = carte.querySelector('.e5-pourcent');
+    carte.append(boite);
+    const barre = boite.querySelector('.e5-barre div');
+    const pourcent = boite.querySelector('.e5-pourcent');
     const total = 1600 / V;
     const debut = performance.now();
     await new Promise((r) => {
@@ -1969,7 +1967,8 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
     const reduit = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const f = (memoire.lire('cafe-login-vu', false) ? 0.35 : 1) * (reduit ? 0.6 : 1);
     contenu.inert = true;
-    try { await document.fonts.load('700 20px DynaPuff'); } catch { /* tant pis */ }
+    const image = ecran.querySelector('.gc-image');
+    const imagePrete = image.decode().catch(() => {});
 
     // 1. La connexion au serveur.
     const total = 2300 * f;
@@ -1982,6 +1981,7 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
       barre.style.width = `${n}%`;
       pourcent.textContent = `${n} %`;
     }
+    await imagePrete;   // l'image doit être là avant de se dessiner
     serveur.querySelector('.gc-serveur-texte').textContent = C.connecte;
     bip('ding');
     await dormir(450 * f);
@@ -1995,8 +1995,8 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
     const a = ecran.querySelector('.gc-affiche').getBoundingClientRect();
     const auNiveau = (fraction) => ((a.top - haut + a.height * fraction) / H) * 100;
     const arrets = [
-      { a: auNiveau(0.32), ms: 1000 },   // juste avant « GoodCyriel »
-      { a: auNiveau(0.44), ms: 1300 },   // juste avant « Café »
+      { a: auNiveau(0.02), ms: 1000 },   // juste avant « GoodCyriel »
+      { a: auNiveau(0.43), ms: 1300 },   // juste avant « Café »
     ];
     let p = 0;
     while (p < 100 && vivant) {
@@ -2013,6 +2013,14 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
     ecran.classList.remove('gc-en-charge');
     contenu.inert = false;
     memoire.ecrire('cafe-login-vu', true);
+    // le pseudo se remplit tout seul, comme un navigateur qui s'en souvient
+    await dormir(350 * f);
+    const pseudo = ecran.querySelector('.gc-pseudo');
+    for (const lettre of C.pseudoValeur) {
+      if (!vivant) return;
+      pseudo.value += lettre;
+      await dormir(70);
+    }
     if (window.matchMedia('(hover: hover)').matches) ecran.querySelector('.e5-mdp').focus({ preventScroll: true });
   }
 
@@ -2051,7 +2059,6 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
       if (champ.value.length === 4) carte.requestSubmit();
       else info(TEXTES.connexion.dAbord);
     });
-    $('[data-e5="inscrire"]').addEventListener('click', () => info(TEXTES.connexion.dejaInscrite));
     champ.addEventListener('input', () => erreur.classList.remove('gc-info'));
     return new Promise((resolve) => {
       carte.addEventListener('submit', async (e) => {

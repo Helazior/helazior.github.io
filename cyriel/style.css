@@ -691,33 +691,48 @@ body[data-fond="sombre"] {
   80% { transform: translateX(2px); }
 }
 
-/* Écran de connexion : « GoodCyriel Café », façon jeu de café en ligne */
+/* Écran de connexion : l'image de Clément (images/connexion-cafe.webp, 941 × 1672),
+   affichée en entier, avec les vrais champs posés exactement sur ceux du dessin.
+   Toutes les positions sont en % de l'image, mesurées sur l'original. */
 
 .e5-login.gc {
   position: absolute;
   inset: 0;
   z-index: 20;
   overflow: hidden;
-  background: #ffe7c6;
+  display: grid;
+  place-items: center;
+  background: #9fdde3;
 }
-.gc-decor {
+/* autour de l'image (écran plus large ou plus haut qu'elle) : la même, floutée */
+.gc-flou {
+  position: absolute;
+  inset: -40px;
+  width: calc(100% + 80px);
+  height: calc(100% + 80px);
+  object-fit: cover;
+  filter: blur(22px) saturate(1.1);
+  opacity: .85;
+  pointer-events: none;
+}
+.gc-cadre {
+  position: relative;
+  container-type: inline-size;
+  aspect-ratio: 941 / 1672;
+  width: min(100vw, 100vh * 941 / 1672);
+  width: min(100vw, 100dvh * 941 / 1672);
+  box-shadow: 0 0 40px rgba(40, 60, 70, .25);
+}
+.gc-image {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
+  -webkit-user-drag: none;
+  user-select: none;
+  pointer-events: none;
 }
-.gc-contenu {
-  position: absolute;
-  inset: 0;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  justify-content: safe center;
-  gap: 10px;
-  padding: max(14px, env(safe-area-inset-top)) 16px max(34px, env(safe-area-inset-bottom));
-}
+.gc-contenu { position: absolute; inset: 0; }
 .gc-cache {
   position: absolute;
   width: 1px;
@@ -726,212 +741,119 @@ body[data-fond="sombre"] {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
-.gc-affiche {
+/* repère invisible sur le logo, pour les arrêts du chargement ligne par ligne */
+.gc-affiche { position: absolute; left: 40%; width: 58%; top: 14.95%; height: 16.15%; pointer-events: none; }
+.e5-carte.gc-panneau { position: absolute; inset: 0; margin: 0; pointer-events: none; }
+.e5-carte.gc-panneau > * { pointer-events: auto; }
+
+/* Les zones cliquables : transparentes, posées sur les boutons du dessin */
+.gc-zone {
+  position: absolute;
   display: block;
-  flex: 0 1 auto;
-  width: min(100%, 460px);
-  height: auto;
-  max-height: 40vh;
-  overflow: visible;
-}
-.gc-affiche text { font-family: var(--police); }
-
-/* Les gros boutons brillants */
-.gc-gros-boutons {
-  display: grid;
-  justify-items: center;
-  gap: 10px;
-}
-.gc-bouton {
-  position: relative;
-  padding: 12px 30px 14px;
-  border: 3px solid;
-  border-radius: 999px;
-  color: #fff;
-  font: 700 21px/1.1 var(--police);
-  text-shadow: 0 2px 0 rgba(40, 10, 60, .28);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color .12s;
 }
-.gc-bouton::before {
-  content: "";
-  position: absolute;
-  left: 14%;
-  right: 14%;
-  top: 4px;
-  height: 42%;
-  border-radius: 999px;
-  background: linear-gradient(rgba(255, 255, 255, .6), rgba(255, 255, 255, 0));
-  pointer-events: none;
+.gc-zone:active { background: rgba(70, 25, 0, .14); }
+.gc-zone:focus-visible { outline: 3px solid #fff; outline-offset: 2px; box-shadow: 0 0 0 6px rgba(122, 60, 240, .55); }
+@media (hover: hover) {
+  .gc-jouer:hover, .gc-connexion:hover { background: rgba(255, 255, 255, .14); }
 }
-.gc-jouer {
-  min-width: min(270px, 80vw);
-  border-color: #4a1fa8;
-  background: linear-gradient(#b48aff, #7a3cf0 70%);
-  box-shadow: 0 5px 0 #4a1fa8, 0 10px 18px rgba(80, 30, 10, .28);
-}
-.gc-inscrire {
-  padding: 8px 22px 10px;
-  border-color: #b8205f;
-  background: linear-gradient(#ffa6cf, #f0559a 70%);
-  font-size: 16px;
-  box-shadow: 0 4px 0 #b8205f, 0 8px 14px rgba(80, 30, 10, .22);
-}
-.gc-bouton:active { transform: translateY(3px); }
-.gc-jouer:active { box-shadow: 0 2px 0 #4a1fa8, 0 4px 10px rgba(80, 30, 10, .25); }
-.gc-inscrire:active { box-shadow: 0 1px 0 #b8205f; }
-.gc-bouton:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+.gc-jouer { left: 19.13%; top: 64.41%; width: 62.17%; height: 6.46%; border-radius: 4cqw; }
+.gc-connexion { left: 29.76%; top: 86.72%; width: 41.23%; height: 5.08%; border-radius: 2.6cqw; }
+.e5-oubli { left: 30.29%; top: 93.3%; width: 39.85%; height: 3.3%; border-radius: 2cqw; }
+.e5-oubli:active { background: rgba(70, 25, 0, .08); }
+.e5-oubli[hidden], .e5-indice[hidden] { display: none; }
 
-/* Le panneau de connexion, sous son store rayé */
-.e5-carte.gc-panneau {
-  position: relative;
-  display: grid;
-  gap: 8px;
-  width: min(360px, 100%);
-  margin-top: 16px;
-  padding: 26px 16px 12px;
-  border: 3px solid #4a1fa8;
-  border-radius: 18px;
-  background: #fffaf2;
-  box-shadow: 0 6px 0 #4a1fa8, 0 14px 26px rgba(80, 30, 10, .28);
-}
-.gc-store {
-  position: absolute;
-  left: 12px;
-  right: 12px;
-  top: -16px;
-  height: 22px;
-  border: 3px solid #4a1fa8;
-  border-bottom: 0;
-  border-radius: 10px 10px 0 0;
-  background: repeating-linear-gradient(90deg, #7a3cf0 0 22px, #fff 22px 44px);
-}
-.gc-store::after {
-  content: "";
-  position: absolute;
-  left: -3px;
-  right: -3px;
-  top: 100%;
-  height: 11px;
-  background:
-    radial-gradient(circle at 11px 0, #7a3cf0 0 10px, transparent 10.5px) 0 0 / 44px 11px repeat-x,
-    radial-gradient(circle at 33px 0, #fff 0 10px, transparent 10.5px) 0 0 / 44px 11px repeat-x;
-}
+/* Les deux champs : transparents tant qu'ils sont vides (on voit le texte du
+   dessin), puis couleur crème pour cacher ce texte quand on écrit. */
 .gc-champ {
-  display: grid;
-  gap: 3px;
+  position: absolute;
+  left: 27.84%;
+  width: 52.9%;
+  height: 3.65%;
+  margin: 0;
+  padding: 0 1.4cqw;
+  border: 0;
+  border-radius: 1.6cqw;
+  background: #fef9f0;
   color: #6b4426;
-  font-size: 13px;
-  font-weight: 700;
-}
-.gc-champ input {
-  width: 100%;
-  padding: 9px 12px;
-  border: 2px solid #dcc2a0;
-  border-radius: 10px;
-  background: #fff;
-  box-shadow: inset 0 2px 3px rgba(90, 45, 10, .14);
-  color: var(--encre);
-  font: 600 17px/1.2 var(--police);
+  font: 700 max(16px, 4cqw)/1 var(--police);
   -webkit-user-select: text;
   user-select: text;
 }
-.gc-champ input[readonly] { color: #7a6a8f; background: #fbf6ee; }
-.gc-champ input:focus { outline: none; border-color: var(--violet); box-shadow: 0 0 0 3px #e3d2ff, inset 0 2px 3px rgba(90, 45, 10, .1); }
-.e5-mdp { -webkit-text-security: disc; letter-spacing: .3em; }
-.gc-ligne {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: 2px;
+.gc-champ:focus { outline: none; box-shadow: 0 0 0 .5cqw rgba(240, 120, 40, .55); }
+.gc-pseudo { top: 73.09%; cursor: default; }
+.gc-pseudo:placeholder-shown { background: transparent; }
+.e5-mdp {
+  top: 78.23%;
+  -webkit-text-security: disc;
+  letter-spacing: .35em;
 }
-.gc-souvenir {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  color: #6b4426;
-  font-size: 13px;
-  cursor: pointer;
-}
-.gc-souvenir input {
-  appearance: none;
-  -webkit-appearance: none;
-  flex: none;
-  width: 20px;
-  height: 20px;
-  margin: 0;
-  border: 2px solid #b08a63;
-  border-radius: 6px;
-  background: #fff;
-  box-shadow: inset 0 2px 2px rgba(90, 45, 10, .14);
-}
-.gc-souvenir input:checked {
-  border-color: #4a1fa8;
-  background: #7a3cf0 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 10.5 L8.6 14 L15 6.5' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 100% no-repeat;
-}
-.gc-souvenir input:focus-visible { outline: 3px solid #c9a8ff; outline-offset: 2px; }
-.e5-jouer.gc-connexion {
-  position: relative;
-  flex: none;
-  padding: 9px 20px 11px;
-  border: 3px solid #4a1fa8;
-  border-radius: 12px;
-  background: linear-gradient(#a77cff, #6a2fe0 75%);
-  color: #fff;
-  font: 700 17px/1.1 var(--police);
-  text-shadow: 0 2px 0 rgba(40, 10, 60, .25);
-  box-shadow: 0 4px 0 #4a1fa8;
-}
-.e5-jouer.gc-connexion::before {
-  content: "";
+.e5-mdp:placeholder-shown { background: transparent; }
+
+/* « Se souvenir de moi » : la case du dessin, et une coche quand on la coche */
+.gc-souvenir { left: 19.4%; top: 82.9%; width: 38%; height: 3.7%; border-radius: 1.5cqw; }
+.gc-souvenir input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.gc-coche {
   position: absolute;
-  left: 10%;
-  right: 10%;
-  top: 3px;
-  height: 40%;
-  border-radius: 8px;
-  background: linear-gradient(rgba(255, 255, 255, .55), rgba(255, 255, 255, 0));
-}
-.e5-jouer.gc-connexion:active { transform: translateY(2px); box-shadow: 0 2px 0 #4a1fa8; }
-
-.e5-erreur {
-  min-height: 1.2em;
-  margin: 0;
-  color: #b8204f;
-  font-size: 13.5px;
-  line-height: 1.35;
-}
-.e5-erreur.gc-info { color: #5a2bc4; }
-
-.e5-oubli {
-  justify-self: center;
-  padding: 2px 8px;
-  border: 0;
-  background: none;
-  color: #6a2fe0;
-  font-size: 13.5px;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.e5-oubli[hidden], .e5-indice[hidden] { display: none; }
-
-.e5-indice {
-  margin: 0;
-  padding: 9px 12px;
-  border-radius: 10px;
-  background: #f3ecff;
-  font-size: 14px;
-  line-height: 1.45;
-}
-
-.gc-version {
-  position: absolute;
-  left: 12px;
-  bottom: max(8px, env(safe-area-inset-bottom));
-  margin: 0;
-  color: rgba(90, 45, 15, .7);
-  font-size: 12px;
+  left: 1.3%;
+  top: 6%;
+  width: 15.8%;
+  aspect-ratio: 1;
+  opacity: 0;
+  transform: scale(.4);
+  transition: opacity .15s, transform .18s cubic-bezier(.3, 1.6, .5, 1);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M4.5 10.5 L8.4 14.4 L15.5 5.5' fill='none' stroke='%237bb21a' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 82% no-repeat;
   pointer-events: none;
+}
+.gc-souvenir input:checked + .gc-coche { opacity: 1; transform: none; }
+.gc-souvenir:has(input:focus-visible) { outline: 3px solid #fff; outline-offset: 2px; }
+
+/* Messages (erreur, indice) : une bulle parchemin juste au-dessus du panneau */
+.gc-messages {
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  bottom: 39.2%;
+  display: grid;
+  gap: 1.4cqw;
+  pointer-events: none;
+}
+.e5-erreur, .e5-indice {
+  margin: 0;
+  padding: 2cqw 3cqw;
+  border: .5cqw solid #9a5a2c;
+  border-radius: 2.4cqw;
+  background: #fff6e4;
+  box-shadow: 0 1cqw 2.4cqw rgba(70, 30, 5, .3);
+  color: #b8204f;
+  font: 600 max(13px, 3.4cqw)/1.35 var(--police);
+  text-align: center;
+}
+.e5-erreur:empty { display: none; }
+.e5-erreur.gc-info { color: #5a2bc4; }
+.e5-indice { color: #6b4426; }
+
+/* Après le bon code : un parchemin sur le panneau, avec la barre */
+.gc-charge {
+  position: absolute;
+  left: 15%;
+  right: 13%;
+  top: 63.5%;
+  bottom: 2.6%;
+  display: grid;
+  align-content: center;
+  gap: 3cqw;
+  padding: 0 8cqw;
+  border-radius: 3cqw;
+  background: #fbebcd;
+  color: #6b4426;
+  font-size: max(15px, 4cqw);
 }
 
 /* Le chargement : la partie pas encore arrivée reste noire */
@@ -992,55 +914,6 @@ body[data-fond="sombre"] {
   background: repeating-linear-gradient(-45deg, var(--violet) 0 10px, #9b6bff 10px 20px);
 }
 .e5-pourcent { margin: 0; font-size: 14px; text-align: center; font-variant-numeric: tabular-nums; }
-
-/* Grand écran : l'affiche un peu plus grande */
-@media (min-width: 900px) and (min-height: 880px) {
-  .gc-affiche { max-height: 44vh; }
-}
-
-/* Écran large mais pas très haut */
-@media (orientation: landscape) and (min-height: 561px) and (max-height: 820px) {
-  .gc-affiche { max-height: 36vh; }
-  .gc-contenu { gap: 8px; padding-bottom: max(26px, env(safe-area-inset-bottom)); }
-}
-
-/* Téléphone un peu court : tout se resserre */
-@media (orientation: portrait) and (max-height: 720px) {
-  .gc-contenu { gap: 8px; padding-bottom: max(26px, env(safe-area-inset-bottom)); }
-  .gc-affiche { max-height: 34vh; }
-  .gc-gros-boutons { gap: 8px; }
-  .gc-jouer { padding: 10px 26px 12px; font-size: 19px; }
-  .gc-inscrire { padding: 6px 18px 8px; font-size: 15px; }
-  .e5-carte.gc-panneau { gap: 6px; padding: 22px 14px 8px; }
-  .gc-champ input { padding: 7px 11px; }
-}
-
-/* Écran bas (téléphone couché) : l'affiche à gauche, le reste à droite */
-@media (orientation: landscape) and (max-height: 560px) {
-  .gc-contenu {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 330px);
-    grid-template-rows: auto auto;
-    align-content: center;
-    align-content: safe center;
-    justify-content: center;
-    column-gap: 20px;
-    row-gap: 6px;
-    padding: max(8px, env(safe-area-inset-top)) max(62px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
-  }
-  .gc-affiche { grid-row: 1 / span 2; align-self: center; width: 100%; max-height: 92vh; }
-  .gc-gros-boutons { grid-template-columns: auto auto; align-items: center; gap: 8px; }
-  .gc-bouton { white-space: nowrap; }
-  .gc-jouer { min-width: 0; padding: 8px 16px 10px; font-size: 16px; }
-  .gc-inscrire { padding: 6px 14px 8px; font-size: 14px; }
-  .e5-carte.gc-panneau { margin-top: 12px; padding: 18px 12px 6px; gap: 4px; }
-  .gc-store { top: -12px; height: 16px; }
-  .gc-champ { font-size: 12px; }
-  .gc-champ input { padding: 5px 10px; font-size: 15px; }
-  .e5-jouer.gc-connexion { padding: 6px 14px 8px; font-size: 15px; }
-  .e5-erreur { min-height: 0; }
-  .gc-version { display: none; }
-}
 
 /* Pipistrelle propose de recommencer la partie */
 .e5-relance {
