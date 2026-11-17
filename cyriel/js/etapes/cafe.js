@@ -8,7 +8,7 @@
 //      pour ouvrir sa vitrine et acheter à l'unité (tout va au panier, puis
 //      au frigo) ;
 //   3. les clients (les joueurs du marché) s'installent et commandent,
-//      chacun avec son exigence (« deux œufs », « sans oignon »…) ;
+//      chacun une recette du livre ;
 //   4. au fourneau, le livre s'ouvre : on choisit la commande, on met dans la
 //      casserole les bons ingrédients du frigo. Puis la bulle du fourneau
 //      demande les ingrédients, puis chaque étape (on touche le fourneau) ;
@@ -125,23 +125,20 @@ const TEXTES = {
   },
   fin: 'Le café est à toi, cheffe. Reviens quand tu veux !',
 
-  // Les commandes des joueurs du marché, avec l'exigence de chacun (leurs
-  // pseudos sont dans joueurs, plus haut).
+  // Les commandes des joueurs du marché (leurs pseudos sont dans joueurs,
+  // plus haut).
   commandes: {
-    bichette: 'Une omelette bien baveuse, avec deux œufs : j’ai une faim de loup !',
-    chachoux: 'Des crêpes à la crème de marron… avec du chocolat en plus, stp !',
-    estel: 'Une salade du jardin, mais sans oignon : j’ai un rendez-vous juste après !',
-    gaston: 'Une soupe à la tomate, avec double crème : il fait froid en Haute-Loire !',
-    angeloune: 'Une mousse au chocolat, mais sans crème : comme la recette de ma grand-mère !',
-    rachou: 'Une tarte à la rhubarbe, mais sans sucre : je fais attention à ma ligne.',
+    bichette: 'Une omelette bien baveuse, s’il te plaît : j’ai une faim de loup !',
+    chachoux: 'Des crêpes à la crème de marron, stp !',
+    estel: 'Une salade du jardin, s’il te plaît : j’ai un rendez-vous juste après !',
+    gaston: 'Une soupe à la tomate bien chaude : il fait froid en Haute-Loire !',
+    angeloune: 'Une mousse au chocolat, comme celle de ma grand-mère !',
+    rachou: 'Une tarte à la rhubarbe, s’il te plaît.',
     clement: 'La spécialité de la maison, s’il te plaît : le gâteau rhubarbe et crème de marron.',
   },
-  // Quand un ingrédient interdit est dans la casserole.
-  rappels: {
-    estel: 'Estelou a bien dit : sans oignon !',
-    angeloune: 'Angelounette a bien dit : sans crème !',
-    rachou: 'Rachou a bien dit : sans sucre !',
-  },
+  // Quand un ingrédient interdit est dans la casserole (si une commande en
+  // a un : sans: [...] dans CLIENTS).
+  rappels: {},
 
   recettes: {
     salade: { nom: 'Salade du jardin', dans: 'une salade du jardin', cuit: 'La salade se prépare…' },
@@ -388,16 +385,17 @@ const RECETTES = {
 };
 const ACCELERATION = 60;
 
-// Les clients (les joueurs du marché), leur table et leur commande : plus =
-// en plus de la recette, sans = à ne surtout pas mettre. Trois tables : les
-// trois derniers attendent qu'une table se libère.
+// Les clients (les joueurs du marché), leur table et leur commande : la
+// recette du livre, telle quelle (on pourrait ajouter plus: { oeufs: 1 } ou
+// sans: ['sucre'], le jeu sait encore les gérer). Trois tables : les trois
+// derniers attendent qu'une table se libère.
 const CLIENTS = [
-  { sorte: 'bichette', table: 1, recette: 'omelette', plus: { oeufs: 1 } },
-  { sorte: 'chachoux', table: 0, recette: 'crepes', plus: { chocolat: 1 } },
-  { sorte: 'estel', table: 2, recette: 'salade', sans: ['oignon'] },
-  { sorte: 'gaston', table: 1, recette: 'soupe', plus: { creme: 1 } },
-  { sorte: 'angeloune', table: 0, recette: 'mousse', sans: ['creme'] },
-  { sorte: 'rachou', table: 2, recette: 'tarte', sans: ['sucre'] },
+  { sorte: 'bichette', table: 1, recette: 'omelette' },
+  { sorte: 'chachoux', table: 0, recette: 'crepes' },
+  { sorte: 'estel', table: 2, recette: 'salade' },
+  { sorte: 'gaston', table: 1, recette: 'soupe' },
+  { sorte: 'angeloune', table: 0, recette: 'mousse' },
+  { sorte: 'rachou', table: 2, recette: 'tarte' },
 ];
 const ARRIVEES = [600, 5200, 6400, 2500, 3500, 3500];   // millisecondes avant chaque arrivée
 // Les joueurs du marché, dans l'ordre de TEXTES.joueurs (pour leurs pseudos).
@@ -440,7 +438,7 @@ const SONS = {
   marche: { fichier: 'sons/cafe-marche.mp3', volume: 1 },
 };
 
-// Les courses des trois premières commandes coûtent 19 pièces : il reste de
+// Les courses des trois premières commandes coûtent 15 pièces : il reste de
 // la marge pour une erreur ou deux (et la roue, le camion, si ça coince).
 const PIECES_DEPART = 30;
 const PAIEMENT_BEURK = 2;   // ce que laisse un client dégoûté
