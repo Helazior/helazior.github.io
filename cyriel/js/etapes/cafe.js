@@ -403,9 +403,10 @@ const SORTES = ['clement', 'chachoux', 'estel', 'gaston', 'bichette', 'angeloune
 
 // Les aliments que Cyriel n'aime pas : vendus au marché comme les autres.
 const DETESTES = ['poivron', 'aubergine', 'gingembre', 'coriandre', 'balsamique', 'vin', 'champagne', 'huitres'];
-// Les épices (à l'épicerie, ou gagnées à la roue) : elles restent au frigo,
-// et servent à relever un plat au moment de cuisiner (voir RECETTES).
-const EPICES = ['vanille', 'persil', 'basilic', 'piment'];
+// Les épices (à l'épicerie, ou gagnées à la roue) : l'épice d'une recette
+// relève le plat (voir RECETTES). On peut la mettre dans la casserole, ou
+// dire oui quand Pipistrelle la propose au moment de cuisiner : vanille,
+// persil, basilic, piment.
 
 // Les cases de la roue de la fortune (k : 'pieces' ou un aliment, n : combien).
 const SEGMENTS_ROUE = [
@@ -488,8 +489,12 @@ function besoins(cmd) {
 
 // Vérifie la casserole. Les aliments détestés sont toujours acceptés : le
 // client les goûtera…
-function verifier(cmd, pot) {
+function verifier(cmd, potComplet) {
   const b = besoins(cmd);
+  // L'épice de la recette (facultative) peut être dans la casserole : elle
+  // relève le plat, elle ne compte pas comme un intrus.
+  const pot = new Map(potComplet);
+  pot.delete(RECETTES[cmd.recette].epice);
   // La spécialité doit être parfaite : pas d'aliment détesté.
   const deteste = cmd.special && [...pot.keys()].find((k) => DETESTES.includes(k));
   if (deteste) return { ok: false, type: 'deteste', k: deteste };
@@ -1673,7 +1678,7 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
 
     function rendre() {
       const hauts = [...f.corps.querySelectorAll('.e5-page')].map((p) => p.scrollTop);
-      const dispo = ORDRE.filter((k) => nb(k) > 0 && !EPICES.includes(k));
+      const dispo = ORDRE.filter((k) => nb(k) > 0);
       const gauche = `
         <h3 class="e5-titre-page">${esc(TEXTES.livreTexte.commande)}</h3>
         ${pretes.length > 1 ? `
@@ -2621,7 +2626,10 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
       }
       // L'épice de la recette est au frigo : on propose de relever le plat.
       const ep = recette(res.cmd.recette).epice;
-      res.epice = ep && nb(ep) > 0 && await proposerEpice(ep) ? ep : null;
+      // Déjà mise dans la casserole : c'est oui. Sinon, si elle est au frigo,
+      // on propose de relever le plat.
+      if (ep && pot.get(ep)) { res.epice = ep; pot.delete(ep); }
+      else res.epice = ep && nb(ep) > 0 && await proposerEpice(ep) ? ep : null;
       await preparer(f, res);
       return true;
     }
