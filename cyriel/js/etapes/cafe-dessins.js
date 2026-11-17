@@ -1949,7 +1949,8 @@ export function marche(etals, joueurs, texteCafe, texteRoue) {
   const C = MARCHE.centre;
   const R = MARCHE.R;
   const e = Object.fromEntries(etals.map((x) => [x.cle, x]));
-  const [nClement, nChachoux, nEstel, nGaston, nBichette, nAngel, nRachou] = joueurs;
+  // (Gaston et Bichette, 4e et 5e, ne viennent qu'au café.)
+  const [nClement, nChachoux, nEstel, , , nAngel, nRachou] = joueurs;
   const place = `M${C.x} ${C.y - R * 14} L${C.x + R * 28} ${C.y} L${C.x} ${C.y + R * 14} L${C.x - R * 28} ${C.y} Z`;
   const touffes = [[-120, 250], [-40, 200], [30, 300], [120, 160], [280, 160], [380, 300], [470, 230], [520, 340], [-90, 360], [10, 420],
     [130, 470], [290, 470], [410, 430], [250, 340], [150, 250], [-230, 300], [640, 300], [60, 520], [350, 540], [-180, 420], [590, 420],
@@ -1981,13 +1982,11 @@ export function marche(etals, joueurs, texteCafe, texteRoue) {
   ${joueur('Cycy la famille', { cyriel: true }, { x: 118, y: 244, fond: '#7a3cf0', opacite: 0.85, parcours: '0,0,3 28,12,4 8,20,2' })}
   ${joueur(nChachoux || '', LOOKS[2], { x: 258, y: 238, parcours: '0,0,2.5 26,13,1.5 8,24,3' })}
   <g transform="translate(${C.x} ${C.y})">${fontaineStatue()}</g>
-  ${joueur(nGaston || '', LOOKS[4], { x: -16, y: 326, parcours: '0,0,2 34,16,1 12,32,2.5 -18,16,1' })}
   ${joueur(nRachou || '', LOOKS[7], { x: 158, y: 356, saute: true })}
   ${joueur(nClement || '', LOOKS[0], { x: 264, y: 358, coucou: true, coeur: true })}
   ${etal(e.cave)}${kiosqueRoue(texteRoue)}
   ${poteauCafe(MARCHE.versCafe.x, MARCHE.versCafe.y, texteCafe)}
   ${joueur(nAngel || '', LOOKS[6], { x: 258, y: 414, parcours: '0,0,3 30,14,2' })}
-  ${joueur(nBichette || '', LOOKS[5], { x: 112, y: 420, parcours: '0,0,2 26,-14,3' })}
   <g transform="translate(${C.x} ${C.y})">${muret('i', R, -R, -7)}${muret('j', R, -R, -7.5)}</g>
   ${poubelle(426, 398)}
   ${arbre(-60, 470, 0.95)}${arbre(470, 476, 0.95, true)}${arbre(20, 580, 1)}${arbre(390, 590, 0.95)}${arbre(-220, 420, 0.9)}${arbre(630, 420, 0.9)}

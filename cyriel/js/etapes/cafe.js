@@ -51,9 +51,9 @@ const TEXTES = {
   ouvert: 'Ouvert',
   panneauCafe: 'Café',
 
-  // Les pseudos des joueurs qui flânent au marché : Clément près de la
-  // fontaine, Chachoux qui se promène, Estel sur le banc, Gaston et Bichette
-  // (visibles seulement sur écran large), puis Angelounette et Rachou.
+  // Les pseudos des joueurs : au marché, Clément près de la fontaine,
+  // Chachoux qui se promène, Estel sur le banc, Angelounette et Rachou ;
+  // Gaston et Bichette ne viennent qu'au café, pour manger.
   joueurs: ['Clément', 'Xx-Chachoux-xX', 'Estelou du Luxou', 'Gaston_du_43', 'Bichette', 'Angelounette', 'Rachou'],
 
   // L'écran de connexion : l'image de Clément (images/connexion-cafe.webp),
@@ -579,7 +579,7 @@ function hudHtml() {
         <span class="e5-bloqueur e5-z" style="${place(CH, [16, 1074, 324, 1182])}"></span>
         <img class="e5-bloc-img" src="images/hud/chat.webp" alt="" draggable="false">
         <div class="e5-chat e5-z" style="${place(CH, [34, 1190, 428, 1436])}" role="log" aria-live="polite" aria-label="${esc(TEXTES.chat.canal)}" tabindex="0"><div class="e5-fil"></div></div>
-        <form class="e5-saisie e5-z" style="${place(CH, [96, 1478, 404, 1518])}" autocomplete="off"><input type="text" maxlength="80" enterkeyhint="send" autocomplete="off" placeholder="${esc(TEXTES.chat.saisie)}" aria-label="${esc(TEXTES.chat.saisie)}"></form>${zones('chat')}
+        <form class="e5-saisie e5-z" style="${place(CH, [40, 1478, 404, 1518])}" autocomplete="off"><input type="text" maxlength="80" enterkeyhint="send" autocomplete="off" placeholder="${esc(TEXTES.chat.saisie)}" aria-label="${esc(TEXTES.chat.saisie)}"></form>${zones('chat')}
       </div>
       <div class="e5-bloc e5-bloc-actions">
         <span class="e5-repere e5-z" data-b="plateaux" style="${place(A, [420, 1388, 912, 1668])}"></span>
@@ -1047,6 +1047,7 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
   /* -------------------------------------------------------------- Les vues */
 
   const vues = { cafe: $('[data-vue="cafe"]'), marche: $('[data-vue="marche"]') };
+  racine.dataset.vue = 'cafe';
   const voile = $('.e5-voile');
   let vue = 'cafe';
   let enTransition = false;
@@ -1056,6 +1057,7 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
     enTransition = true;
     await animer(voile, [{ opacity: 0 }, { opacity: 1 }], { duree: 260 });
     for (const [k, v] of Object.entries(vues)) v.style.visibility = k === nom ? '' : 'hidden';
+    racine.dataset.vue = nom;
     cadreCourant = CADRES[nom];
     cadrer();
     vue = nom;

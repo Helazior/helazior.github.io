@@ -331,6 +331,10 @@ body.e5-en-jeu #son { display: none; }
   width: 100%;
   height: 100%;
 }
+/* Le fond de chaque vue, sous le dessin : les morceaux pas encore peints
+   (téléphone) prennent sa couleur au lieu de clignoter en blanc. */
+.e5-svg { background: #c9c5bd; }
+.e5[data-vue="marche"] .e5-svg { background: #b4df4a; }
 .e5-svg text { font-family: var(--police); }
 .e5-svg text:not([fill]) { fill: var(--encre); }
 
