@@ -52,8 +52,9 @@ marché) se règle en tête de `js/etapes/cafe.js` (`SONS`).
   à 1 min 44,75 s il revient exactement à son début ; la boucle s'arrête donc
   là (les deux premières minutes, sans raccord audible ; 60 ms de fondu au
   raccord). Sans l'image de pochette, ré-encodé en 112 kbit/s (1,5 Mo). Jouée
-  dans la salle du café (volume 0,12 dans `SONS`), elle se tait pendant la
-  chanson d'anniversaire et reprend où elle en était au retour du marché.
+  dans la salle du café (volume 0,12 dans `SONS`) ; au marché elle continue,
+  plus doucement (`auMarche` : 0,05), sous les oiseaux et la fontaine. Elle se
+  tait pendant la chanson d'anniversaire.
 - `etape-4-piano.mp3` : « Dreaming of Sun » (piano), par leberch, Pixabay
   (licence Pixabay). Silence du début coupé, ré-encodé en 128 kbit/s. C'était
   la musique du café ; elle accompagne maintenant la zone humide (étape 4),

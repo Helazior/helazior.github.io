@@ -2030,8 +2030,8 @@ export function marche(etals, joueurs, texteCafe, texteRoue) {
   ${etal(e.cremerie)}${etal(e.primeur)}
   ${girouette(-96, 288)}${borneIncendie(-62, 310)}
   ${oranger(500, 284)}${corbeille(532, 302)}
-  ${banc(440, 264)}
-  ${joueur(nEstel || '', LOOKS[3], { x: 440, y: 263, assis: true })}
+  ${banc(124, 444)}
+  ${joueur(nEstel || '', LOOKS[3], { x: 124, y: 443, assis: true })}
   ${joueur('Cycy la famille', { cyriel: true }, { x: 118, y: 244, fond: '#7a3cf0', opacite: 0.85, parcours: '0,0,3 28,12,4 8,20,2' })}
   ${joueur(nChachoux || '', LOOKS[2], { x: 258, y: 238, parcours: '0,0,2.5 26,13,1.5 8,24,3' })}
   <g transform="translate(${C.x} ${C.y})">${fontaineStatue()}</g>

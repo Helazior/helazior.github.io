@@ -54,7 +54,7 @@ const TEXTES = {
   // Les pseudos des joueurs : au marché, Clément près de la fontaine,
   // Chachoux qui se promène, Estel sur le banc, Angelounette et Rachou ;
   // Gaston et Inesquiressemblepas ne viennent qu'au café, pour manger.
-  joueurs: ['Clément', 'Xx-Chachoux-xX', 'Estelou du Luxou', 'Gaston_du_43', 'Inesquiressemblepas', 'Angelounette', 'Rachou'],
+  joueurs: ['Clément', 'Xx-Chachoux-xX', 'Esteloux', 'Gaston_du_43', 'Inesquiressemblepas', 'Angelounette', 'Rachou'],
 
   // L'écran de connexion : l'image de Clément (images/connexion-cafe.webp),
   // avec les vrais champs posés exactement sur ceux du dessin. Les textes
@@ -434,7 +434,7 @@ const PRIX = {
 // musique du jeu d'origine dans la salle, et les oiseaux et la fontaine du
 // marché.
 const SONS = {
-  salle: { fichier: 'sons/cafe-salle.mp3', volume: 0.12 },
+  salle: { fichier: 'sons/cafe-salle.mp3', volume: 0.12, auMarche: 0.05 },   // auMarche : son volume au marché
   marche: { fichier: 'sons/cafe-marche.mp3', volume: 1 },
 };
 
@@ -697,7 +697,13 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
   const bip = (...a) => { if (vivant) son.bip(...a); };
   const coeurs = (x, y, n) => { if (vivant) fx.coeurs(x, y, n); };
   // Le son de fond : 'salle', 'marche' ou null (silence).
-  const ambiance = (nom) => { if (vivant) son.ambiance(nom ? SONS[nom].fichier : null, nom ? SONS[nom].volume : 1); };
+  // Au marché, la musique de la salle continue, plus doucement, sous les
+  // oiseaux et la fontaine.
+  const ambiance = (nom) => {
+    if (!vivant) return;
+    if (nom === 'marche') son.ambiance([{ url: SONS.marche.fichier, volume: SONS.marche.volume }, { url: SONS.salle.fichier, volume: SONS.salle.auMarche }]);
+    else son.ambiance(nom ? SONS[nom].fichier : null, nom ? SONS[nom].volume : 1);
+  };
 
   function dormir(ms) {
     return new Promise((r) => {
