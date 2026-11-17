@@ -26,6 +26,16 @@ import * as M from './marais-dessins.js';
 
 /* ======================================================= Textes à modifier */
 
+// Le point de sauvegarde (quand toutes les femelles ont pondu) : en cas de
+// défaite après, on reprend aux œufs au lieu de tout recommencer.
+const CLE_SAUVEGARDE = 'cyriel.e4-oeufs';
+function lireSauvegarde() {
+  try { return JSON.parse(localStorage.getItem(CLE_SAUVEGARDE) || 'null'); } catch { return null; }
+}
+function ecrireSauvegarde(v) {
+  try { if (v) localStorage.setItem(CLE_SAUVEGARDE, JSON.stringify(v)); else localStorage.removeItem(CLE_SAUVEGARDE); } catch { /* tant pis */ }
+}
+
 // Le jeu : réglé pour rester facile (durées en millisecondes).
 const REGLES = {
   vies: 5,
@@ -55,6 +65,11 @@ const TEXTES = {
   },
   perdu: 'Le marais était un peu trop agité… Pas grave, on recommence !',
   recommencer: 'Recommencer',
+  // Le point de sauvegarde : quand toutes les femelles ont pondu.
+  perduOeufs: 'Le marais était un peu trop agité… Pas grave : les œufs sont pondus, on reprend à partir d’eux !',
+  reprendre: 'Reprendre aux œufs',
+  toutRecommencer: 'Tout recommencer',
+  reprise: 'On reprend aux œufs : toutes les femelles ont pondu ! Occupe-toi des petits : touche une loupe pour l’agrandir.',
   ou: 'Où vais-je pondre ?',
   refus: ['Pas pour mes petits !', 'Beurk, pas le bon goût…', 'Non, pas ici.'],
   refusMachaon: 'Pas question !',
@@ -705,11 +720,15 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     const fond = document.createElement('div');
     fond.className = 'e4-perdu';
     fond.setAttribute('role', 'dialog');
-    fond.innerHTML = `<div class="e4-perdu-boite"><p>${TEXTES.perdu}</p><button type="button" class="e4-principal" data-e4="recommencer">${TEXTES.recommencer}</button></div>`;
+    const sauvee = lireSauvegarde();
+    fond.innerHTML = sauvee
+      ? `<div class="e4-perdu-boite"><p>${TEXTES.perduOeufs}</p><button type="button" class="e4-principal" data-e4="reprendre">${TEXTES.reprendre}</button> <button type="button" data-e4="recommencer">${TEXTES.toutRecommencer}</button></div>`
+      : `<div class="e4-perdu-boite"><p>${TEXTES.perdu}</p><button type="button" class="e4-principal" data-e4="recommencer">${TEXTES.recommencer}</button></div>`;
     racine.append(fond);
-    const b = fond.querySelector('button');
-    b.addEventListener('click', () => { bip('clic', 0.5); allerEtape(4); }, { once: true });
-    b.focus({ preventScroll: true });
+    const reprendre = fond.querySelector('[data-e4="reprendre"]');
+    reprendre?.addEventListener('click', () => { bip('clic', 0.5); allerEtape(4); }, { once: true });
+    fond.querySelector('[data-e4="recommencer"]').addEventListener('click', () => { bip('clic', 0.5); ecrireSauvegarde(null); allerEtape(4); }, { once: true });
+    (reprendre || fond.querySelector('button')).focus({ preventScroll: true });
   }
 
   /* ---- Les femelles qui attendent */
@@ -1385,7 +1404,9 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       const t = await L.attendre(siliques.map((q) => q.s));
       if (t.el === sc.s) break;
       relancer(t.el, 'e4-secoue-petit');
-      bip('non');
+      const v = cibleLoupe(L);
+      perdreVie(v.x, v.y - LR * v.k - 6);
+      if (!enJeu) return;
       L.bulle(t.x ?? 0, (t.y ?? 0) - 14, [T.pasCa]);
       plusTard(1400, L.cacherBulle);
     }
@@ -1589,7 +1610,9 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       const pres = positions.get(c.g).x + (choisie.a[0] < positions.get(c.g).x ? -30 : 30);
       await aller(choisie.g, pres, choisie.a[1], 650);
       choisie.g.classList.remove('e4-marche-fourmi');
-      bip('non');
+      const v = cibleLoupe(L);
+      perdreVie(v.x, v.y - LR * v.k - 6);
+      if (!enJeu) return;
       L.dire(T.mauvaiseFourmi);
       await dormir(700);
       choisie.sensG.setAttribute('transform', `scale(${(pres < positions.get(c.g).x ? -3 : 3)} 3)`);
@@ -1833,26 +1856,32 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     horloge = requestAnimationFrame(pas);
   }
 
-  async function jeu() {
+  async function jeu(reprise = null) {
     enJeu = true;
     etat = 'jeu';
     zoneVies.hidden = false;
     lancerHorloge();
-    dire(TEXTES.consigne);
-    poserOeufPris('cardamine');
-    for (let i = 0; i < ESPECES.length; i++) {
-      if (!enJeu) return null;
-      const f = creerFemelle(ESPECES[i]);
-      femelles.push(f);
-      arriver(f, PLACES_ATTENTE[i]);
-      if (i < ESPECES.length - 1) await vraiment(REGLES.arrivees);
+    if (reprise) {
+      // On reprend aux œufs : toutes les femelles ont déjà pondu.
+      for (const { e, p } of reprise) pontes.push({ e: ESPECES.find((x) => x.cle === e), p: planteDe(p) });
+    } else {
+      dire(TEXTES.consigne);
+      poserOeufPris('cardamine');
+      for (let i = 0; i < ESPECES.length; i++) {
+        if (!enJeu) return null;
+        const f = creerFemelle(ESPECES[i]);
+        femelles.push(f);
+        arriver(f, PLACES_ATTENTE[i]);
+        if (i < ESPECES.length - 1) await vraiment(REGLES.arrivees);
+      }
     }
     // 1re partie : placer toutes les femelles. 2e partie : les loupes.
     while (enJeu && pontes.length < ESPECES.length) await new Promise((r) => signaux.push(r));
     if (!enJeu) return null;
     etat = 'loupes';
+    ecrireSauvegarde(pontes.map(({ e, p }) => ({ e: e.cle, p: p.cle })));   // le point de sauvegarde
     fermerQuestion();
-    dire(TEXTES.loupes);
+    dire(reprise ? TEXTES.reprise : TEXTES.loupes);
     await vraiment(1500);
     for (const { e, p } of pontes) {
       if (!enJeu) return null;
@@ -1863,6 +1892,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     if (!enJeu) return null;
     enJeu = false;
     etat = 'gagne';
+    ecrireSauvegarde(null);
     for (const g of lueurs.values()) g.remove();
     for (const g of [...calques.loupes.children]) disparaitre(g, 600);
     zoneVies.hidden = true;
@@ -1983,6 +2013,18 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
 
   async function scenario() {
     dire('');
+    const sauvee = lireSauvegarde();
+    const valide = sauvee && sauvee.length === ESPECES.length && sauvee.every(({ e, p }) => ESPECES.some((x) => x.cle === e) && planteDe(p));
+    if (valide) {
+      // Reprise au point de sauvegarde : pas de sortie de grotte ni d'intro.
+      revelerPanneau();
+      const machaon = await jeu(sauvee);
+      if (!machaon) return;
+      etat = 'fin';
+      await finale(machaon);
+      return;
+    }
+    ecrireSauvegarde(null);
     await transition();
     revelerPanneau();
     dire(TEXTES.intro);

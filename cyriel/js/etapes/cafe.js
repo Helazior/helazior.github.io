@@ -15,7 +15,7 @@
 //      la barre se remplit, et la cuisson démarre, avec son minuteur et son
 //      bouton 60x au-dessus du fourneau. Il y a trois fourneaux : pendant
 //      qu'un plat cuit, on en lance un autre ;
-//   5. Pipistrelle sert. Le dernier client, Clément, commande la spécialité,
+//   5. Cyriel sert. Le dernier client, Clément, commande la spécialité,
 //      puis laisse son mot.
 //
 // La roue de la fortune (au marché) et le camion du chef pâtissier (à droite
@@ -79,9 +79,9 @@ const TEXTES = {
     chargement: 'Chargement du café…',
   },
 
-  // Ce que dit Pipistrelle, la serveuse.
+  // Ce que dit Pipistrelle, qui conseille la cheffe.
   retour: 'Te revoilà, cheffe ! Tu veux relire ton mot, ou rejouer une partie ?',
-  intro: 'Bienvenue dans ton café, cheffe Cyriel ! Moi, c’est Pipistrelle, ta serveuse. Ce soir, on rouvre.',
+  intro: 'Bienvenue dans ton café, cheffe Cyriel ! Moi, c’est Pipistrelle : je te donnerai des conseils. Ce soir, on rouvre.',
   livre: (plats) => `Le frigo est vide… Les premiers clients ont réservé ${plats}. Regarde dans le livre de recettes ce qu’il faut acheter !`,
   versMarche: 'Allons au marché faire les courses !',
   marche: 'Touche un étal pour voir ce qu’il vend. Le livre de recettes et le panier (ton frigo) sont en bas à droite.',
@@ -105,7 +105,7 @@ const TEXTES = {
   vraiTemps: 'Comme dans le vrai jeu, la cuisson prend du vrai temps ! Pour ne pas attendre, touche le bouton jaune 60x, au-dessus du fourneau.',
   pret: (n) => `C’est prêt sur le fourneau ${n} ! Touche-le pour poser le plat sur le comptoir.`,
   pretSpecial: (n) => `Le gâteau est prêt sur le fourneau ${n} ! Touche-le pour le sortir du four.`,
-  service: 'Je l’apporte !',
+  service: 'Bon appétit !',
   calme: 'Ouf, tout le monde est servi.',
   special: 'Oh ! Regarde qui arrive : Clément ! Il commande la spécialité de la maison. Sa recette vient d’apparaître dans le livre !',
   commandeSpeciale: 'Touche un fourneau pour préparer la spécialité.',
@@ -250,7 +250,7 @@ const TEXTES = {
       cadeau: 'Les cadeaux ? Patience… une surprise t’attend à la fin de la soirée.',
       toques: 'L’équipe au complet : toi en cuisine, moi en salle !',
       marmite: 'Pour cuisiner, touche un fourneau.',
-      noeud: 'Le nœud papillon, c’est mon uniforme de serveuse !',
+      noeud: 'Le nœud papillon, c’est ma petite touche chic !',
       toque: 'La toque de cheffe, c’est toi qui la portes !',
       onglets: ['', 'Tes amis cuisiniers sont en congé ce soir.', 'Ce soir, la cuisine est rien qu’à toi.', 'Tous les ustensiles sont déjà au fourneau !'],
     },
@@ -662,6 +662,8 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
   svg.innerHTML = `${D.defs()}
     <g class="e5-vue" data-vue="cafe">
       ${D.fondCafe()}
+      <g class="e5-calque-cuisine"></g>
+      ${D.comptoir()}
       <g class="e5-calque-plateau"></g>
       <g class="e5-calque-clients"></g>
       ${D.tables()}
@@ -681,6 +683,7 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
 
   const arreterPromeneurs = D.animerPromeneurs(svg.querySelector('[data-vue="marche"]'));
   const calques = {
+    cuisine: $('.e5-calque-cuisine'),
     plateau: $('.e5-calque-plateau'),
     clients: $('.e5-calque-clients'),
     tables: $('.e5-calque-tables'),
@@ -1003,9 +1006,10 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
 
   // Le niveau dans la tasse et la barre d'expérience.
   const N = TEXTES.niveau;
-  let niveau = memoire.lire('cafe-fini', false) ? N.fin : N.depart;
-  let xp = niveau >= N.fin ? 0 : N.xp;
-  let xpMax = niveau >= N.fin ? N.xpSuivant : N.xpMax;
+  // Chaque partie commence au niveau 23 : le gâteau de la fin fait passer 24.
+  let niveau = N.depart;
+  let xp = N.xp;
+  let xpMax = N.xpMax;
   const blocNiveau = $('.e5-niveau');
   const xpBarre = $('.e5-xp');
   function majXp() {
@@ -1042,8 +1046,22 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
   const pipi = svgEl('g', { class: 'e5-pipi' }, calques.volants);
   pipi.innerHTML = `<g class="e5-flotte"><g transform="scale(.78)">${D.pipistrelle()}</g></g>`;
   placer(pipi, L.pipi.x, L.pipi.y);
-  const pipiPlat = pipi.querySelector('.e5-pipi-plat');
-  let pipiLibre = Promise.resolve();
+
+  // Cyriel, en cheffe : elle passe d'un fourneau à l'autre et sert les plats.
+  // En cuisine, elle est derrière le comptoir ; dans la salle, avec les clients.
+  const cy = { g: svgEl('g', { class: 'e5-cyriel' }, calques.cuisine) };
+  cy.corps = svgEl('g', { class: 'e5-corps' }, cy.g);
+  cy.corps.innerHTML = `<g transform="scale(${L.echelle})">${D.cheffe()}</g>`;
+  const cyPlat = cy.corps.querySelector('.e5-cy-plat');
+  placer(cy.g, L.cyriel.x, L.cyriel.y);
+  let cyLibre = Promise.resolve();
+  let cyEnService = 0;
+  // Pendant la cuisson, si elle n'a rien à servir, elle va au fourneau.
+  function cyVersFeu(k) {
+    if (cyEnService) return;
+    const p = L.devantFeu[k];
+    cyLibre = cyLibre.then(() => (cyEnService || !vivant ? null : marcher(cy, [[p.x, p.y]])));
+  }
 
   /* -------------------------------------------------------------- Les vues */
 
@@ -2321,7 +2339,7 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
     }
   }
 
-  // Le comptoir : chaque plat prêt attend Pipistrelle à sa place.
+  // Le comptoir : chaque plat prêt attend Cyriel à sa place.
   const occupees = new Set();
   const PLAT = 0.8;   // taille des plats dans la salle
 
@@ -2351,6 +2369,7 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
     const T = TEXTES.fourneau;
     const nom = TEXTES.feux.nom(f.k + 1);
     cmd.etat = 'cuisine';
+    cyVersFeu(f.k);
     Object.assign(f, { etat: 'gestes', cmd, r, extra, fait: 0, total: r.cuisson * 60, vitesse: 1 });
     const contenu = [...pot].flatMap(([k, n]) => Array(n).fill(k));
     for (const [k, n] of pot) frigo.set(k, nb(k) - n);
@@ -2479,24 +2498,34 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
     bip('clic', 0.5);
   }
 
-  // Pipistrelle va chercher le plat au comptoir et le pose devant le client.
-  // Renvoie une promesse tenue quand le plat est sur la table.
+  // Cyriel prend le plat au comptoir, fait le tour du comptoir et le pose
+  // devant le client. Renvoie une promesse tenue quand le plat est sur la table.
   function servir(cmd) {
     const c = cmd.client;
     const plat = RECETTES[cmd.recette].plat;
     let poser;
     const surTable = new Promise((r) => { poser = r; });
-    pipiLibre = pipiLibre.then(async () => {
-      direUnInstant(TEXTES.service, 1800);
-      pipi.classList.add('e5-vole');
-      const { n, x, y, g } = cmd.surComptoir;
-      await voler(pipi, x, y - 30, 650, { hauteur: 16 });
+    cyEnService += 1;
+    cyLibre = cyLibre.then(async () => {
+      const { n, g } = cmd.surComptoir;
+      const prise = L.derriereComptoir[n];
+      const S = L.sortieCuisine;
+      const A = L.allee;
+      const T = L.servir[L.tables.indexOf(c.table)];
+      if (cy.g.parentNode !== calques.cuisine) {   // elle revient d'une table
+        await marcher(cy, [[A.x, A.y], [S.x, S.y]]);
+        calques.cuisine.append(cy.g);
+      }
+      await marcher(cy, [[prise.x, prise.y]]);
       g.remove();
       occupees.delete(n);
-      pipiPlat.innerHTML = D.PLATS[plat]({ vapeur: false });
+      cyPlat.innerHTML = `<g transform="scale(${PLAT / L.echelle})">${D.PLATS[plat]({ vapeur: false })}</g>`;
       bip('clic', 0.7);
-      await voler(pipi, c.table.x + 20, c.table.y - L.dessus - 34, 900, { hauteur: 34 });
-      pipiPlat.replaceChildren();
+      direUnInstant(TEXTES.service, 1800);
+      await marcher(cy, [[S.x, S.y]]);
+      calques.clients.append(cy.g);
+      await marcher(cy, [[A.x, A.y], [T.x, T.y]]);
+      cyPlat.replaceChildren();
       const a = svgEl('g', {}, calques.tables);
       a.innerHTML = `<g class="e5-pose e5-pop"><g transform="scale(${PLAT})">${D.PLATS[plat]()}</g></g>`;
       placer(a, c.table.x, c.table.y - L.dessus - 7);
@@ -2507,8 +2536,11 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
       bip('plouf');
       gagnerXp(RECETTES[cmd.recette].xp + (cmd.epice ? TEXTES.epice.xp : 0));
       poser();
-      await voler(pipi, L.pipi.x, L.pipi.y, 850, { hauteur: 26 });
-      pipi.classList.remove('e5-vole');
+      cyEnService -= 1;
+      if (cyEnService) return;   // un autre plat attend : elle y va directement
+      await marcher(cy, [[A.x, A.y], [S.x, S.y]]);
+      calques.cuisine.append(cy.g);
+      await marcher(cy, [[L.cyriel.x, L.cyriel.y]]);
     });
     return surTable;
   }
@@ -2628,7 +2660,7 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
 
   // La boucle du service, comme dans le jeu : on touche un fourneau libre
   // pour lancer une commande, un fourneau prêt pour poser le plat au
-  // comptoir. Jusqu'à trois plats cuisent en même temps ; Pipistrelle sert.
+  // comptoir. Jusqu'à trois plats cuisent en même temps ; Cyriel sert.
   let paralleleDit = false;
   async function service(cmds, { premierTexte, texte }) {
     const enFond = [];
@@ -2745,7 +2777,13 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
       animer(gateau, [{ transform: 'scale(.18)' }, { transform: 'scale(1)' }], { duree: 1200, easing: 'cubic-bezier(.3,.8,.3,1)' }),
     ]);
     const S = { x: C.x + 82, y: C.y + 4 };   // la place de Clément, à côté du gâteau
-    await marcher(sp, [[S.x, sp.y], [S.x, S.y]]);
+    // Cyriel quitte ses fourneaux et vient de l'autre côté du gâteau.
+    cyLibre = cyLibre.then(async () => {
+      if (cy.g.parentNode === calques.cuisine) await marcher(cy, [[L.sortieCuisine.x, L.sortieCuisine.y]]);
+      calque.append(cy.g);
+      await marcher(cy, [[C.x - 82, C.y + 4]]);
+    });
+    await Promise.all([marcher(sp, [[S.x, sp.y], [S.x, S.y]]), cyLibre]);
     await dire(T.surprise, [T.pourMoi]);
 
     // Les bougies, puis Pipistrelle les allume.
@@ -2828,7 +2866,7 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
     const q = versEcran(E.x, E.y - 8);
     if (vivant) fx.etincelles(q.x, q.y, 16, '#d7b3ff', 140);
     await marcher(sp, [[S.x, S.y]]);
-    calque.append(sp.g, pipi);
+    calque.append(cy.g, sp.g, pipi);
     ambiance('salle');
     return { enveloppe, x: E.x, y: E.y };
   }
@@ -3071,7 +3109,7 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
     const arrivees = lancerArrivees(commandes);
     await service(commandes, { premierTexte: TEXTES.premiereCommande, texte: TEXTES.commandeSuivante });
     await arrivees;
-    await pipiLibre;
+    await cyLibre;
     await dormir(500);
     toutRamasser();
     dire(TEXTES.calme);

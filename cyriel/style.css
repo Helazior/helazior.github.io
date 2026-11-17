@@ -2729,3 +2729,4 @@ svg.e5-m { display: block; overflow: visible; }
 .e2-coeurs-touche { animation: e2-coeurs-touche .45s; }
 @keyframes e2-coeurs-touche { 20% { transform: translateX(-5px); } 45% { transform: translateX(5px); } 70% { transform: translateX(-3px); } }
 @media (prefers-reduced-motion: reduce) { .e2-coeur-pop, .e2-coeurs-touche { animation: none; } }
+.e5-cyriel { pointer-events: none; }

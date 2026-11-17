@@ -7,7 +7,7 @@
 // qui tient toujours à l'écran ; le décor déborde largement autour.
 
 import { cheminChiffre } from '../chiffres.js';
-import { duoSpeleo, cyrielChapeau, cyrielClin, cyrielNatte } from './clins-doeil.js';
+import { duoSpeleo, cyrielChapeau, cyrielClin, cyrielNatte, cyrielCheffe } from './clins-doeil.js';
 
 
 const ENCRE = '#1a1026';
@@ -796,7 +796,13 @@ export const LIEUX = {
   sieges: TABLES_J.map((j) => pt(SIEGE_I, j)),     // pieds d'un client assis (cachés par la table)
   chemins: TABLES_J.map((j) => [pt(0.6, 11.4), pt(6, 11.4), pt(6, j), pt(SIEGE_I, j)]),
   porte: pt(0.5, 11.4),
-  pipi: pt(5.4, 1.6, 46),                          // Pipistrelle au repos
+  pipi: pt(5.4, 1.6, 46),                          // Pipistrelle au repos (elle conseille)
+  cyriel: pt(2.75, 8.3),                           // Cyriel en cuisine, au repos
+  devantFeu: FEUX_J.slice(0, NB_FEUX).map((j) => pt(2.65, j + 1.55)),   // Cyriel près d'un fourneau
+  derriereComptoir: [6, 4, 8].map((j) => pt(2.95, j)),                  // Cyriel prend le plat n
+  sortieCuisine: pt(2.6, 10.1),                    // le bout du comptoir, côté salle
+  allee: pt(5.9, 10.1),                            // l'allée entre le comptoir et les chaises, au bout
+  servir: TABLES_J.map((j) => pt(5.9, j + 0.95)),  // Cyriel pose le plat sur la table t
   comptoir: [pt(4.2, 6, 14), pt(4.2, 4, 14), pt(4.2, 8, 14)],   // places des plats prêts
   feux: FEUX_J.slice(0, NB_FEUX).map(lieuxFeu),     // les fourneaux où l'on cuisine
   frigo: pt(1.6, 1.05, 26),
@@ -1094,9 +1100,21 @@ export function fondCafe() {
   ${murDroitDecor()}
   ${murGaucheDecor()}
   ${frigoIso()}
-  ${fourneauxIso()}
+  ${fourneauxIso()}`;
+}
+
+// Le comptoir et les chaises, dessinés après Cyriel quand elle est en
+// cuisine (le comptoir cache le bas de son corps).
+export function comptoir() {
+  return `
   ${comptoirIso()}
   ${TABLES_J.map(chaiseIso).join('')}`;
+}
+
+// Cyriel en cheffe, aux fourneaux et au service ; son plat est dans
+// .e5-cy-plat (sur sa main levée).
+export function cheffe() {
+  return cyrielCheffe({ plat: '<g class="e5-cy-plat"></g>' });
 }
 
 export function tables() {
