@@ -55,6 +55,19 @@ const CHUTES = [
 const CHUTE_ALERTE = 0.5;     // secondes de tremblement avant la chute
 const GRAVITE = 900;          // px du monde par seconde²
 const REPRISE = { x: 650, y: 400 };   // le début du passage
+
+// Le bouchon d'argile : trois boules, un peu plus grosses que la
+// chauve-souris, ferment la galerie de la sortie. En touchant une boule, elle
+// s'en retrouve enrobée (l'argile colle, impossible de la lâcher) : elle est
+// alors trop large pour passer par le trou qu'elle vient d'ouvrir. Une pierre
+// qui lui tombe dessus fait éclater l'argile (sans coûter de cœur).
+const ARGILE = {
+  r: 18,                     // rayon d'une boule
+  enrobee: 21,               // rayon de la chauve-souris enrobée
+  x: 1581, y: 189,           // centre du bouchon
+  travers: { x: Math.SQRT1_2, y: Math.SQRT1_2 },   // en travers de la galerie
+  decalages: [-43.5, -7.5, 28.5],
+};
 const calme = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const borner = (v, a, b) => Math.min(b, Math.max(a, v));
 const pause = () => new Promise((r) => setTimeout(r, 0));
@@ -296,6 +309,46 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
       return { ...def, plafond, sol, longueur, largeur: def.genre === 'stalactite' ? 7 : 8, duree, tau: 0, y: plafond, tombe: false, tremble: 0 };
     });
     const poussieres = [];   // grains qui tombent pendant le tremblement (décor)
+    const boules = ARGILE.decalages.map((d, i) => ({
+      x: ARGILE.x + ARGILE.travers.x * d, y: ARGILE.y + ARGILE.travers.y * d, prise: false, tourne: i * 1.3,
+    }));
+    let enrobee = false;     // la chauve-souris est dans sa boule d'argile
+    const rayonChauve = () => (enrobee ? ARGILE.enrobee : RAYON_CORPS);
+    // De combien la chauve-souris (telle qu'elle est) s'enfoncerait dans la
+    // roche ou dans une boule en (x, y) ; 0 ou moins : la place est libre.
+    function penetration(x, y) {
+      const R = rayonChauve();
+      let e = grotte.valeur(x, y) + R;
+      for (const b of boules) {
+        if (!b.prise) e = Math.max(e, ARGILE.r + R - Math.hypot(x - b.x, y - b.y));
+      }
+      return e;
+    }
+    // La boule touchée en (x, y), ou null si c'est la roche.
+    function bouleEn(x, y) {
+      const R = rayonChauve();
+      if (grotte.valeur(x, y) > -R) return null;
+      for (const b of boules) {
+        if (!b.prise && Math.hypot(x - b.x, y - b.y) < ARGILE.r + R) return b;
+      }
+      return null;
+    }
+    function enrober(b) {
+      b.prise = true;
+      enrobee = true;
+      bat.secousse = 0.25;
+      son.bip('argile');
+      for (let i = 0; i < 12; i++) eclat(b.x, b.y, i % 2 ? '#a8714a' : '#d9a36f', 90, 0.5);
+    }
+    function casserArgile(ch) {
+      enrobee = false;
+      invulnerable = 0.8;
+      bat.secousse = 0.3;
+      son.bip('eclat');
+      for (let i = 0; i < 22; i++) eclat(bat.x, bat.y, i % 3 ? '#a8714a' : '#e6b886', 150, 0.8);
+      ch.tombe = false;
+      ch.y = ch.sol + 100;
+    }
     let coeurs = COEURS.depart;
     let invulnerable = 0;
     let reprise = -10;       // instant du dernier retour au début du passage
@@ -376,9 +429,10 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
         }
         // la chauve-souris est-elle touchée ?
         if (ch.tombe && invulnerable <= 0 && victoire < 0) {
+          const R = rayonChauve();
           const dy = bat.y < ch.y - ch.longueur ? ch.y - ch.longueur - bat.y : bat.y > ch.y ? bat.y - ch.y : 0;
           const dx = Math.abs(bat.x - ch.x);
-          if (dx < ch.largeur + RAYON_CORPS && dy < RAYON_CORPS) touchee(ch);
+          if (dx < ch.largeur + R && dy < R) { if (enrobee) casserArgile(ch); else touchee(ch); }
         }
       }
       for (let i = poussieres.length - 1; i >= 0; i--) {
@@ -391,6 +445,35 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
       invulnerable = Math.max(0, invulnerable - dt);
     }
 
+    function boule(x, y, r, tourne) {
+      const g = c.createRadialGradient(x - r * 0.35, y - r * 0.4, r * 0.1, x, y, r);
+      g.addColorStop(0, '#d9a36f');
+      g.addColorStop(0.55, '#a8714a');
+      g.addColorStop(1, '#6e4630');
+      c.fillStyle = g;
+      c.beginPath();
+      c.arc(x, y, r, 0, TAU);
+      c.fill();
+      // quelques creux, comme de l'argile pétrie
+      c.fillStyle = 'rgba(70, 40, 25, .35)';
+      for (let i = 0; i < 3; i++) {
+        const a = tourne + i * 2.1;
+        c.beginPath();
+        c.ellipse(x + Math.cos(a) * r * 0.45, y + Math.sin(a) * r * 0.45, r * 0.16, r * 0.1, a, 0, TAU);
+        c.fill();
+      }
+    }
+    function dessinerBoules() {
+      for (const b of boules) {
+        if (b.prise) continue;
+        const lu = debug === 'carte' ? 1 : Math.max(lumiere(b.x, b.y), lumiereSortie(b.x, b.y));
+        if (lu < 0.01) continue;
+        c.globalAlpha = lu;
+        boule(b.x, b.y, ARGILE.r, b.tourne);
+      }
+      c.globalAlpha = 1;
+    }
+
     function dessinerChutes() {
       const vx0 = cam.x - 30;
       const vx1 = cam.x + vl / z + 30;
@@ -398,7 +481,8 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
         if (ch.x < vx0 || ch.x > vx1) continue;   // hors de l'écran
         // visible surtout là où une onde vient de passer
         const lu = debug === 'carte' ? 1 : lumiere(ch.x, ch.tombe ? ch.y : ch.plafond + 8);
-        const a = 0.16 + 0.84 * lu;
+        const a = lu;
+        if (a < 0.01) continue;
         // repousse en haut après une chute
         const pousse = ch.tombe ? 1 : Math.min(1, ch.tau / 0.35);
         if (pousse <= 0.02) continue;
@@ -431,7 +515,7 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
       if (poussieres.length) {
         c.fillStyle = '#b9a6e8';
         for (const p of poussieres) {
-          c.globalAlpha = 0.5 * (1 - p.age / 0.6);
+          c.globalAlpha = 0.5 * (1 - p.age / 0.6) * (debug === 'carte' ? 1 : lumiere(p.x, p.y));
           c.fillRect(p.x - 0.8, p.y - 0.8, 1.6, 1.6);
         }
       }
@@ -464,7 +548,7 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
 
     // Image de tout ce qu'une source placée en (ox, oy) peut éclairer,
     // avec un bord qui s'estompe en fin de portée.
-    function imageVisible(ox, oy, vis, portee) {
+    function imageVisible(ox, oy, vis, portee, transparente = false) {
       const rt = portee + PENETRATION;
       const x0 = Math.round((ox - rt) * q);
       const y0 = Math.round((oy - rt) * q);
@@ -489,14 +573,21 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
       const sh = Math.min(monde.height, y0 + cote) - sy;
       if (sl > 0 && sh > 0) tc.drawImage(monde, sx, sy, sl, sh, sx - x0, sy - y0, sl, sh);
       tc.restore();
-      // l'image s'assombrit jusqu'au noir en bout de portée
-      tc.globalCompositeOperation = 'source-atop';
+      // l'image s'assombrit jusqu'au noir en bout de portée (ou devient
+      // transparente, pour être posée par-dessus le reste)
+      tc.globalCompositeOperation = transparente ? 'destination-in' : 'source-atop';
       const cx = ox * q - x0;
       const cy = oy * q - y0;
       const g = tc.createRadialGradient(cx, cy, 0, cx, cy, rt * q);
-      g.addColorStop(0, 'rgba(0,0,0,0)');
-      g.addColorStop(0.68, 'rgba(0,0,0,0)');
-      g.addColorStop(1, '#000');
+      if (transparente) {
+        g.addColorStop(0, '#000');
+        g.addColorStop(0.68, '#000');
+        g.addColorStop(1, 'rgba(0,0,0,0)');
+      } else {
+        g.addColorStop(0, 'rgba(0,0,0,0)');
+        g.addColorStop(0.68, 'rgba(0,0,0,0)');
+        g.addColorStop(1, '#000');
+      }
       tc.fillStyle = g;
       tc.fillRect(0, 0, cote, cote);
       return { t, x0, y0 };
@@ -561,19 +652,28 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
       const ux = dx / dist;
       const uy = dy / dist;
       let libre = 0;
+      // déjà coincée (elle vient d'être enrobée contre une paroi ou une
+      // autre boule) : elle peut se dégager, tant qu'elle ne s'enfonce pas
+      let enfonce = penetration(bat.x, bat.y);
+      let boule = null;     // la boule d'argile qui l'arrête, s'il y en a une
       for (let p = 3; p <= dist; p += 3) {
-        if (grotte.bloque(bat.x + ux * p, bat.y + uy * p)) break;
+        const x = bat.x + ux * p;
+        const y = bat.y + uy * p;
+        const e = penetration(x, y);
+        if (e > 0 && e > enfonce - 0.3) { boule = bouleEn(x, y); break; }
+        enfonce = Math.min(enfonce, e);
         libre = p;
       }
       const heurte = libre < dist - 3;
       if (libre < 5) {            // collée à la roche dans cette direction
+        if (boule && !enrobee) { enrober(boule); return; }
         bat.secousse = 0.22;
         son.bip('poc');
         return;
       }
       bat.vol = {
         x0: bat.x, y0: bat.y, x1: bat.x + ux * libre, y1: bat.y + uy * libre,
-        t: 0, duree: Math.max(0.2, libre / VITESSE_VOL), heurte, ux,
+        t: 0, duree: Math.max(0.2, libre / VITESSE_VOL), heurte, ux, boule: heurte ? boule : null,
       };
       son.bip('vol');
     }
@@ -589,6 +689,11 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
       bat.y = v.y0 + (v.y1 - v.y0) * e;
       bat.penche = v.ux * 0.28 * Math.sin(p * Math.PI);
       if (p >= 1) {
+        if (v.boule && !enrobee) {
+          enrober(v.boule);
+          bat.vol = null;
+          return;
+        }
         if (v.heurte) {
           bat.secousse = 0.28;
           son.bip('poc');
@@ -608,10 +713,17 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
 
     // La sortie éclaire les parois autour d'elle, sans avoir besoin d'onde.
     const visSortie = visibilite(SORTIE.x, SORTIE.y, PORTEE_LUEUR);
+    let imgSortie = null;   // les parois éclairées par la sortie (pour le halo)
+    // Lumière que la sortie donne en (x, y) (0 si la roche fait écran).
+    function lumiereSortie(x, y) {
+      const d = Math.hypot(x - SORTIE.x, y - SORTIE.y);
+      if (d >= PORTEE_LUEUR * 0.85) return 0;
+      const a = (Math.atan2(y - SORTIE.y, x - SORTIE.x) + TAU) % TAU;
+      if (visSortie.d[Math.round((a / TAU) * RAYONS) % RAYONS] < d - 4) return 0;
+      return Math.min(1, 1.5 * (1 - d / (PORTEE_LUEUR * 0.85)));
+    }
     {
-      const img = imageVisible(SORTIE.x, SORTIE.y, visSortie, PORTEE_LUEUR);
-      r.drawImage(img.t, img.x0, img.y0);
-      img.t.width = img.t.height = 1;
+      imgSortie = imageVisible(SORTIE.x, SORTIE.y, visSortie, PORTEE_LUEUR, true);
       for (let i = 0; i < RAYONS; i++) {
         const a = (i / RAYONS) * TAU;
         for (let p = 0; p <= Math.min(visSortie.d[i], PORTEE_LUEUR * 0.8); p += 8) {
@@ -619,10 +731,17 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
         }
       }
     }
-    // Le halo lui-même, dessiné une fois pour toutes.
-    const lueur = toile(PORTEE_LUEUR * 2, PORTEE_LUEUR * 2);
+    // Le halo lui-même, avec les parois qu'il éclaire, dessiné une fois pour
+    // toutes : elles restent visibles même quand la grotte retombe dans le noir.
+    const lueur = toile(Math.ceil(PORTEE_LUEUR * 2 * q), Math.ceil(PORTEE_LUEUR * 2 * q));
     {
       const lc = lueur.getContext('2d');
+      lc.scale(q, q);
+      lc.drawImage(imgSortie.t, imgSortie.x0 / q - (SORTIE.x - PORTEE_LUEUR), imgSortie.y0 / q - (SORTIE.y - PORTEE_LUEUR),
+        imgSortie.t.width / q, imgSortie.t.height / q);
+      imgSortie.t.width = imgSortie.t.height = 1;
+      imgSortie = null;
+      lc.globalCompositeOperation = 'lighter';
       lc.beginPath();
       for (let i = 0; i < RAYONS; i++) {
         const a = (i / RAYONS) * TAU;
@@ -639,7 +758,7 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
       g.addColorStop(0.45, 'rgba(255, 222, 150, 0.3)');
       g.addColorStop(1, 'rgba(255, 210, 130, 0)');
       lc.fillStyle = g;
-      lc.fillRect(0, 0, lueur.width, lueur.height);
+      lc.fillRect(0, 0, PORTEE_LUEUR * 2, PORTEE_LUEUR * 2);
     }
 
     if (debug === 'carte') {
@@ -788,6 +907,9 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
       // à partir d'ici, on dessine en coordonnées du monde
       c.setTransform(k, 0, 0, k, -cam.x * k, -cam.y * k);
 
+      const sortieVue = SORTIE.x + PORTEE_LUEUR > cam.x && SORTIE.x - PORTEE_LUEUR < cam.x + vl / z
+        && SORTIE.y + PORTEE_LUEUR > cam.y && SORTIE.y - PORTEE_LUEUR < cam.y + vh / z;
+
       // les deux spéléos, une fois découverts : ils se balancent, respirent,
       // et leurs frontales tremblotent un peu dans le noir
       if (estVu(SPELEO.x, SPELEO.y - 30) || debug === 'carte') {
@@ -817,11 +939,13 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
         c.globalCompositeOperation = 'source-over';
       }
 
-      // lumière de la sortie
+      // lumière de la sortie (la suite se dessine aussi en « lighter »)
       c.globalCompositeOperation = 'lighter';
-      c.globalAlpha = 0.86 + 0.14 * Math.sin(temps * 1.7);
-      c.drawImage(lueur, SORTIE.x - PORTEE_LUEUR, SORTIE.y - PORTEE_LUEUR);
-      c.globalAlpha = 1;
+      if (sortieVue) {
+        c.globalAlpha = 0.86 + 0.14 * Math.sin(temps * 1.7);
+        c.drawImage(lueur, SORTIE.x - PORTEE_LUEUR, SORTIE.y - PORTEE_LUEUR, PORTEE_LUEUR * 2, PORTEE_LUEUR * 2);
+        c.globalAlpha = 1;
+      }
 
       // le chiffre palpite doucement une fois découvert
       if (chiffreVu >= 0 || debug === 'carte') {
@@ -899,6 +1023,7 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
       }
       c.globalAlpha = 1;
 
+      dessinerBoules();
       dessinerChutes();
 
       // la chauve-souris
@@ -940,6 +1065,33 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
       }
       c.restore();
 
+      // enrobée d'argile : une coque, comme une bulle autour d'elle
+      if (enrobee) {
+        const R = ARGILE.enrobee;
+        const v = Math.max(0.25, bat.corps) * apparition;
+        c.save();
+        c.translate(bx, by);
+        c.globalAlpha = 0.6 * v;
+        const g = c.createRadialGradient(-R * 0.3, -R * 0.35, R * 0.2, 0, 0, R);
+        g.addColorStop(0, 'rgba(230, 184, 134, .25)');
+        g.addColorStop(0.7, 'rgba(168, 113, 74, .55)');
+        g.addColorStop(1, 'rgba(110, 70, 48, .95)');
+        c.fillStyle = g;
+        c.beginPath();
+        c.arc(0, 0, R, 0, TAU);
+        c.fill();
+        c.globalAlpha = 0.9 * v;
+        c.strokeStyle = '#6e4630';
+        c.lineWidth = 2.2;
+        c.stroke();
+        c.strokeStyle = 'rgba(255, 236, 210, .7)';
+        c.lineWidth = 2;
+        c.beginPath();
+        c.arc(0, 0, R - 4, -2.6, -1.7);
+        c.stroke();
+        c.restore();
+      }
+
       // sortie : tout devient lumière
       if (victoire >= 0) {
         const a = Math.min(1, (temps - victoire) / 1.3);
@@ -974,6 +1126,8 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
         get chiffreVu() { return chiffreVu >= 0; },
         get gobes() { return gobes; },
         get coeurs() { return coeurs; },
+        get enrobee() { return enrobee; },
+        boules,
         get invulnerable() { return invulnerable; },
         chutes,
         estVu,

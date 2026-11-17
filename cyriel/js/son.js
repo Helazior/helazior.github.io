@@ -195,6 +195,10 @@ export function bip(nom, p = 0) {
       ton({ de: 210, a: 70, duree: 0.12, volume: 0.25 * p });
       bruit({ duree: 0.12, volume: 0.12 * p, filtre: 'bandpass', de: 1500, a: 500, q: 0.7 });
       break;
+    case 'argile':      // « splotch » : l'argile colle
+      bruit({ duree: 0.22, volume: 0.32, filtre: 'lowpass', de: 900, a: 160, q: 1.4 });
+      ton({ de: 150, a: 90, duree: 0.16, volume: 0.25 });
+      break;
     case 'aie':
       ton({ type: 'triangle', de: 700, a: 300, duree: 0.18, volume: 0.26 });
       bruit({ duree: 0.1, volume: 0.18, filtre: 'bandpass', de: 1200, a: 400, q: 0.8 });
