@@ -15,6 +15,7 @@ import etape1 from './etapes/etape1.js';
 import etape2 from './etapes/etape2.js';
 import etape3 from './etapes/etape3.js';
 import etape4 from './etapes/etape4.js';
+import course from './etapes/etape-course.js';
 import cafe from './etapes/cafe.js';
 
 const ETAPES = [
@@ -22,6 +23,7 @@ const ETAPES = [
   etape2,
   etape3,
   etape4,
+  course,
   cafe,
 ];   // étape n° = position + 1
 

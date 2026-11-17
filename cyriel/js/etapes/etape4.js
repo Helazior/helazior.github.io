@@ -23,7 +23,6 @@
 import { CODE } from '../code.js';
 import { chauveSouris } from '../dessin.js';
 import * as M from './marais-dessins.js';
-import { course } from './course.js';
 
 /* ======================================================= Textes à modifier */
 
@@ -767,6 +766,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
         nommer(f);
         fermerQuestion();
         if (f.attente) selectionner(f);
+        direFemelle(f, f.e.arrivee);
       });
       zoneBoutons.append(b);
     }
@@ -777,7 +777,8 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     question = null;
     zoneBoutons.innerHTML = '';
     zoneBoutons.classList.remove('e4-reponses');
-    if (ditPendantQuestion) { texte.textContent = ditPendantQuestion; ditPendantQuestion = null; }
+    texte.textContent = ditPendantQuestion || TEXTES.consigne;
+    ditPendantQuestion = null;
   }
   function nommer(f) {
     f.nommee = true;
@@ -792,6 +793,15 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     if (!premiereQuestion) return;
     premiereQuestion = false;
     if (enJeu && !question && !selection && f.attente && !f.nommee) poserQuestion(f);
+  }
+
+  // Une femelle parle : sa bulle la suit et s'efface après lecture.
+  function direFemelle(f, t) {
+    if (f.parole) f.parole.remove();
+    const p = positions.get(f.g) || { x: 200, y: 200 };
+    const b = bulleParole(calques.bulles, p.x, p.y - 26, t);
+    f.parole = b;
+    plusTard(Math.max(2600, t.length * 60), () => { if (f.parole === b) { b.remove(); f.parole = null; } });
   }
 
   function selectionner(f) {
@@ -867,12 +877,12 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       bip('non');
       flotter(calques.bulles, s.x, s.y - 26, f.e.textes.dejaPris, '#d6336c');
       montrerOeufPris(p.cle, 3000);
-      dire(TEXTES.occupeCourt);
+      direFemelle(f, TEXTES.occupeCourt);
     } else {
       f.erreurs++;
       bip(f.e.cle === 'machaon' ? 'beurk' : 'non');
       flotter(calques.bulles, s.x, s.y - 26, f.e.cle === 'machaon' ? TEXTES.refusMachaon : TEXTES.refus[refusVus++ % TEXTES.refus.length], '#d6336c');
-      dire(premierRefus ? TEXTES.premierRefus : `${f.e.indice}`);
+      direFemelle(f, premierRefus ? TEXTES.premierRefus : f.e.indice);
       premierRefus = false;
       if (f.erreurs >= 2) montrerPlante(f.e);
     }
@@ -931,6 +941,56 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     p.el.addEventListener('keydown', h);
   });
 
+  /* ---- Les bulles de parole : chacun parle pour soi */
+  //
+  // Les loupes (donc les plantes) et les femelles ont leurs propres bulles :
+  // plusieurs dialogues avancent en même temps, et on voit qui parle.
+
+  function couper(t, max = 26) {
+    const lignes = [];
+    let l = '';
+    for (const mot of t.split(' ')) {
+      if (l && (l + ' ' + mot).length > max) { lignes.push(l); l = mot; } else l = l ? `${l} ${mot}` : mot;
+    }
+    if (l) lignes.push(l);
+    return lignes;
+  }
+  // Une bulle dont la pointe vise (x, y), gardée dans le décor. Si elle
+  // chevauche une bulle déjà posée (liste deja), elle monte au-dessus.
+  function bulleParole(parent, x, y, t, deja = null, pop = true) {
+    const lignes = couper(t);
+    const l = Math.max(...lignes.map((u) => u.length)) * 6 + 22;
+    const h = lignes.length * 14 + 20;
+    const cx = Math.min(M.LARGEUR - l / 2 - 4, Math.max(l / 2 + 4, x));
+    let pointe = Math.max(h + 6, y);
+    if (deja) {
+      for (let essai = 0; essai < 6; essai++) {
+        const gene = deja.find((r) => cx - l / 2 < r.x1 + 3 && cx + l / 2 > r.x0 - 3 && pointe - h - 8 < r.y1 + 3 && pointe > r.y0 - 3);
+        if (!gene) break;
+        pointe = gene.y0 - 4;
+      }
+      deja.push({ x0: cx - l / 2, x1: cx + l / 2, y0: pointe - h - 8, y1: pointe });
+    }
+    const g = svgEl('g', { class: 'e4-parole' }, parent);
+    g.innerHTML = `<g class="${pop ? 'e5-pop' : ''}">${M.bulle(lignes).replace(/font-weight="700"/g, 'font-weight="500"')}</g>`;
+    placer(g, cx, pointe);
+    return g;
+  }
+  // Les bulles des loupes : toutes si aucune n'est agrandie (rangées pour ne
+  // pas se chevaucher), sinon seulement celle de la loupe agrandie.
+  function rangerParoles() {
+    const deja = [];
+    const ordre = [...loupes].sort((a, b) => b.cy - a.cy || a.cx - b.cx);
+    for (const L of ordre) {
+      if (L.parole) L.parole.remove();
+      L.parole = null;
+      if (!L.texte || !L.g.isConnected || (loupeOuverte && loupeOuverte !== L)) continue;
+      const c = cibleLoupe(L);
+      L.parole = bulleParole(calques.bulles, c.x, c.y - LR * c.k - 2, L.texte, deja, L.texteVu !== L.texte);
+      L.texteVu = L.texte;
+    }
+  }
+
   /* ---- Les loupes : chaque plante pondue devient une loupe vivante */
   //
   // Les petits jeux d'avant se jouent dans des loupes posées à la place des
@@ -958,6 +1018,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
   function poserLoupe(L) {
     const c = cibleLoupe(L);
     L.g.style.transform = `translate(${c.x}px, ${c.y}px) scale(${c.k})`;
+    rangerParoles();
   }
   function agrandir(L) {
     if (loupeOuverte === L) return;
@@ -1001,6 +1062,15 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       placer(L.bulleG, Math.min(LR + 20 - l / 2, Math.max(-LR - 20 + l / 2, x)), y);
     };
     L.cacherBulle = () => { if (L.bulleG) L.bulleG.remove(); L.bulleG = null; };
+    // ce que dit la loupe (la plante et ses petits) : une bulle au-dessus d'elle
+    L.parole = null;
+    L.texte = '';
+    L.dire = (t) => {
+      L.texte = t;
+      L.placerParole();
+    };
+    L.placerParole = rangerParoles;
+    L.raconter = async (t, min = 1800) => { L.dire(t); await dormir(Math.max(min, t.length * 55)); };
     L.etinc = (x, y, n, couleur, force) => {
       const c = cibleLoupe(L);
       etincelles(c.x + x * c.k, c.y + y * c.k, calme ? Math.ceil(n / 3) : Math.ceil(n * (L.grande ? 0.8 : 0.4)), couleur, force * c.k * 1.6);
@@ -1077,6 +1147,9 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
 
   async function fermerLoupePlante(L) {
     reduire(L);
+    L.texte = '';
+    if (L.parole) L.parole.remove();
+    L.parole = null;
     cancelAnimationFrame(L.boucleEau);
     L.g.style.transform = `translate(${L.cx}px, ${L.cy}px) scale(0)`;
     await dormir(450);
@@ -1167,7 +1240,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     toile.style.opacity = '0';
     const feuilles = [...L.contenu.querySelectorAll('.e4-plante-loupe polygon')];
     for (const fe of feuilles) fe.classList.add('e4-feuille');
-    await raconter(T.ponte, 2600);
+    await L.raconter(T.ponte, 2600);
 
     // Éclosion : une colonie de petites chenilles noires dans leur toile.
     bip('eclosion');
@@ -1179,12 +1252,12 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     });
     for (const c of colonie) c.corps.classList.add('e4-rampe');
     apparaitre(toile, 700);
-    dire(T.eclosion);
+    L.dire(T.eclosion);
     const zoneTouche = touchable(svgEl('circle', { r: LR, fill: 'transparent' }, L.contenu), 'Nourrir les chenilles', 'nourrir');
     L.etat = 'nourrir';
     const N = 8;
     for (let i = 1; i <= N; i++) {
-      const t = await L.attendre([zoneTouche], { inactif: 7000, quandInactif: () => dire(T.eclosion) });
+      const t = await L.attendre([zoneTouche], { inactif: 7000, quandInactif: () => L.dire(T.eclosion) });
       const x = t.x ?? 0;
       const y = t.y ?? -40;
       bip('croque');
@@ -1204,12 +1277,12 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     }
     zoneTouche.remove();
     L.etat = 'occupe';
-    await raconter(T.grandes, 1600);
+    await L.raconter(T.grandes, 1600);
     await Promise.all([disparaitre(colonieG, 700), disparaitre(toile, 700)]);
 
     // Une chrysalide pend sous une feuille, puis l'adulte, ailes fermées.
     const chrys = chrysalideLoupe(L.contenu, 'paon', 30, -22, 2.2);
-    dire(T.chrysalide);
+    L.dire(T.chrysalide);
     await dormir(1500);
     await eclore(chrys);
     const adulte = svgEl('g', { transform: 'translate(32 26)' }, L.contenu);
@@ -1217,7 +1290,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     const ferme = svgEl('g', { transform: 'scale(1.5)' }, adulte);
     svgEl('g', { class: 'e5-pop' }, ferme).innerHTML = M.paonFerme();
     bip('eclosion');
-    dire(T.ferme);
+    L.dire(T.ferme);
     await dormir(2000);
 
     // La mésange arrive.
@@ -1233,7 +1306,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     await voler(oiseau, -78, -24, 320, { hauteur: 10 });
     touchable(adulte, 'Le paon du jour, ailes fermées', 'paon-adulte');
     L.etat = 'mesange';
-    dire(T.mesange);
+    L.dire(T.mesange);
     let h = null;
     await L.attendre([adulte], { inactif: 5000, quandInactif: () => { h = halo(L.contenu, 32, -12, 44, 52); }, danger: TEXTES.rates.paon });
     if (h) h.remove();
@@ -1254,7 +1327,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     bip('vol');
     await voler(oiseau, -250, -200, 900, { hauteur: 20 });
     oiseau.remove();
-    dire(T.peur);
+    L.dire(T.peur);
     await dormir(2400);
   }
 
@@ -1272,7 +1345,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       s.innerHTML = M.silique(l);
       return { s, g, y: y + DY, a, l };
     });
-    dire(T.ponte);
+    L.dire(T.ponte);
     await dormir(1000);
     await animer(L.contenu.querySelector('.e4-coque'), [{ fill: '#f6f1d6' }, { fill: '#f28c28' }], { duree: 2000 });
     await dormir(800);
@@ -1282,7 +1355,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     const bebe = creerChenille(L.contenu, 'aurore', { x: 8, y: -112 + DY, k: 0.7 });
     bebe.corps.classList.add('e4-mange');
     disparaitre(L.contenu.querySelector('.e4-oeuf').parentNode, 1200);
-    await raconter(T.eclosion, 3600);
+    await L.raconter(T.eclosion, 3600);
     await disparaitre(bebe.g, 500);
 
     // Cache-cache : elle s'est allongée contre une silique.
@@ -1294,7 +1367,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       svgEl('path', { d: `M0 -12 V${-l - 6}`, stroke: 'transparent', 'stroke-width': 20, 'stroke-linecap': 'round' }, s);
       touchable(s, `Fruit n° ${i + 1}`, i === cache ? 'chenille-aurore' : `silique-${i}`);
     });
-    dire(T.cache);
+    L.dire(T.cache);
     L.etat = 'cherche-chenille';
     let rates = 0;
     const trahir = () => sc.s.classList.add('e4-gigote');
@@ -1315,19 +1388,19 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     bip('miam');
     L.etinc(tete.x, tete.y, 12, '#fff3a8', 100);
     L.bulle(tete.x, tete.y - 12, [TEXTES.coucou]);
-    dire(T.trouvee);
+    L.dire(T.trouvee);
     await dormir(2600);
     L.cacherBulle();
 
     // Chrysalide, puis l'hiver passe.
     await disparaitre(sc.s, 500);
     const chrys = chrysalideLoupe(L.contenu, 'aurore', 10, 40 + DY, 2.4, 14);
-    dire(T.hiver);
+    L.dire(T.hiver);
     await dormir(1000);
     await hiver(L, 2800);
     await eclore(chrys);
     papillonLoupe(L, 'aurore', 4, -6, 2.2);
-    dire(T.printemps);
+    L.dire(T.printemps);
     await dormir(3000);
   }
 
@@ -1340,14 +1413,14 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       <g class="e4-fenetres"></g>
       <g transform="translate(-34 104) rotate(-32) scale(1.6)"><g class="e4-oeufs e5-pop">${M.oeufsCuivre()}</g></g>`;
     for (const fe of L.contenu.querySelectorAll('.e4-plante-loupe ellipse')) fe.classList.add('e4-feuille-saison');
-    dire(T.ponte);
+    L.dire(T.ponte);
     await dormir(2200);
 
     // La petite chenille et ses « fenêtres ».
     bip('eclosion');
     disparaitre(L.contenu.querySelector('.e4-oeufs').parentNode, 400);
     const c = creerChenille(L.contenu, 'cuivre', { x: -14, y: 122, k: 0.55 });
-    dire(T.fenetres);
+    L.dire(T.fenetres);
     const fenetres = L.contenu.querySelector('.e4-fenetres');
     for (const [x, y] of [[-23, 113], [-35, 94], [-47, 75]]) {
       c.corps.classList.add('e4-rampe');
@@ -1364,7 +1437,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     await dormir(1300);
 
     // L'automne : elle s'endort au pied de la plante.
-    dire(T.automne);
+    L.dire(T.automne);
     L.contenu.classList.add('e4-automne');
     c.corps.classList.add('e4-rampe');
     await aller(c.g, 18, 146, 1300);
@@ -1402,13 +1475,13 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
         const b = svgEl('g', { transform: `translate(8 ${MARCHES[marche] - 26})` }, L.effets);
         b.innerHTML = [0, 1, 2].map((i) => `<circle class="e4-bulle-eau" style="animation-delay:${(i * 0.25).toFixed(2)}s" cx="${-4 + i * 5}" cy="0" r="${2 + i}" fill="none" stroke="#fff" stroke-width="1.4"/>`).join('');
         plusTard(1600, () => b.remove());
-        if (!ditNoyee) { ditNoyee = true; dire(T.noyee); }
+        if (!ditNoyee) { ditNoyee = true; L.dire(T.noyee); }
       }
       L.boucleEau = requestAnimationFrame(monter);
     };
     L.boucleEau = requestAnimationFrame(monter);
     bip('plouf');
-    dire(T.crue);
+    L.dire(T.crue);
     L.etat = 'crue';
     while (marche < MARCHES.length - 1) {
       let h = null;
@@ -1425,13 +1498,13 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     cancelAnimationFrame(L.boucleEau);
     bip('miam');
     L.etinc(8, MARCHES[marche] - 10, 12, '#fff3a8', 100);
-    await raconter(T.sauvee, 2600);
+    await L.raconter(T.sauvee, 2600);
 
     // La décrue, le printemps, la métamorphose.
     await animer(eauG, [{ transform: `translate(0px, ${niveau.toFixed(1)}px)` }, { transform: `translate(0px, ${LR + 40}px)` }], { duree: 1600, easing: 'ease-in' });
     eauG.remove();
     L.contenu.classList.remove('e4-automne');
-    dire(T.printemps);
+    L.dire(T.printemps);
     grandir(c, 1.05);
     c.corps.classList.add('e4-mange');
     bip('croque');
@@ -1442,7 +1515,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     await dormir(900);
     await eclore(chrys);
     papillonLoupe(L, 'cuivre', 10, -64, 2.1);
-    dire(T.adulte);
+    L.dire(T.adulte);
     await dormir(2600);
   }
 
@@ -1459,7 +1532,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       <g class="e4-plante-loupe" transform="translate(0 80) scale(1.9)">${M.plante('gentiane')}</g>
       <g class="e4-oeufs"></g>`;
     const oeufs = L.contenu.querySelector('.e4-oeufs');
-    dire(T.ponte);
+    L.dire(T.ponte);
     for (const [x, y] of [[-22, -64], [-26, -55], [25, -77], [5, -42]]) {
       svgEl('g', { transform: `translate(${x} ${y}) scale(1.3)` }, oeufs).innerHTML = `<g class="e5-pop">${M.oeufAzure()}</g>`;
       bip('poc');
@@ -1471,14 +1544,14 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     const c = creerChenille(L.contenu, 'azure', { x: -22, y: -116, k: 0.7 });
     apparaitre(c.g, 400);
     c.corps.classList.add('e4-mange');
-    dire(T.fleur);
+    L.dire(T.fleur);
     await dormir(2400);
     c.corps.classList.remove('e4-mange');
     bip('vol');
     await aller(c.g, -34, SOL + 6, 650, 'cubic-bezier(.5,0,1,.6)');
     bip('poc');
     grandir(c, 0.9);
-    dire(T.tombe);
+    L.dire(T.tombe);
 
     // Trois fourmis passent : laquelle l'adoptera ?
     const sortes = [
@@ -1505,7 +1578,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     let restantes = [...fourmis];
     let erreurs = 0;
     for (;;) {
-      const t = await L.attendre(restantes.map((f) => f.g), { inactif: 15000, quandInactif: () => dire(T.indiceFourmi) });
+      const t = await L.attendre(restantes.map((f) => f.g), { inactif: 15000, quandInactif: () => L.dire(T.indiceFourmi) });
       const choisie = restantes.find((f) => f.g === t.el);
       if (choisie.cle === 'myrmica') break;
       erreurs++;
@@ -1516,7 +1589,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       await aller(choisie.g, pres, choisie.a[1], 650);
       choisie.g.classList.remove('e4-marche-fourmi');
       bip('non');
-      dire(erreurs === 1 ? `${T.mauvaiseFourmi} ${T.indiceFourmi}` : T.mauvaiseFourmi);
+      L.dire(erreurs === 1 ? `${T.mauvaiseFourmi} ${T.indiceFourmi}` : T.mauvaiseFourmi);
       await dormir(700);
       choisie.sensG.setAttribute('transform', `scale(${(pres < positions.get(c.g).x ? -3 : 3)} 3)`);
       choisie.g.classList.add('e4-marche-fourmi');
@@ -1536,7 +1609,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     const ici = positions.get(c.g);
     await aller(myr.g, ici.x + 34, ici.y + 6, 900);
     myr.g.classList.remove('e4-marche-fourmi');
-    dire(T.adoptee);
+    L.dire(T.adoptee);
     await dormir(900);
     myr.sensG.setAttribute('transform', 'scale(3 3)');
     myr.g.classList.add('e4-marche-fourmi');
@@ -1556,7 +1629,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     svgEl('rect', { x: -30, y: -30, width: 60, height: 40, fill: 'transparent' }, larve.g);
     await animer(L.contenu, [{ opacity: 0 }, { opacity: 1 }], { duree: 400 });
     touchable(larve.g, 'La chenille de l’azuré', 'chenille-azure');
-    dire(T.reclame);
+    L.dire(T.reclame);
     L.etat = 'reclame';
     for (let i = 0; i < 4; i++) {
       let h = null;
@@ -1574,7 +1647,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       aller(n.g, n.x, n.y, 380);
     }
     L.etat = 'occupe';
-    dire(T.nourrie);
+    L.dire(T.nourrie);
     await dormir(2600);
 
     // Près d'un an plus tard : la chrysalide, puis le papillon sort du nid.
@@ -1587,7 +1660,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     svgEl('g', { class: 'e4-eclot e4-lent' }, pk).innerHTML = M.papillon('azure');
     placer(papillon, -36, 30);
     bip('eclosion');
-    dire(T.sortie);
+    L.dire(T.sortie);
     await dormir(900);
     await aller(papillon, 50, -16, 1100);
     await aller(papillon, 76, -92, 900);
@@ -1602,7 +1675,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     L.contenu.innerHTML = `
       <g class="e4-plante-loupe" transform="translate(0 140) scale(2.2)">${M.plante('carotte')}</g>
       <g transform="translate(24 12) scale(2)"><g class="e4-oeuf e5-pop">${M.oeufMachaon()}</g></g>`;
-    dire(T.ponte);
+    L.dire(T.ponte);
     await dormir(2400);
     bip('eclosion');
     await disparaitre(L.contenu.querySelector('.e4-oeuf').parentNode, 400);
@@ -1622,7 +1695,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       return { g, grand, corps, x, y };
     });
     for (const s of spots) apparaitre(s.g, 400);
-    dire(T.fiente);
+    L.dire(T.fiente);
     L.etat = 'fiente';
     let rates = 0;
     const trahir = () => spots[vraie].corps.classList.add('e4-rampe');
@@ -1644,14 +1717,14 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     spots.forEach((q, i) => { if (i !== vraie) disparaitre(q.g, 400); });
     bip('miam');
     L.bulle(s.x, s.y - 24, [TEXTES.coucou]);
-    dire(T.trouvee);
+    L.dire(T.trouvee);
     await dormir(1200);
     L.cacherBulle();
 
     // Elle mange, grandit, mue.
     L.etat = 'manger';
     for (let i = 1; i <= 4; i++) {
-      await L.attendre([s.g], { inactif: 6000, quandInactif: () => dire(T.trouvee) });
+      await L.attendre([s.g], { inactif: 6000, quandInactif: () => L.dire(T.trouvee) });
       bip('croque');
       s.corps.classList.add('e4-mange');
       L.etinc(s.x + 24, s.y - 6, 6, '#7fbf5a', 80);
@@ -1665,7 +1738,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     L.etinc(s.x, s.y - 8, 14, '#ffffff', 90);
     s.corps.innerHTML = M.chenille('machaon');
     s.grand.style.transform = 'scale(1.15)';
-    dire(T.mue);
+    L.dire(T.mue);
     await dormir(1200);
     s.corps.classList.add('e4-rampe');
     await aller(s.g, 14, 48, 1000);
@@ -1685,7 +1758,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       await aller(fourmi, ...f.a, 1700, 'ease-out');
       fourmi.classList.remove('e4-marche-fourmi');
       L.etat = 'cornes';
-      dire(v === 0 ? T.fourmi : T.encore);
+      L.dire(v === 0 ? T.fourmi : T.encore);
       let h = null;
       await L.attendre([s.g], { inactif: 5000, quandInactif: () => { h = halo(L.contenu, s.x + 20, s.y - 10, 46, 26); }, danger: TEXTES.rates.machaon });
       if (h) h.remove();
@@ -1700,7 +1773,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       fourmi.remove();
       s.corps.classList.remove('e4-fache');
       if (v === 0) {
-        dire(T.cornes);
+        L.dire(T.cornes);
         await dormir(3000);
       }
     }
@@ -1708,7 +1781,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     // La chrysalide.
     const chrys = chrysalideLoupe(L.contenu, 'machaon', 12, 56, 2.4, 8);
     await disparaitre(s.g, 450);
-    dire(T.chrysalide);
+    L.dire(T.chrysalide);
     await dormir(2200);
     relancer(chrys.tremble, 'e4-tremble');
     bip('clic', 0.2);
@@ -1904,13 +1977,8 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       animer(zoom, [{ transform: 'scale(2.3)' }, { transform: 'scale(.7)' }], { duree: 1900, easing: 'ease-in' }),
       ...envols,
     ]);
-    // La petite course jusqu'au café, puis l'écran passe aux couleurs du café.
+    // Ensuite : la petite course jusqu'au café (l'étape 5).
     etat = 'course';
-    await course(racine, { son, fx, V, calme, debug });
-    const voile = document.createElement('div');
-    voile.className = 'e4-voile';
-    racine.append(voile);
-    await animer(voile, [{ opacity: 0 }, { opacity: 1 }], { duree: 700, easing: 'ease-in' });
     suivante();
   }
 

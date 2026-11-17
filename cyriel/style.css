@@ -2053,3 +2053,6 @@ button.e5-case:disabled { opacity: .38; cursor: default; box-shadow: none; }
 }
 .e4-boutons.e4-reponses button.e4-juste { background: #3f9e5a; border-color: #2a7a42; color: #fff; }
 @keyframes e4-faux { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+
+/* Les bulles de parole des loupes et des femelles */
+.e4-parole { pointer-events: none; transition: opacity .3s; }

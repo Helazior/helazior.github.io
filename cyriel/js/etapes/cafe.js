@@ -21,7 +21,7 @@
 // Tous les textes sont regroupés juste en dessous. Le mot et le cadeau
 // sont à écrire par Clément : TEXTES.lettre et TEXTES.cadeau.
 //
-// Pour les essais :  ?etape=5&debug=vite  (tout va 4 fois plus vite).
+// Pour les essais :  ?etape=6&debug=vite  (tout va 4 fois plus vite).
 
 import { CODE } from '../code.js';
 import * as D from './cafe-dessins.js';
