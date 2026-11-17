@@ -419,14 +419,14 @@ const SEGMENTS_ROUE = [
 // couleur : son store et le haut de sa vitrine, fonce : son enseigne.
 const ETALS = [
   { cle: 'primeur', nom: 'Primeur', couleur: '#e8553a', fonce: '#b33a20', articles: ['tomates', 'oignon', 'salade', 'rhubarbe', 'poivron', 'aubergine', 'coriandre', 'gingembre'] },
-  { cle: 'epicerie', nom: 'Épicerie', couleur: '#8f5cf7', fonce: '#6a3fd0', articles: ['farine', 'sucre', 'chocolat', 'marron', 'persil', 'basilic', 'piment', 'balsamique'] },
+  { cle: 'epicerie', nom: 'Épicerie', couleur: '#8f5cf7', fonce: '#6a3fd0', articles: ['farine', 'sucre', 'chocolat', 'marron', 'vanille', 'persil', 'basilic', 'piment', 'balsamique'] },
   { cle: 'cremerie', nom: 'Crèmerie', couleur: '#3ea6c9', fonce: '#1f7896', articles: ['lait', 'oeufs', 'beurre', 'creme'] },
   { cle: 'cave', nom: 'Cave et marée', couleur: '#e39b2d', fonce: '#a8641a', articles: ['vin', 'champagne', 'huitres'] },
 ];
 
 const PRIX = {
   rhubarbe: 3, farine: 1, sucre: 1, marron: 4, chocolat: 3, oeufs: 2, lait: 1, beurre: 2,
-  tomates: 2, oignon: 1, salade: 2, creme: 2, persil: 1, basilic: 1, piment: 1,
+  tomates: 2, oignon: 1, salade: 2, creme: 2, vanille: 3, persil: 1, basilic: 1, piment: 1,
   poivron: 2, aubergine: 2, gingembre: 2, coriandre: 1, balsamique: 4, vin: 5, champagne: 9, huitres: 6,
 };
 
