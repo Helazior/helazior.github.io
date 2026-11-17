@@ -31,6 +31,9 @@ const GOBE = 26;             // distance à laquelle un moustique est gobé
 
 const PORTEE_LUEUR = 300;    // jusqu'où porte la lumière de la sortie
 const CASE_VU = 16;          // maille de la grille « déjà révélé »
+const NOIR_APRES = 5;        // secondes de lumière après le passage d'une onde…
+const NOIR_DUREE = 6;        // …puis l'obscurité revient petit à petit
+const NOIR_MAX = 0.9;        // un souvenir très faible de la roche reste
 
 const VIOLET = '#8f5cf7';
 const calme = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -203,10 +206,38 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
     const vuCols = Math.ceil(MONDE.l / CASE_VU);
     const vuRangs = Math.ceil(MONDE.h / CASE_VU);
     const vu = new Uint8Array(vuCols * vuRangs);
+    const eclaire = new Float32Array(vuCols * vuRangs).fill(-1e9);   // dernier passage d'une onde
     const marquer = (x, y) => {
       const i = (x / CASE_VU) | 0;
       const j = (y / CASE_VU) | 0;
-      if (i >= 0 && j >= 0 && i < vuCols && j < vuRangs) vu[j * vuCols + i] = 1;
+      if (i >= 0 && j >= 0 && i < vuCols && j < vuRangs) { vu[j * vuCols + i] = 1; eclaire[j * vuCols + i] = temps; }
+    };
+    // la roche éclairée un peu au-delà de ce qui compte comme « vu »
+    const eclairer = (x, y) => {
+      const i = (x / CASE_VU) | 0;
+      const j = (y / CASE_VU) | 0;
+      if (i >= 0 && j >= 0 && i < vuCols && j < vuRangs) eclaire[j * vuCols + i] = temps;
+    };
+    // Le voile qui ramène l'obscurité : une case par maille, agrandie et
+    // adoucie au dessin.
+    const nuit = toile(vuCols, vuRangs);
+    const nc = nuit.getContext('2d');
+    const nuitImg = nc.createImageData(vuCols, vuRangs);
+    function majNuit() {
+      const d = nuitImg.data;
+      for (let n = 0; n < vu.length; n++) {
+        const a = Math.min(1, Math.max(0, (temps - eclaire[n] - NOIR_APRES) / NOIR_DUREE));
+        d[n * 4 + 3] = Math.round(255 * NOIR_MAX * a * a * (3 - 2 * a));
+      }
+      nc.putImageData(nuitImg, 0, 0);
+    }
+    // 1 en pleine lumière, presque 0 une fois l'obscurité revenue.
+    const lumiere = (x, y) => {
+      const i = (x / CASE_VU) | 0;
+      const j = (y / CASE_VU) | 0;
+      if (!(i >= 0 && j >= 0 && i < vuCols && j < vuRangs) || !vu[j * vuCols + i]) return 0;
+      const a = Math.min(1, Math.max(0, (temps - eclaire[j * vuCols + i] - NOIR_APRES) / NOIR_DUREE));
+      return 1 - a;
     };
     const estVu = (x, y) => {
       const i = (x / CASE_VU) | 0;
@@ -323,6 +354,8 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
         }
         const fin = Math.min(o.r, d + 6, limiteVu);
         for (let p = Math.max(0, o.rAvant - CASE_VU); p <= fin; p += 8) marquer(o.x + ca * p, o.y + sa * p);
+        const finRoche = Math.min(o.r, d + PENETRATION + CASE_VU);
+        for (let p = Math.max(fin, o.rAvant - CASE_VU); p <= finRoche; p += 8) eclairer(o.x + ca * p, o.y + sa * p);
       }
     }
 
@@ -427,6 +460,7 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
       r.drawImage(monde, 0, 0);
       r.globalCompositeOperation = 'lighten';
       vu.fill(1);
+      eclaire.fill(Infinity);
     }
 
     /* --------------------------------------------------------- Caméra */
@@ -563,6 +597,13 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
       // à partir d'ici, on dessine en coordonnées du monde
       c.setTransform(k, 0, 0, k, -cam.x * k, -cam.y * k);
 
+      // l'obscurité revient sur ce qu'aucune onde n'a éclairé depuis un moment
+      if (debug !== 'carte') {
+        majNuit();
+        c.imageSmoothingEnabled = true;
+        c.drawImage(nuit, 0, 0, vuCols * CASE_VU, vuRangs * CASE_VU);
+      }
+
       // les deux spéléos, une fois découverts : ils se balancent, respirent,
       // et leurs frontales tremblotent un peu dans le noir
       if (estVu(SPELEO.x, SPELEO.y - 30) || debug === 'carte') {
@@ -646,7 +687,9 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
 
       // moustiques (seulement là où la grotte a été révélée)
       for (const m of moustiques) {
-        if (!m.vivant || !estVu(m.x, m.y)) continue;
+        const lm = debug === 'carte' ? 1 : lumiere(m.x, m.y);
+        if (!m.vivant || lm <= 0.02) continue;
+        c.globalAlpha = Math.min(1, 0.15 + lm);
         const mx = m.x + Math.cos(temps * 2.3 + m.phase) * 9;
         const my = m.y + Math.sin(temps * 3.1 + m.phase * 1.3) * 6;
         const aile = 3.6 + Math.sin(temps * 60 + m.phase) * 1.2;
@@ -660,6 +703,7 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
         c.ellipse(mx, my, 1.5, 3.2, 0.25, 0, TAU);
         c.fill();
       }
+      c.globalAlpha = 1;
 
       // étincelles
       for (const p of etincelles) {
