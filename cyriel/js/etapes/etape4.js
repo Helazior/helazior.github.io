@@ -29,7 +29,8 @@ import * as M from './marais-dessins.js';
 // Le jeu : réglé pour rester facile (durées en millisecondes).
 const REGLES = {
   vies: 5,
-  arrivees: 7000,            // une nouvelle femelle toutes les 7 secondes
+  arrivees: 3500,            // une nouvelle femelle toutes les 3,5 secondes
+  entreLoupes: 3000,         // une fois toutes placées, les loupes s'ouvrent une à une
   patience: 30000,           // avant qu'une mésange fonde sur une femelle qui attend
   dangerLoupe: 14000,        // pour réagir à un danger dans une loupe (mésange, crue, fourmis)
 }
@@ -45,6 +46,7 @@ const TEXTES = {
   choisisDabord: 'Touche d’abord une femelle.',
   occupeCourt: 'Déjà un œuf orange sur la cardamine : les jeunes chenilles d’aurore se mangent entre elles ! Essaie l’autre plante à fleurs blanches.',
   pasCelleLa: 'Pas celle-là : il lui faut une Myrmica, la fourmi rousse !',
+  loupes: 'Toutes ont pondu ! Maintenant, occupe-toi des petits : touche une loupe pour l’agrandir.',
   gagne: 'Les cinq papillons sont nés ! Bravo, naturaliste !',
   rates: {
     paon: 'Trop tard : la mésange a bousculé le paon !',
@@ -869,7 +871,8 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       f.g.classList.add('e4-vite');
       voler(f.g, 470, 30, 1200, { hauteur: 40, ondule: 8 }).then(() => f.g.remove());
       femelles.splice(femelles.indexOf(f), 1);
-      vieALaLoupe(f.e, p);
+      pontes.push({ e: f.e, p });
+      signaler();
       return;
     }
     relancer(p.el, 'e4-secoue-plante');
@@ -1816,6 +1819,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
 
   // Le jeu du marais : les arrivées, l'horloge des patiences et des dangers.
   const signaux = [];
+  const pontes = [];
   const signaler = () => signaux.splice(0).forEach((r) => r());
 
   let horloge = 0;
@@ -1859,6 +1863,18 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       femelles.push(f);
       arriver(f, PLACES_ATTENTE[i]);
       if (i < ESPECES.length - 1) await vraiment(REGLES.arrivees);
+    }
+    // 1re partie : placer toutes les femelles. 2e partie : les loupes.
+    while (enJeu && pontes.length < ESPECES.length) await new Promise((r) => signaux.push(r));
+    if (!enJeu) return null;
+    etat = 'loupes';
+    fermerQuestion();
+    dire(TEXTES.loupes);
+    await vraiment(1500);
+    for (const { e, p } of pontes) {
+      if (!enJeu) return null;
+      vieALaLoupe(e, p);
+      await vraiment(REGLES.entreLoupes);
     }
     while (enJeu && finis < ESPECES.length) await new Promise((r) => signaux.push(r));
     if (!enJeu) return null;
@@ -2013,6 +2029,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       get pages() { return pages.length; },
       get vies() { return vies; },
       get attente() { return femelles.filter((f) => f.attente).map((f) => f.e.cle); },
+      get pontes() { return pontes.length; },
       get dangers() { return comptes.map((c) => c.cle); },
       get loupes() { return loupes.map((L) => ({ cle: L.e.cle, etat: L.etat, grande: L.grande, attend: L.attentes > 0 })); },
       get question() { return question && question.f.e.cle; },
