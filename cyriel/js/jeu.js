@@ -28,9 +28,28 @@ const ETAPES = [
 ];   // étape n° = position + 1
 
 const CLE_ETAPE = 'cyriel.etape';
+const CLE_MAX = 'cyriel.etape-max';   // l'étape la plus loin déjà atteinte sur cet appareil
+
+// Le code secret (?cle=…) : sans lui, l'adresse ne permet ni de sauter à une
+// étape pas encore atteinte, ni d'activer les aides d'essai (?debug). Seule
+// son empreinte est gardée ici. Pour le changer : outils/cle.mjs.
+const EMPREINTE_CLE = 1546458228;
+function empreinte(texte) {
+  let x = 2166136261;
+  for (const o of new TextEncoder().encode(texte)) x = Math.imul(x ^ o, 16777619) >>> 0;
+  return x;
+}
 const scene = document.getElementById('scene');
 const theme = document.querySelector('meta[name="theme-color"]');
 const params = new URLSearchParams(location.search);
+const enLocal = ['localhost', '127.0.0.1'].includes(location.hostname);
+const cleBonne = enLocal || empreinte((params.get('cle') || '').trim().toLowerCase()) === EMPREINTE_CLE;
+
+function etapeMax() {
+  try {
+    return Math.max(1, parseInt(localStorage.getItem(CLE_MAX), 10) || 0, parseInt(localStorage.getItem(CLE_ETAPE), 10) || 0);
+  } catch { return 1; }
+}
 
 /** Petite mémoire qui survit à la fermeture de la page (sur un même appareil). */
 const memoire = {
@@ -67,9 +86,13 @@ function aller(n) {
   const etape = ETAPES[n - 1];
   fond(etape.fond);
   son.ambiance(etape.ambiance || null);
-  try { localStorage.setItem(CLE_ETAPE, String(n)); } catch { /* navigation privée */ }
+  try {
+    const max = etapeMax();
+    localStorage.setItem(CLE_ETAPE, String(n));
+    localStorage.setItem(CLE_MAX, String(Math.max(max, n)));
+  } catch { /* navigation privée */ }
 
-  // L'adresse suit la progression : ?etape=4 permet de reprendre ailleurs.
+  // L'adresse suit la progression (pour reprendre ailleurs, il faut le code).
   const p = new URLSearchParams(location.search);
   if (n > 1) p.set('etape', String(n)); else p.delete('etape');
   const suite = p.toString();
@@ -77,7 +100,7 @@ function aller(n) {
 
   nettoyer = etape.demarrer({
     scene, son, fx, memoire, fond,
-    debug: params.get('debug'),   // null, '' ou 'carte'
+    debug: cleBonne ? params.get('debug') : null,   // null, '', 'carte' ou 'vite'
     suivante: () => aller(numero + 1),
     derniere: n === ETAPES.length,
     numero: n,
@@ -117,7 +140,9 @@ for (const geste of ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown']
 
 let depart = 1;
 if (params.has('etape')) {
-  depart = parseInt(params.get('etape'), 10);
+  depart = borner(parseInt(params.get('etape'), 10));
+  // Sans le code, on ne va pas plus loin que l'étape déjà atteinte.
+  if (!cleBonne) depart = Math.min(depart, etapeMax());
 } else {
   try { depart = parseInt(localStorage.getItem(CLE_ETAPE), 10) || 1; } catch { depart = 1; }
 }
