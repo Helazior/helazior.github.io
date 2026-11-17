@@ -222,137 +222,52 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
     r.fillStyle = '#000';
     r.fillRect(0, 0, revele.width, revele.height);
     r.globalCompositeOperation = 'lighten';
-    // Ce qu'on affiche : la même image, où les mailles retombées dans le noir
-    // sont déjà assombries (« figées »), pour ne plus avoir à les voiler à
-    // chaque image.
-    const affiche = toile(monde.width, monde.height);
-    const ra = affiche.getContext('2d');
-    ra.fillStyle = '#000';
-    ra.fillRect(0, 0, affiche.width, affiche.height);
-    ra.globalCompositeOperation = 'lighten';
     const vuCols = Math.ceil(MONDE.l / CASE_VU);
     const vuRangs = Math.ceil(MONDE.h / CASE_VU);
     const vu = new Uint8Array(vuCols * vuRangs);
     const eclaire = new Float32Array(vuCols * vuRangs).fill(-1e9);   // dernier passage d'une onde
-    const figee = new Uint8Array(vuCols * vuRangs);        // maille déjà assombrie dans « affiche »
-    const sombre = new Float32Array(vuCols * vuRangs).fill(1);   // 0 en lumière … 1 dans le noir
-    const ALPHA_NOIR = Math.round(255 * NOIR_MAX);
-    const bordCase = (i) => Math.round(i * CASE_VU * q);
-    // Une onde éclaire la maille (i, j) : elle et ses voisines, si elles
-    // étaient figées dans le noir, retrouvent l'image d'origine.
-    function allumer(i, j) {
-      const n = j * vuCols + i;
-      if (temps - eclaire[n] > NOIR_APRES) {
-        for (let jj = Math.max(0, j - 1); jj <= Math.min(vuRangs - 1, j + 1); jj++) {
-          for (let ii = Math.max(0, i - 1); ii <= Math.min(vuCols - 1, i + 1); ii++) {
-            const m = jj * vuCols + ii;
-            if (!figee[m]) continue;
-            figee[m] = 0;
-            const x = bordCase(ii);
-            const y = bordCase(jj);
-            const l = bordCase(ii + 1) - x;
-            const h = bordCase(jj + 1) - y;
-            ra.globalCompositeOperation = 'source-over';
-            ra.drawImage(revele, x, y, l, h, x, y, l, h);
-            ra.globalCompositeOperation = 'lighten';
-          }
-        }
-      }
-      eclaire[n] = temps;
-      sombre[n] = 0;
-    }
     const marquer = (x, y) => {
       const i = (x / CASE_VU) | 0;
       const j = (y / CASE_VU) | 0;
-      if (i >= 0 && j >= 0 && i < vuCols && j < vuRangs) { vu[j * vuCols + i] = 1; allumer(i, j); }
+      if (i >= 0 && j >= 0 && i < vuCols && j < vuRangs) { vu[j * vuCols + i] = 1; eclaire[j * vuCols + i] = temps; }
     };
     // la roche éclairée un peu au-delà de ce qui compte comme « vu »
     const eclairer = (x, y) => {
       const i = (x / CASE_VU) | 0;
       const j = (y / CASE_VU) | 0;
-      if (i >= 0 && j >= 0 && i < vuCols && j < vuRangs) allumer(i, j);
+      if (i >= 0 && j >= 0 && i < vuCols && j < vuRangs) eclaire[j * vuCols + i] = temps;
     };
-    // Le voile qui ramène l'obscurité : une case par maille, agrandie et
-    // adoucie au dessin. On ne le dessine que là où il change encore ; une
-    // maille entièrement retombée dans le noir (elle et ses voisines) est
-    // assombrie une fois pour toutes dans « affiche ».
-    const nuit = toile(vuCols, vuRangs);
-    const nc = nuit.getContext('2d');
-    const nuitImg = nc.createImageData(vuCols, vuRangs);
-    nuitImg.data.fill(0);
-    for (let n = 0; n < vu.length; n++) nuitImg.data[n * 4 + 3] = ALPHA_NOIR;
-    nc.putImageData(nuitImg, 0, 0);
-    let voile = null;          // zone à voiler à cette image (ou null)
-    const noirAutour = (i, j) => {
-      for (let jj = j - 1; jj <= j + 1; jj++) {
-        for (let ii = i - 1; ii <= i + 1; ii++) {
-          if (ii < 0 || jj < 0 || ii >= vuCols || jj >= vuRangs) continue;
-          if (sombre[jj * vuCols + ii] < 1) return false;
-        }
-      }
-      return true;
-    };
-    const lumiereAutour = (i, j) => {
-      for (let jj = j - 1; jj <= j + 1; jj++) {
-        for (let ii = i - 1; ii <= i + 1; ii++) {
-          if (ii < 0 || jj < 0 || ii >= vuCols || jj >= vuRangs) continue;
-          if (sombre[jj * vuCols + ii] > 0) return false;
-        }
-      }
-      return true;
-    };
-    function majNuit() {
-      const d = nuitImg.data;
-      let change = false;
-      for (let n = 0; n < vu.length; n++) {
-        if (figee[n]) continue;
-        const a = Math.min(1, Math.max(0, (temps - eclaire[n] - NOIR_APRES) / NOIR_DUREE));
-        sombre[n] = a;
-        const v = Math.round(255 * NOIR_MAX * a * a * (3 - 2 * a));
-        if (d[n * 4 + 3] !== v) { d[n * 4 + 3] = v; change = true; }
-      }
-      if (change) nc.putImageData(nuitImg, 0, 0);
-      // fige ce qui est tout à fait noir ; repère ce qui reste à voiler
-      const chemin = new Path2D();
-      const marge = 1 / q;
-      let aVoiler = false;
-      let aFiger = false;
-      ra.globalCompositeOperation = 'source-over';
-      ra.fillStyle = `rgba(0, 0, 0, ${ALPHA_NOIR / 255})`;
-      ra.beginPath();
-      for (let j = 0; j < vuRangs; j++) {
-        let debut = -1;
-        for (let i = 0; i <= vuCols; i++) {
-          const n = j * vuCols + i;
-          let actif = false;
-          if (i < vuCols && !figee[n]) {
-            if (noirAutour(i, j)) {
-              figee[n] = 1;
-              aFiger = true;
-              const x = bordCase(i);
-              const y = bordCase(j);
-              ra.rect(x, y, bordCase(i + 1) - x, bordCase(j + 1) - y);
-            } else actif = !lumiereAutour(i, j);
-          }
-          if (actif && debut < 0) debut = i;
-          if (!actif && debut >= 0) {
-            chemin.rect(debut * CASE_VU - marge, j * CASE_VU - marge, (i - debut) * CASE_VU + 2 * marge, CASE_VU + 2 * marge);
-            aVoiler = true;
-            debut = -1;
-          }
-        }
-      }
-      if (aFiger) ra.fill();
-      ra.globalCompositeOperation = 'lighten';
-      voile = aVoiler ? chemin : null;
+
+    // L'obscurité qui revient : toute la grotte révélée s'assombrit ensemble,
+    // quelques secondes après la dernière onde (on dessine simplement l'image
+    // moins opaque sur le fond noir : ça ne coûte rien). Quand une nouvelle
+    // onde part, l'assombrissement atteint est inscrit une fois dans l'image ;
+    // la nouvelle onde, elle, éclaire en pleine lumière.
+    function obscurite() {
+      if (debug === 'carte') return 0;
+      const a = Math.min(1, Math.max(0, (temps - derniereOnde - NOIR_APRES) / NOIR_DUREE));
+      return NOIR_MAX * a * a * (3 - 2 * a);
+    }
+    const dernierNoir = { t: -1e9, n: 0 };
+    function inscrireObscurite() {
+      const n = obscurite();
+      if (n < 0.004) return;
+      dernierNoir.t = temps;
+      dernierNoir.n = n;
+      r.save();
+      r.globalCompositeOperation = 'source-over';
+      r.fillStyle = `rgba(0, 0, 0, ${n.toFixed(3)})`;
+      r.fillRect(0, 0, revele.width, revele.height);
+      r.restore();
     }
     // 1 en pleine lumière, presque 0 une fois l'obscurité revenue.
     const lumiere = (x, y) => {
       const i = (x / CASE_VU) | 0;
       const j = (y / CASE_VU) | 0;
       if (!(i >= 0 && j >= 0 && i < vuCols && j < vuRangs) || !vu[j * vuCols + i]) return 0;
-      const a = Math.min(1, Math.max(0, (temps - eclaire[j * vuCols + i] - NOIR_APRES) / NOIR_DUREE));
-      return 1 - a;
+      // pas rééclairée depuis le dernier assombrissement inscrit : déjà plus sombre
+      const deja = eclaire[j * vuCols + i] < dernierNoir.t ? 1 - dernierNoir.n : 1;
+      return deja * (1 - obscurite());
     };
     const estVu = (x, y) => {
       const i = (x / CASE_VU) | 0;
@@ -591,6 +506,7 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
 
     function emettre() {
       if (temps - derniereOnde < PAUSE_ONDE || victoire >= 0) return;
+      inscrireObscurite();
       derniereOnde = temps;
       nbOndes++;
       const vis = visibilite(bat.x, bat.y, PORTEE);
@@ -612,13 +528,6 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
       r.clip('evenodd');
       r.drawImage(o.img.t, o.img.x0, o.img.y0);
       r.restore();
-      ra.save();
-      ra.beginPath();
-      ra.arc(o.x * q, o.y * q, o.r * q, 0, TAU);
-      ra.arc(o.x * q, o.y * q, Math.max(0, o.rAvant - 3) * q, 0, TAU, true);
-      ra.clip('evenodd');
-      ra.drawImage(o.img.t, o.img.x0, o.img.y0);
-      ra.restore();
 
       const limiteVu = PORTEE * 0.86;
       for (let i = 0; i < RAYONS; i++) {
@@ -737,8 +646,6 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
       r.globalCompositeOperation = 'source-over';
       r.drawImage(monde, 0, 0);
       r.globalCompositeOperation = 'lighten';
-      ra.globalCompositeOperation = 'source-over';
-      ra.drawImage(monde, 0, 0);
       vu.fill(1);
       eclaire.fill(Infinity);
     }
@@ -872,24 +779,14 @@ function demarrer({ scene, son, fond, memoire, suivante, debug }) {
       const x1 = Math.min(MONDE.l, cam.x + vl / z);
       const y1 = Math.min(MONDE.h, cam.y + vh / z);
       if (x1 > x0 && y1 > y0) {
-        c.drawImage(affiche, x0 * q, y0 * q, (x1 - x0) * q, (y1 - y0) * q,
+        c.globalAlpha = 1 - obscurite();
+        c.drawImage(revele, x0 * q, y0 * q, (x1 - x0) * q, (y1 - y0) * q,
           (x0 - cam.x) * k, (y0 - cam.y) * k, (x1 - x0) * k, (y1 - y0) * k);
+        c.globalAlpha = 1;
       }
 
       // à partir d'ici, on dessine en coordonnées du monde
       c.setTransform(k, 0, 0, k, -cam.x * k, -cam.y * k);
-
-      // l'obscurité revient sur ce qu'aucune onde n'a éclairé depuis un moment
-      if (debug !== 'carte') {
-        majNuit();
-        if (voile) {
-          c.save();
-          c.clip(voile);
-          c.imageSmoothingEnabled = true;
-          c.drawImage(nuit, 0, 0, vuCols * CASE_VU, vuRangs * CASE_VU);
-          c.restore();
-        }
-      }
 
       // les deux spéléos, une fois découverts : ils se balancent, respirent,
       // et leurs frontales tremblotent un peu dans le noir
