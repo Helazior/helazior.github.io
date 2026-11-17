@@ -2033,3 +2033,23 @@ button.e5-case:disabled { opacity: .38; cursor: default; box-shadow: none; }
 @media (prefers-reduced-motion: reduce) {
   .e4-mini-alerte .e4-mini-pop, .e4-mini-crue, .e4-secousse { animation: none; }
 }
+
+/* « Quel est ce papillon ? » : trois noms à toucher */
+.e4-boutons.e4-reponses { flex-wrap: wrap; justify-content: flex-start; gap: 6px; }
+.e4-boutons.e4-reponses button {
+  padding: 8px 13px 9px;
+  border-color: var(--violet);
+  background: #fff;
+  color: var(--violet-fonce);
+  box-shadow: 0 3px 0 var(--violet);
+}
+.e4-boutons.e4-reponses button.e4-faux {
+  border-color: #d9d2e0;
+  background: #f3eff6;
+  color: #a79bb3;
+  box-shadow: none;
+  text-decoration: line-through;
+  animation: e4-faux .3s;
+}
+.e4-boutons.e4-reponses button.e4-juste { background: #3f9e5a; border-color: #2a7a42; color: #fff; }
+@keyframes e4-faux { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }

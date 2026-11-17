@@ -39,11 +39,13 @@ const REGLES = {
 };
 
 const TEXTES = {
-  intro: 'Cinq femelles arrivent coup sur coup, et tout se passe en même temps : pendant que tu places les unes sur leur plante, les œufs des autres éclosent dans les loupes en haut. Quand une loupe clignote en rouge, touche-la ! Tu as 5 vies.',
+  intro: 'Place les papillons (femelles) sur les bonnes plantes pour les reproduire. Il va falloir s’occuper de les faire éclore et que tout le monde survive.',
+  question: 'Quel est ce papillon ?',
+  faux: 'Non, essaie une autre réponse !',
   demarrer: 'C’est parti !',
   consigne: 'Touche une femelle, puis sa plante. Vite, les mésanges rôdent !',
-  choisie: (nom) => `${nom} : sur quelle plante ?`,
-  troplongue: (nom) => `Une mésange a fondu sur la femelle ${nom.toLowerCase()} ! Ne la fais pas trop attendre.`,
+  choisie: (nom) => `${nom} ! Touche sa plante.`,
+  troplongue: 'Une mésange a fondu sur une femelle qui attendait ! Ne les fais pas trop attendre.',
   choisisDabord: 'Touche d’abord une femelle.',
   occupeCourt: 'Déjà un œuf orange sur la cardamine : les jeunes chenilles d’aurore se mangent entre elles ! Essaie l’autre plante à fleurs blanches.',
   pasCelleLa: 'Pas celle-là : il lui faut une Myrmica, la fourmi rousse !',
@@ -457,7 +459,10 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
 
   const texte = $('.e4-texte');
   const zoneBoutons = $('.e4-boutons');
+  let question = null;             // la question « Quel est ce papillon ? » en cours
+  let ditPendantQuestion = null;
   function dire(t) {
+    if (question) { ditPendantQuestion = t; return; }
     if (texte.textContent === t) return;
     texte.textContent = t;
     animer($('.e4-panneau'), [{ transform: 'translateY(3px)', opacity: 0.55 }, { transform: 'none', opacity: 1 }], { duree: 240, garder: false });
@@ -726,6 +731,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
   }
 
   function perdu() {
+    fermerQuestion();
     enJeu = false;
     etat = 'perdu';
     const fond = document.createElement('div');
@@ -741,23 +747,79 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
   /* ---- Les femelles qui attendent */
 
   function creerFemelle(e) {
-    const g = svgEl('g', { class: 'e4-papillon e4-vite e4-femelle', 'data-e4': `femelle-${e.cle}`, role: 'button', tabindex: 0, 'aria-label': `Femelle ${e.nom.toLowerCase()} : touche-la, puis sa plante` }, calques.papillons);
+    const g = svgEl('g', { class: 'e4-papillon e4-vite e4-femelle', 'data-e4': `femelle-${e.cle}`, role: 'button', tabindex: 0, 'aria-label': 'Femelle papillon : touche-la pour dire qui elle est' }, calques.papillons);
     svgEl('circle', { r: 30, fill: 'transparent' }, g);
     const anneau = svgEl('circle', { class: 'e4-patience', r: 27, fill: 'none', stroke: '#8f5cf7', 'stroke-width': 3.5, 'stroke-linecap': 'round', transform: 'rotate(-90)', 'stroke-dasharray': `${(2 * Math.PI * 27).toFixed(1)} 999` }, g);
     const zoom = svgEl('g', { class: 'e4-zoom' }, g);
     const taille = svgEl('g', { transform: 'scale(.78)' }, zoom);
     svgEl('g', { class: 'e4-tambour' }, taille).innerHTML = M.papillon(e.cle, { femelle: true });
     placer(g, 430, 150);
-    const f = { e, g, anneau, place: null, attente: false, patience: REGLES.patience, erreurs: 0 };
+    const f = { e, g, anneau, place: null, attente: false, patience: REGLES.patience, erreurs: 0, nommee: false };
     const choisir = (ev) => {
       if (ev.type === 'keydown' && ev.key !== 'Enter' && ev.key !== ' ') return;
       ev.preventDefault();
       if (!enJeu || !f.attente) return;
-      selectionner(f);
+      if (f.nommee) selectionner(f); else poserQuestion(f);
     };
     g.addEventListener('pointerdown', choisir);
     g.addEventListener('keydown', choisir);
     return f;
+  }
+
+  // « Quel est ce papillon ? » : trois noms à toucher dans le panneau. Une
+  // mauvaise réponse se grise (on en touche vite une autre) ; la bonne nomme
+  // la femelle, l'étiquette reste sous elle, et elle est prête à pondre.
+  function poserQuestion(f) {
+    fermerQuestion();
+    selectionner(null);
+    f.g.classList.add('e4-choisie');
+    question = { f };
+    const autres = ESPECES.filter((x) => x !== f.e).sort(() => Math.random() - 0.5).slice(0, 2);
+    const choix = [f.e, ...autres].sort(() => Math.random() - 0.5);
+    texte.textContent = TEXTES.question;
+    zoneBoutons.classList.add('e4-reponses');
+    zoneBoutons.innerHTML = '';
+    bip('clic', 0.6);
+    for (const x of choix) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = x.nom;
+      b.dataset.e4 = `nom-${x.cle}`;
+      b.addEventListener('click', () => {
+        if (question?.f !== f) return;
+        if (x !== f.e) {
+          bip('non');
+          b.disabled = true;
+          b.classList.add('e4-faux');
+          texte.textContent = TEXTES.faux;
+          return;
+        }
+        b.classList.add('e4-juste');
+        bip('chiffre');
+        nommer(f);
+        fermerQuestion();
+        if (f.attente) selectionner(f);
+      });
+      zoneBoutons.append(b);
+    }
+  }
+  function fermerQuestion() {
+    if (!question) return;
+    if (selection !== question.f) question.f.g.classList.remove('e4-choisie');
+    question = null;
+    zoneBoutons.innerHTML = '';
+    zoneBoutons.classList.remove('e4-reponses');
+    if (ditPendantQuestion) { texte.textContent = ditPendantQuestion; ditPendantQuestion = null; }
+  }
+  function nommer(f) {
+    f.nommee = true;
+    f.g.setAttribute('aria-label', `${f.e.nom} : touche-la, puis sa plante`);
+    const etiq = svgEl('g', { class: 'e5-pop', transform: 'translate(0 36)', 'pointer-events': 'none' }, f.g);
+    etiq.innerHTML = M.etiquette([f.e.court]);
+  }
+  // Une femelle vient d'arriver : si rien n'est en cours, on demande son nom.
+  function proposerQuestion(f) {
+    if (enJeu && !question && !selection && f.attente && !f.nommee) poserQuestion(f);
   }
 
   function selectionner(f) {
@@ -776,6 +838,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     await voler(f.g, place.x, place.y, 900, { hauteur: 30, ondule: 6 });
     f.g.classList.remove('e4-vite');
     f.attente = true;
+    proposerQuestion(f);
   }
 
   // Elle a trop attendu : une mésange fond sur elle (elle s'en sort, mais on
@@ -790,7 +853,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     bip('vol');
     await voler(oiseau, p.x - 6, p.y, 420 * R, { hauteur: 8 });   // vitesse réelle : un vrai piqué
     relancer(f.g, 'e4-secoue-plante');
-    perdreVie(p.x, p.y - 30, TEXTES.troplongue(f.e.nom));
+    perdreVie(p.x, p.y - 30, TEXTES.troplongue);
     await voler(oiseau, p.x + 140, p.y - 110, 500 * R, { hauteur: 10 });
     oiseau.remove();
   }
@@ -798,8 +861,14 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
   // On touche une plante : la femelle choisie (ou celle qui attend depuis le
   // plus longtemps) va la goûter.
   async function essayerPlante(p) {
-    let f = selection || femelles.filter((x) => x.attente).sort((a, b) => a.patience - b.patience)[0];
-    if (!f || !f.attente) { dire(TEXTES.choisisDabord); return; }
+    if (question) { bip('non'); relancer($('.e4-panneau'), 'e4-secousse'); return; }
+    const urgentes = femelles.filter((x) => x.attente).sort((a, b) => a.patience - b.patience);
+    let f = selection || urgentes.find((x) => x.nommee);
+    if (!f) {
+      if (urgentes.length) poserQuestion(urgentes[0]); else dire(TEXTES.choisisDabord);
+      return;
+    }
+    if (!f.attente) { dire(TEXTES.choisisDabord); return; }
     selectionner(null);
     f.attente = false;
     const s = sommet(p);
@@ -1079,7 +1148,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       avant = t;
       if (enJeu) {
         for (const f of femelles) {
-          if (!f.attente) continue;
+          if (!f.attente || question?.f === f) continue;
           f.patience -= dt;
           const k = Math.max(0, f.patience / REGLES.patience);
           f.anneau.setAttribute('stroke-dasharray', `${(k * 2 * Math.PI * 27).toFixed(1)} 999`);
@@ -1271,6 +1340,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       get vies() { return vies; },
       get attente() { return femelles.filter((f) => f.attente).map((f) => f.e.cle); },
       get dangers() { return comptes.map((c) => c.L.e.cle); },
+      get question() { return question && question.f.e.cle; },
     };
   }
 
