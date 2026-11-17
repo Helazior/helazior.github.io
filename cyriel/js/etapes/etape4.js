@@ -30,13 +30,10 @@ import { course } from './course.js';
 // Le jeu : réglé pour rester facile (durées en millisecondes).
 const REGLES = {
   vies: 5,
-  arrivees: 2000,            // une femelle toutes les 2 secondes
-  patience: 12000,           // avant qu'une mésange fonde sur une femelle qui attend
-  danger: 6000,              // pour réagir à un danger dans une loupe
-  oeuf: 1800,
-  chrysalide: 1600,
-  entreDangers: [1500, 3500],
-};
+  arrivees: 7000,            // une nouvelle femelle toutes les 7 secondes
+  patience: 30000,           // avant qu'une mésange fonde sur une femelle qui attend
+  dangerLoupe: 14000,        // pour réagir à un danger dans une loupe (mésange, crue, fourmis)
+}
 
 const TEXTES = {
   intro: 'Place les papillons (femelles) sur les bonnes plantes pour les reproduire. Il va falloir s’occuper de les faire éclore et que tout le monde survive.',
@@ -50,6 +47,11 @@ const TEXTES = {
   occupeCourt: 'Déjà un œuf orange sur la cardamine : les jeunes chenilles d’aurore se mangent entre elles ! Essaie l’autre plante à fleurs blanches.',
   pasCelleLa: 'Pas celle-là : il lui faut une Myrmica, la fourmi rousse !',
   gagne: 'Les cinq papillons sont nés ! Bravo, naturaliste !',
+  rates: {
+    paon: 'Trop tard : la mésange a bousculé le paon !',
+    cuivre: 'Glou… la chenille du cuivré a bu la tasse !',
+    machaon: 'Aïe, la fourmi a embêté la chenille du machaon !',
+  },
   perdu: 'Le marais était un peu trop agité… Pas grave, on recommence !',
   recommencer: 'Recommencer',
   ou: 'Où vais-je pondre ?',
@@ -80,12 +82,6 @@ const ESPECES = [
   {
     cle: 'paon', nom: 'Paon du jour', latin: 'Aglais io',
     court: 'Paon',
-    jeu: {
-      ponte: 'Paon du jour : tout un paquet d’œufs sur l’ortie !',
-      dangers: [],
-      adulte: { menace: 'mesange', texte: 'Une mésange ! Touche la loupe du paon : il ouvre ses ailes !', bravo: 'Ses grands « yeux » font fuir la mésange !', rate: 'Trop tard : la mésange a bousculé le paon…' },
-      envol: 'Un paon du jour s’envole !',
-    },
     plantes: ['ortie'], hote: 'grande ortie',
     arrivee: 'Une femelle paon du jour cherche où pondre. Touche la plante qui nourrira ses chenilles !',
     indice: 'Indice : sa plante pique quand on la frôle.',
@@ -103,11 +99,6 @@ const ESPECES = [
   {
     cle: 'aurore', nom: 'Aurore', latin: 'Anthocharis cardamines',
     court: 'Aurore',
-    jeu: {
-      ponte: 'Aurore : un seul œuf, qui vire à l’orange.',
-      dangers: [{ menace: 'mesange', texte: 'Un oiseau cherche la chenille d’aurore ! Touche sa loupe : elle se cache contre une silique.', bravo: 'Bien cachée : on dirait un fruit de la plante !', rate: 'Repérée ! L’oiseau l’a fait tomber…' }],
-      envol: 'Une aurore s’envole !',
-    },
     plantes: ['alliaire'], occupee: 'cardamine', hote: 'cardamine des prés, alliaire officinale',
     arrivee: 'Une aurore… sans orange au bout des ailes : c’est une femelle ! Où va-t-elle pondre ?',
     indice: 'Indice : sa plante a de petites fleurs blanches et sent l’ail quand on froisse ses feuilles.',
@@ -128,11 +119,6 @@ const ESPECES = [
   {
     cle: 'cuivre', nom: 'Cuivré des marais', latin: 'Lycaena dispar',
     court: 'Cuivré',
-    jeu: {
-      ponte: 'Cuivré des marais : des œufs blancs sur la patience.',
-      dangers: [{ menace: 'crue', touches: 3, duree: 6500, texte: 'Crue d’hiver ! Touche trois fois la loupe du cuivré pour que la chenille grimpe au sec.', bravo: 'Au sec ! Elle passera l’hiver tranquille.', rate: 'Glou… elle est restée trop longtemps sous l’eau.' }],
-      envol: 'Un cuivré des marais s’envole !',
-    },
     plantes: ['patience'], hote: 'patience d’eau et autres grandes patiences',
     arrivee: 'Une femelle cuivré des marais, orange tachetée de noir. Où va-t-elle pondre ?',
     indice: 'Indice : une grande plante du bord de l’eau, aux grappes rousses.',
@@ -151,14 +137,6 @@ const ESPECES = [
   {
     cle: 'azure', nom: 'Azuré des mouillères', latin: 'Phengaris alcon',
     court: 'Azuré',
-    jeu: {
-      ponte: 'Azuré des mouillères : des œufs blancs sur les boutons de la gentiane.',
-      dangers: [
-        { menace: 'fourmis', texte: 'La chenille d’azuré est tombée au sol : touche la fourmi qui doit l’adopter !', bravo: 'Adoptée par les Myrmica !', rate: 'Personne ne l’a adoptée à temps…' },
-        { menace: 'faim', touches: 2, texte: 'Dans la fourmilière, elle réclame à manger : touche deux fois sa loupe !', bravo: 'Nourrie au bouche-à-bouche par les fourmis !', rate: 'Elle a eu faim…' },
-      ],
-      envol: 'Un azuré sort de la fourmilière et s’envole !',
-    },
     plantes: ['gentiane'], hote: 'gentiane pneumonanthe… et des fourmis Myrmica',
     arrivee: 'Voici une femelle azuré des mouillères : brune, poudrée de bleu. Quelle plante choisira-t-elle ?',
     indice: 'Indice : des fleurs bleues en trompette.',
@@ -178,14 +156,6 @@ const ESPECES = [
   {
     cle: 'machaon', nom: 'Machaon', latin: 'Papilio machaon',
     court: 'Machaon',
-    jeu: {
-      ponte: 'Machaon : un œuf sur la carotte sauvage.',
-      dangers: [
-        { menace: 'fourmi', texte: 'Une fourmi approche la chenille du machaon : touche sa loupe pour sortir ses cornes !', bravo: 'Pschitt ! Les cornes orange repoussent la fourmi.', rate: 'La fourmi l’a embêtée…' },
-        { menace: 'fourmi', texte: 'Encore une fourmi sur le machaon ! Touche sa loupe !', bravo: 'Encore repoussée !', rate: 'Aïe, la fourmi l’a embêtée…' },
-      ],
-      envol: 'Le machaon s’envole !',
-    },
     plantes: ['carotte'], hote: 'carotte sauvage, fenouil et autres ombellifères',
     arrivee: 'Et voici une femelle machaon ! Où va-t-elle pondre ?',
     indice: 'Indice : des fleurs blanches en ombrelle.',
@@ -271,10 +241,9 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       </g>`).join('')}
     </g>
     <g class="e4-dessus"></g>
-    <g class="e4-papillons"></g>
     <g class="e4-loupes"></g>
+    <g class="e4-papillons"></g>
     <g class="e4-bulles"></g>
-    <defs><clipPath id="e4-clip-mini"><circle r="34"/></clipPath></defs>
     <g class="e4-calque-loupe"></g>`;
   plantes.forEach((p) => { p.el = svg.querySelector(`[data-e4="plante-${p.cle}"]`); });
   const planteDe = (cle) => plantes.find((p) => p.cle === cle);
@@ -696,7 +665,6 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
   const vraiment = (ms) => dormir(ms * RYTHME);   // durées en vraies millisecondes
   const sommet = (p) => ({ x: p.x + 2, y: p.y - p.haut - 4 });
   const PLACES_ATTENTE = [96, 160, 224, 288, 352].map((x) => ({ x, y: 196 }));
-  const PLACES_LOUPES = [48, 124, 200, 276, 352].map((x) => ({ x, y: 66 }));
   let enJeu = false;
   let vies = REGLES.vies;
   let selection = null;
@@ -817,8 +785,12 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     const etiq = svgEl('g', { class: 'e5-pop', transform: 'translate(0 36)', 'pointer-events': 'none' }, f.g);
     etiq.innerHTML = M.etiquette([f.e.court]);
   }
-  // Une femelle vient d'arriver : si rien n'est en cours, on demande son nom.
+  // La toute première femelle pose la question d'elle-même ; les suivantes,
+  // quand on les touche (pour ne pas cacher les consignes des loupes).
+  let premiereQuestion = true;
   function proposerQuestion(f) {
+    if (!premiereQuestion) return;
+    premiereQuestion = false;
     if (enJeu && !question && !selection && f.attente && !f.nommee) poserQuestion(f);
   }
 
@@ -887,7 +859,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       f.g.classList.add('e4-vite');
       voler(f.g, 470, 30, 1200, { hauteur: 40, ondule: 8 }).then(() => f.g.remove());
       femelles.splice(femelles.indexOf(f), 1);
-      cycle(f.e, p);
+      vieALaLoupe(f.e, p);
       return;
     }
     relancer(p.el, 'e4-secoue-plante');
@@ -959,181 +931,815 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     p.el.addEventListener('keydown', h);
   });
 
-  /* ---- Les loupes : la vie de chaque ponte */
+  /* ---- Les loupes : chaque plante pondue devient une loupe vivante */
+  //
+  // Les petits jeux d'avant se jouent dans des loupes posées à la place des
+  // plantes, tous en même temps. Une petite loupe qui a besoin de Cyriel
+  // brille ; la toucher l'agrandit sur place (une seule à la fois) pour jouer
+  // dedans. Les dangers (mésange, crue, fourmis) ont un compte à rebours large :
+  // laissé à zéro, il coûte une vie, puis le jeu attend encore.
 
-  const ANNEAU_LOUPE = 2 * Math.PI * 36;
+  const LR = M.RAYON_LOUPE;
+  const PETITE = 45;
+  const GRANDE = 112;
+  const ANNEAU = 2 * Math.PI * (LR + 8);
+  const loupes = [];
+  let loupeOuverte = null;
 
-  function creerLoupe(e, i) {
-    const pl = PLACES_LOUPES[i];
-    const g = svgEl('g', { class: 'e4-mini', 'data-e4': `loupe-${e.cle}`, role: 'button', tabindex: 0, 'aria-label': `Loupe : ${e.nom}`, transform: `translate(${pl.x} ${pl.y})` }, calques.loupes);
-    const pop = svgEl('g', { class: 'e4-mini-pop' }, g);
-    pop.innerHTML = `
-      <circle class="e4-mini-bord" r="38" fill="#5a32a0" stroke="#5a32a0" stroke-width="2"/>
-      <g clip-path="url(#e4-clip-mini)">
-        <circle r="34" fill="url(#e4-fond-loupe)"/>
-        <path d="M-34 22 Q0 16 34 22 V40 H-34 Z" fill="#9ccc72"/>
-        <g class="e4-mini-scene"></g>
-        <g class="e4-mini-menace"></g>
-        <g class="e4-mini-eau"></g>
-      </g>
-      <circle class="e4-mini-compte" r="36" fill="none" stroke="#e04a2a" stroke-width="4.5" stroke-linecap="round" transform="rotate(-90)" stroke-dasharray="0 999"/>
-      <circle r="34" fill="none" stroke="#c9b3ff" stroke-width="1.5"/>
-      <g transform="translate(0 44)">${M.etiquette([e.court])}</g>`;
-    const q = (s) => pop.querySelector(s);
-    const L = { e, g, pop, scene: q('.e4-mini-scene'), menace: q('.e4-mini-menace'), eau: q('.e4-mini-eau'), compte: q('.e4-mini-compte'), x: pl.x, y: pl.y, attenteTouche: null };
-    const toucher = (ev) => {
-      if (ev.type === 'keydown' && ev.key !== 'Enter' && ev.key !== ' ') return;
-      ev.preventDefault();
-      if (!enJeu || !L.attenteTouche) return;
-      const cote = ev.target.closest('[data-cote]');
-      L.attenteTouche(cote ? cote.dataset.cote : null, ev);
+  function cibleLoupe(L) {
+    if (!L.grande) return { x: L.cx, y: L.cy, k: PETITE / LR };
+    const k = GRANDE / LR;
+    return {
+      x: Math.min(M.LARGEUR - GRANDE - 4, Math.max(GRANDE + 4, L.cx)),
+      y: Math.min(M.HAUTEUR - GRANDE - 4, Math.max(GRANDE + 30, L.cy)),
+      k,
     };
-    g.addEventListener('pointerdown', toucher);
-    g.addEventListener('keydown', toucher);
+  }
+  function poserLoupe(L) {
+    const c = cibleLoupe(L);
+    L.g.style.transform = `translate(${c.x}px, ${c.y}px) scale(${c.k})`;
+  }
+  function agrandir(L) {
+    if (loupeOuverte === L) return;
+    if (loupeOuverte) reduire(loupeOuverte);
+    fermerQuestion();                 // la question reviendra en touchant la femelle
+    loupeOuverte = L;
+    L.grande = true;
+    L.g.classList.add('e4-ploupe-grande');
+    calques.loupes.append(L.g);       // devant les autres
+    bip('onde');
+    poserLoupe(L);
+  }
+  function reduire(L) {
+    if (!L.grande) return;
+    L.grande = false;
+    L.g.classList.remove('e4-ploupe-grande');
+    if (loupeOuverte === L) loupeOuverte = null;
+    L.cacherBulle();
+    poserLoupe(L);
+  }
+
+  function ouvrirLoupePlante(e, p) {
+    const corps = p.el.querySelector('.e4-plante-corps');
+    corps.style.transition = 'opacity .4s';
+    corps.style.opacity = '0';
+    const g = svgEl('g', { class: 'e4-ploupe', 'data-e4': `loupe-${e.cle}` }, calques.loupes);
+    const verre = svgEl('g', { 'clip-path': 'url(#e4-clip-loupe)' }, g);
+    svgEl('circle', { r: LR, fill: 'url(#e4-fond-loupe)' }, verre);
+    verre.insertAdjacentHTML('beforeend', M.bokeh());
+    const contenu = svgEl('g', { class: 'e4-loupe-contenu' }, verre);
+    const effets = svgEl('g', { 'pointer-events': 'none' }, verre);
+    svgEl('g', { class: 'e4-loupe-cadre', 'pointer-events': 'none' }, g).innerHTML = M.cadreLoupe(LR);
+    const anneau = svgEl('circle', { class: 'e4-ploupe-compte', r: LR + 8, fill: 'none', stroke: '#e04a2a', 'stroke-width': 14, 'stroke-linecap': 'round', transform: 'rotate(-90)', 'stroke-dasharray': '0 9999', 'pointer-events': 'none' }, g);
+    const bulles = svgEl('g', { 'pointer-events': 'none' }, g);
+    const L = { e, p, g, contenu, effets, bulles, anneau, cx: p.x, cy: p.y - 64, grande: false, etat: 'occupe', attentes: 0, dangers: 0, boucleEau: 0, bulleG: null };
+    L.bulle = (x, y, lignes) => {
+      L.cacherBulle();
+      const l = Math.max(...lignes.map((t) => t.length)) * 6 + 22;
+      L.bulleG = svgEl('g', { class: 'e4-bulle' }, bulles);
+      L.bulleG.innerHTML = `<g class="e5-pop">${M.bulle(lignes)}</g>`;
+      placer(L.bulleG, Math.min(LR + 20 - l / 2, Math.max(-LR - 20 + l / 2, x)), y);
+    };
+    L.cacherBulle = () => { if (L.bulleG) L.bulleG.remove(); L.bulleG = null; };
+    L.etinc = (x, y, n, couleur, force) => {
+      const c = cibleLoupe(L);
+      etincelles(c.x + x * c.k, c.y + y * c.k, calme ? Math.ceil(n / 3) : Math.ceil(n * (L.grande ? 0.8 : 0.4)), couleur, force * c.k * 1.6);
+    };
+    // Comme attendreTouche, mais dans la loupe : la loupe brille tant qu'elle
+    // attend ; avec danger, un compte à rebours tourne autour d'elle.
+    L.attendre = (cibles, { inactif = 0, quandInactif = null, type = 'pointerdown', danger = null } = {}) => new Promise((resolve) => {
+      L.attentes++;
+      L.g.classList.add('e4-ploupe-attend');
+      let compte = null;
+      if (danger) {
+        L.dangers++;
+        L.g.classList.add('e4-ploupe-alerte');
+        compte = { reste: REGLES.dangerLoupe, total: REGLES.dangerLoupe, anneau, cle: e.cle };
+        compte.echec = () => {
+          const c = cibleLoupe(L);
+          perdreVie(c.x, c.y - LR * c.k - 6, danger);
+          compte.reste = compte.total;
+        };
+        comptes.push(compte);
+        bip('sonnette');
+      }
+      const id = inactif && quandInactif ? plusTard(inactif, quandInactif) : 0;
+      const ecouteurs = cibles.map((c) => {
+        const f = (ev) => {
+          if (ev.type === 'keydown' && ev.key !== 'Enter' && ev.key !== ' ') return;
+          if (ev.type === 'pointerdown' && ev.button > 0) return;
+          ev.preventDefault();
+          ev.stopPropagation();
+          annuler(id);
+          for (const [cc, ff] of ecouteurs) {
+            cc.removeEventListener(type, ff);
+            cc.removeEventListener('keydown', ff);
+          }
+          L.attentes--;
+          if (!L.attentes) L.g.classList.remove('e4-ploupe-attend');
+          if (compte) {
+            comptes.splice(comptes.indexOf(compte), 1);
+            anneau.setAttribute('stroke-dasharray', '0 9999');
+            L.dangers--;
+            if (!L.dangers) L.g.classList.remove('e4-ploupe-alerte');
+          }
+          let x = null;
+          let y = null;
+          if (ev.type !== 'keydown' && ev.clientX !== undefined) {
+            const m = contenu.getScreenCTM();
+            if (m) {
+              const q = new DOMPoint(ev.clientX, ev.clientY).matrixTransform(m.inverse());
+              x = q.x;
+              y = q.y;
+            }
+          }
+          resolve({ el: c, x, y });
+        };
+        c.addEventListener(type, f);
+        c.addEventListener('keydown', f);
+        return [c, f];
+      });
+    });
+    // Une petite loupe : le premier toucher l'agrandit, sans jouer.
+    g.addEventListener('pointerdown', (ev) => {
+      if (L.grande) return;
+      ev.stopPropagation();
+      ev.preventDefault();
+      agrandir(L);
+    }, true);
+    loupes.push(L);
+    g.style.transform = `translate(${p.x}px, ${p.y - 64}px) scale(0)`;
+    void g.getBoundingClientRect();
+    poserLoupe(L);
     bip('onde');
     return L;
   }
 
-  function stade(L, contenu) {
-    L.scene.innerHTML = `<g class="e5-pop">${contenu}</g>`;
+  async function fermerLoupePlante(L) {
+    reduire(L);
+    cancelAnimationFrame(L.boucleEau);
+    L.g.style.transform = `translate(${L.cx}px, ${L.cy}px) scale(0)`;
+    await dormir(450);
+    L.g.remove();
+    loupes.splice(loupes.indexOf(L), 1);
+    L.p.el.querySelector('.e4-plante-corps').style.opacity = '1';
   }
 
-  const DESSINS = {
-    oeuf: {
-      paon: `<g transform="translate(0 12) scale(.7)">${M.oeufsPaon()}</g>`,
-      aurore: `<g transform="translate(0 20) scale(1.7)">${M.oeufAurore('#f28c28')}</g>`,
-      cuivre: `<g transform="translate(-4 12) scale(1.5)">${M.oeufsCuivre()}</g>`,
-      azure: `<g transform="translate(0 12) scale(1.5)">${[-6, 0, 6].map((x) => `<g transform="translate(${x} ${x ? 0 : -4})">${M.oeufAzure()}</g>`).join('')}</g>`,
-      machaon: `<g transform="translate(0 12) scale(1.8)">${M.oeufMachaon()}</g>`,
-    },
-    chenille: (cle) => cle === 'paon'
-      ? [[-12, 20, 1], [6, 14, -1], [12, 24, -1]].map(([x, y, s]) => `<g transform="translate(${x} ${y}) scale(${s * 0.55} .55)"><g class="e4-corps e4-rampe">${M.chenille('paon')}</g></g>`).join('')
-      : `<g transform="translate(0 20) scale(.95)"><g class="e4-corps e4-rampe">${M.chenille(cle)}</g></g>`,
-    chrysalide: (cle) => `<g transform="translate(0 ${cle === 'paon' ? -10 : 20}) scale(1.35)"><g class="e4-chrysalide">${M.chrysalide(cle)}</g></g>`,
-  };
+  // Toucher ailleurs (une plante, une femelle, le décor) rapetisse la loupe.
+  svg.addEventListener('pointerdown', (ev) => {
+    if (loupeOuverte && !loupeOuverte.g.contains(ev.target)) reduire(loupeOuverte);
+  });
 
-  // Un danger dans une loupe. type : 'tap' (n touchers), ou 'choix' (toucher
-  // le bon côté). Renvoie true si on l'a évité à temps.
-  function danger(L, { duree = REGLES.danger, touches = 1, choix = null, menace = '', texte, bravo, rate, surTouche }) {
-    return new Promise((resolve) => {
-      L.menace.innerHTML = menace;
-      L.g.classList.add('e4-mini-alerte');
-      bip('sonnette');
-      dire(texte);
-      let n = 0;
-      const c = { reste: duree, total: duree, L };
-      const finir = (ok) => {
-        comptes.splice(comptes.indexOf(c), 1);
-        L.attenteTouche = null;
-        L.g.classList.remove('e4-mini-alerte');
-        L.compte.setAttribute('stroke-dasharray', '0 999');
-        if (ok) {
-          bip('chiffre');
-          etincelles(L.x, L.y, 10, '#fff3a8', 70);
-          if (bravo) dire(bravo);
-        } else perdreVie(L.x, L.y + 10, rate);
-        resolve(ok);
-      };
-      c.echec = () => finir(false);
-      comptes.push(c);
-      L.attenteTouche = (cote) => {
-        if (choix) {
-          if (cote === choix) finir(true);
-          else if (cote) { bip('non'); dire(TEXTES.pasCelleLa); }
-          return;
-        }
-        n++;
-        bip('clic', Math.min(1, 0.3 + n * 0.25));
-        if (surTouche) surTouche(n);
-        if (n >= touches) finir(true);
-      };
-    });
+  function creerChenille(parent, cle, { x = 0, y = 0, k = 1, rotation = 0, dessin = null } = {}) {
+    const g = svgEl('g', {}, parent);
+    const tourne = svgEl('g', { transform: `rotate(${rotation})` }, g);
+    const grandit = svgEl('g', { class: 'e4-croissance' }, tourne);
+    const corps = svgEl('g', { class: 'e4-corps' }, grandit);
+    corps.innerHTML = dessin || M.chenille(cle);
+    grandit.style.transform = `scale(${k})`;
+    placer(g, x, y);
+    return { g, tourne, grandit, corps, k };
+  }
+  function grandir(c, k) {
+    c.k = k;
+    c.grandit.style.transform = `scale(${k.toFixed(2)})`;
   }
 
-  // La vie d'une ponte, de l'œuf au papillon, dans sa loupe.
-  async function cycle(e, p) {
-    const i = ESPECES.indexOf(e);
-    const L = creerLoupe(e, i);
-    const T = e.jeu;
-    stade(L, DESSINS.oeuf[e.cle]);
-    dire(T.ponte);
-    await vraiment(REGLES.oeuf);
-    if (!enJeu) return;
+  function chrysalideLoupe(parent, cle, x, y, k, rotation = 0) {
+    const g = svgEl('g', { transform: `translate(${x} ${y}) rotate(${rotation}) scale(${k})` }, parent);
+    const tremble = svgEl('g', { class: 'e4-chrysalide' }, g);
+    svgEl('g', { class: 'e5-pop' }, tremble).innerHTML = M.chrysalide(cle);
+    return { g, tremble };
+  }
+
+  async function eclore(chrys) {
+    relancer(chrys.tremble, 'e4-tremble');
+    bip('clic', 0.2);
+    await dormir(850);
+    disparaitre(chrys.g, 400);
+  }
+
+  function papillonLoupe(L, cle, x, y, k) {
+    const g = svgEl('g', { transform: `translate(${x} ${y}) scale(${k})` }, L.contenu);
+    svgEl('g', { class: 'e4-eclot e4-lent' }, g).innerHTML = M.papillon(cle);
     bip('eclosion');
-    stade(L, DESSINS.chenille(e.cle));
-    for (const d of T.dangers) {
-      await vraiment(REGLES.entreDangers[0] + Math.random() * (REGLES.entreDangers[1] - REGLES.entreDangers[0]));
-      if (!enJeu) return;
-      await jouerDanger(L, e, d);
-      if (!enJeu) return;
-      L.menace.innerHTML = '';
-      L.eau.innerHTML = '';
+    L.etinc(x, y, 14, '#fff3a8', 120);
+    return g;
+  }
+
+  function zzz(parent, x, y) {
+    const g = svgEl('g', { transform: `translate(${x} ${y})` }, parent);
+    g.innerHTML = [0, 1, 2].map((i) => `<text class="e4-zzz" style="animation-delay:${(-i * 0.6).toFixed(1)}s" x="${i * 7}" y="${-i * 8}" font-size="${12 + i * 3}" font-weight="700" fill="#5a4a8a">z</text>`).join('');
+    return g;
+  }
+
+  function odeur(parent, x, y) {
+    const g = svgEl('g', { transform: `translate(${x} ${y})` }, parent);
+    g.innerHTML = [0, 1, 2].map((i) => `<path class="e4-odeur" style="animation-delay:${(i * 0.12).toFixed(2)}s" d="M${-8 + i * 9} 0 q-4 -6 0 -12 t0 -12" stroke="#f28c28" stroke-width="2.4" fill="none" stroke-linecap="round"/>`).join('');
+    plusTard(1300, () => g.remove());
+  }
+
+  async function hiver(L, duree) {
+    const voile = svgEl('rect', { x: -LR, y: -LR, width: LR * 2, height: LR * 2, fill: '#e9f0ff' }, L.effets);
+    voile.style.opacity = '0';
+    const neige = svgEl('g', {}, L.effets);
+    for (let i = 0; i < (calme ? 0 : 28); i++) {
+      const fl = svgEl('circle', { cx: (-150 + Math.random() * 300).toFixed(1), cy: -LR - 10, r: (1.8 + Math.random() * 2.6).toFixed(1), fill: '#fff', class: 'e4-flocon' }, neige);
+      fl.style.animationDuration = `${((2.2 + Math.random() * 1.6) / R).toFixed(2)}s`;
+      fl.style.animationDelay = `${((-Math.random() * 3) / R).toFixed(2)}s`;
     }
+    await animer(voile, [{ opacity: 0 }, { opacity: 0.6 }], { duree: 700 });
+    await dormir(duree);
+    await Promise.all([disparaitre(voile, 800), disparaitre(neige, 800)]);
+  }
+
+  /* -------------------------------------------------------- Le paon du jour */
+
+  async function jeuPaon(L, e) {
+    const T = e.textes;
+    L.contenu.innerHTML = `
+      <path d="M-200 26 C-160 16 -120 8 -60 0 M-128 12 l-16 -18 M-100 7 l9 -15" stroke="#7a5232" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <g class="e4-plante-loupe" transform="translate(0 150) scale(2.4)">${M.plante('ortie')}</g>
+      <g transform="translate(0 -46)"><g class="e4-toile">${M.toileSoie()}</g></g>
+      <g class="e4-colonie"></g>
+      <g transform="translate(-30 40)"><g class="e4-oeufs e5-pop">${M.oeufsPaon()}</g></g>`;
+    const toile = L.contenu.querySelector('.e4-toile');
+    toile.style.opacity = '0';
+    const feuilles = [...L.contenu.querySelectorAll('.e4-plante-loupe polygon')];
+    for (const fe of feuilles) fe.classList.add('e4-feuille');
+    await raconter(T.ponte, 2600);
+
+    // Éclosion : une colonie de petites chenilles noires dans leur toile.
+    bip('eclosion');
+    disparaitre(L.contenu.querySelector('.e4-oeufs').parentNode, 300);
+    const colonieG = L.contenu.querySelector('.e4-colonie');
+    const colonie = COLONIE.map(([x, y, sens]) => {
+      const g = svgEl('g', { transform: `translate(${x} ${y}) scale(${sens} 1)` }, colonieG);
+      return creerChenille(g, 'paon', { k: 0.3 });
+    });
+    for (const c of colonie) c.corps.classList.add('e4-rampe');
+    apparaitre(toile, 700);
+    dire(T.eclosion);
+    const zoneTouche = touchable(svgEl('circle', { r: LR, fill: 'transparent' }, L.contenu), 'Nourrir les chenilles', 'nourrir');
+    L.etat = 'nourrir';
+    const N = 8;
+    for (let i = 1; i <= N; i++) {
+      const t = await L.attendre([zoneTouche], { inactif: 7000, quandInactif: () => dire(T.eclosion) });
+      const x = t.x ?? 0;
+      const y = t.y ?? -40;
+      bip('croque');
+      L.etinc(x, y, 7, '#7fbf5a', 80);
+      flotter(L.contenu, x, y - 12, TEXTES.miam);
+      const fe = feuilles[feuilles.length - i];
+      if (fe) fe.classList.add('e4-mangee');
+      for (const c of colonie) {
+        grandir(c, 0.3 + (0.65 * i) / N);
+        c.corps.classList.add('e4-mange');
+      }
+      plusTard(380, () => { for (const c of colonie) c.corps.classList.remove('e4-mange'); });
+      if (i === 3 || i === 6) {
+        // une mue : la vieille peau craque
+        plusTard(200, () => { bip('eclosion'); for (const [cx, cy] of COLONIE) L.etinc(cx, cy - 6, 2, '#ffffff', 40); });
+      }
+    }
+    zoneTouche.remove();
+    L.etat = 'occupe';
+    await raconter(T.grandes, 1600);
+    await Promise.all([disparaitre(colonieG, 700), disparaitre(toile, 700)]);
+
+    // Une chrysalide pend sous une feuille, puis l'adulte, ailes fermées.
+    const chrys = chrysalideLoupe(L.contenu, 'paon', 30, -22, 2.2);
+    dire(T.chrysalide);
+    await dormir(1500);
+    await eclore(chrys);
+    const adulte = svgEl('g', { transform: 'translate(32 26)' }, L.contenu);
+    svgEl('rect', { x: -50, y: -96, width: 104, height: 112, fill: 'transparent' }, adulte);
+    const ferme = svgEl('g', { transform: 'scale(1.5)' }, adulte);
+    svgEl('g', { class: 'e5-pop' }, ferme).innerHTML = M.paonFerme();
+    bip('eclosion');
+    dire(T.ferme);
+    await dormir(2000);
+
+    // La mésange arrive.
+    const oiseau = svgEl('g', {}, L.contenu);
+    const sens = svgEl('g', { transform: 'scale(1.25)' }, oiseau);
+    const corpsOiseau = svgEl('g', { class: 'e4-oiseau e4-vole' }, sens);
+    corpsOiseau.innerHTML = M.mesange();
+    placer(oiseau, -240, -120);
+    bip('vol');
+    await voler(oiseau, -96, -22, 1200, { hauteur: 26 });
+    corpsOiseau.classList.remove('e4-vole');
+    await dormir(350);
+    await voler(oiseau, -78, -24, 320, { hauteur: 10 });
+    touchable(adulte, 'Le paon du jour, ailes fermées', 'paon-adulte');
+    L.etat = 'mesange';
+    dire(T.mesange);
+    let h = null;
+    await L.attendre([adulte], { inactif: 5000, quandInactif: () => { h = halo(L.contenu, 32, -12, 44, 52); }, danger: TEXTES.rates.paon });
+    if (h) h.remove();
+    L.etat = 'occupe';
+
+    // Il ouvre ses ailes : les ocelles !
+    ferme.remove();
+    const ouvert = svgEl('g', { transform: 'translate(0 -22) scale(2.1)' }, adulte);
+    svgEl('g', { class: 'e4-eclot e4-lent' }, ouvert).innerHTML = M.papillon('paon');
+    bip('ocelles');
+    L.etinc(32, -22, 14, '#f2c14e', 120);
+    const surprise = svgEl('g', { transform: 'translate(-72 -62)' }, L.contenu);
+    surprise.innerHTML = '<text class="e5-pop" text-anchor="middle" font-size="36" font-weight="700" fill="#e04a2a" stroke="#fff" stroke-width="4" paint-order="stroke">!</text>';
+    await dormir(500);
+    surprise.remove();
+    sens.setAttribute('transform', 'scale(-1.25 1.25)');
+    corpsOiseau.classList.add('e4-vole');
+    bip('vol');
+    await voler(oiseau, -250, -200, 900, { hauteur: 20 });
+    oiseau.remove();
+    dire(T.peur);
+    await dormir(2400);
+  }
+
+  /* ------------------------------------------------------------- L'aurore */
+
+  async function jeuAurore(L, e) {
+    const T = e.textes;
+    const DY = 16;      // tout le gros plan un peu plus bas, pour voir les fleurs
+    L.contenu.innerHTML = `<g transform="translate(0 ${DY})">${M.alliaireLoupe()}<g class="e4-siliques"></g>${M.fleursAlliaireLoupe()}
+      <g transform="translate(16 -116) scale(2)"><g class="e4-oeuf e5-pop">${M.oeufAurore()}</g></g></g>`;
+    const groupe = L.contenu.querySelector('.e4-siliques');
+    const siliques = M.SILIQUES.map(([y, a, l]) => {
+      const g = svgEl('g', { transform: `translate(0 ${y}) rotate(${a})` }, groupe);
+      const s = svgEl('g', { class: 'e4-silique' }, g);
+      s.innerHTML = M.silique(l);
+      return { s, g, y: y + DY, a, l };
+    });
+    dire(T.ponte);
+    await dormir(1000);
+    await animer(L.contenu.querySelector('.e4-coque'), [{ fill: '#f6f1d6' }, { fill: '#f28c28' }], { duree: 2000 });
+    await dormir(800);
+
+    // Éclosion : elle mange sa coquille.
+    bip('eclosion');
+    const bebe = creerChenille(L.contenu, 'aurore', { x: 8, y: -112 + DY, k: 0.7 });
+    bebe.corps.classList.add('e4-mange');
+    disparaitre(L.contenu.querySelector('.e4-oeuf').parentNode, 1200);
+    await raconter(T.eclosion, 3600);
+    await disparaitre(bebe.g, 500);
+
+    // Cache-cache : elle s'est allongée contre une silique.
+    const cache = 1 + Math.floor(Math.random() * 5);
+    const sc = siliques[cache];
+    sc.s.innerHTML = M.chenilleSilique(sc.l);
+    groupe.append(sc.g);    // par-dessus les autres : là où elles se croisent, c'est elle qu'on touche
+    siliques.forEach(({ s, l }, i) => {
+      svgEl('path', { d: `M0 -12 V${-l - 6}`, stroke: 'transparent', 'stroke-width': 20, 'stroke-linecap': 'round' }, s);
+      touchable(s, `Fruit n° ${i + 1}`, i === cache ? 'chenille-aurore' : `silique-${i}`);
+    });
+    dire(T.cache);
+    L.etat = 'cherche-chenille';
+    let rates = 0;
+    const trahir = () => sc.s.classList.add('e4-gigote');
+    for (;;) {
+      const t = await L.attendre(siliques.map((q) => q.s), { inactif: 12000, quandInactif: trahir });
+      if (t.el === sc.s) break;
+      rates++;
+      relancer(t.el, 'e4-secoue-petit');
+      bip('non');
+      L.bulle(t.x ?? 0, (t.y ?? 0) - 14, [T.pasCa]);
+      plusTard(1400, L.cacherBulle);
+      if (rates >= 2) trahir();
+    }
+    L.etat = 'occupe';
+    sc.s.classList.remove('e4-gigote');
+    const r = (sc.a * Math.PI) / 180;
+    const tete = { x: Math.sin(r) * (sc.l - 4), y: sc.y - Math.cos(r) * (sc.l - 4) };
+    bip('miam');
+    L.etinc(tete.x, tete.y, 12, '#fff3a8', 100);
+    L.bulle(tete.x, tete.y - 12, [TEXTES.coucou]);
+    dire(T.trouvee);
+    await dormir(2600);
+    L.cacherBulle();
+
+    // Chrysalide, puis l'hiver passe.
+    await disparaitre(sc.s, 500);
+    const chrys = chrysalideLoupe(L.contenu, 'aurore', 10, 40 + DY, 2.4, 14);
+    dire(T.hiver);
+    await dormir(1000);
+    await hiver(L, 2800);
+    await eclore(chrys);
+    papillonLoupe(L, 'aurore', 4, -6, 2.2);
+    dire(T.printemps);
+    await dormir(3000);
+  }
+
+  /* ---------------------------------------------------- Le cuivré des marais */
+
+  async function jeuCuivre(L, e) {
+    const T = e.textes;
+    L.contenu.innerHTML = `
+      <g class="e4-plante-loupe" transform="translate(0 150) scale(2.4)">${M.plante('patience')}</g>
+      <g class="e4-fenetres"></g>
+      <g transform="translate(-34 104) rotate(-32) scale(1.6)"><g class="e4-oeufs e5-pop">${M.oeufsCuivre()}</g></g>`;
+    for (const fe of L.contenu.querySelectorAll('.e4-plante-loupe ellipse')) fe.classList.add('e4-feuille-saison');
+    dire(T.ponte);
+    await dormir(2200);
+
+    // La petite chenille et ses « fenêtres ».
+    bip('eclosion');
+    disparaitre(L.contenu.querySelector('.e4-oeufs').parentNode, 400);
+    const c = creerChenille(L.contenu, 'cuivre', { x: -14, y: 122, k: 0.55 });
+    dire(T.fenetres);
+    const fenetres = L.contenu.querySelector('.e4-fenetres');
+    for (const [x, y] of [[-23, 113], [-35, 94], [-47, 75]]) {
+      c.corps.classList.add('e4-rampe');
+      await aller(c.g, x + 10, y + 8, 520);
+      c.corps.classList.remove('e4-rampe');
+      c.corps.classList.add('e4-mange');
+      bip('croque');
+      const fe = svgEl('g', { transform: `translate(${x} ${y}) rotate(-32)` }, fenetres);
+      svgEl('ellipse', { rx: 8.5, ry: 4.8, fill: '#e8f5d6', stroke: '#c5e0a6', 'stroke-width': 1, class: 'e5-pop' }, fe);
+      await dormir(700);
+      c.corps.classList.remove('e4-mange');
+    }
+    grandir(c, 0.8);
+    await dormir(1300);
+
+    // L'automne : elle s'endort au pied de la plante.
+    dire(T.automne);
+    L.contenu.classList.add('e4-automne');
+    c.corps.classList.add('e4-rampe');
+    await aller(c.g, 18, 146, 1300);
+    c.corps.classList.remove('e4-rampe');
+    const dodo = zzz(L.contenu, 34, 124);
+    await dormir(2900);
+    dodo.remove();
+
+    // La crue : l'eau monte, il faut grimper.
+    const MARCHES = [146, 112, 78, 44, 10, -24, -58];
+    const NIVEAU_HAUT = 6;
+    c.tourne.setAttribute('transform', 'rotate(-90)');
+    placer(c.g, 8, MARCHES[0]);
+    svgEl('rect', { x: -26, y: -34, width: 44, height: 62, fill: 'transparent' }, c.g);
+    touchable(c.g, 'La chenille du cuivré', 'chenille-cuivre');
+    const eauG = svgEl('g', {}, L.effets);
+    eauG.innerHTML = M.eau(LR);
+    let niveau = LR + 24;
+    placer(eauG, 0, niveau);
+    let marche = 0;
+    let sousLEau = false;
+    let ditNoyee = false;
+    const sous = () => niveau < MARCHES[marche] - 22;
+    // l'eau monte toute seule, image après image
+    let avant = performance.now();
+    const monter = (t) => {
+      if (!vivant) return;
+      const dt = Math.min(0.05, (t - avant) / 1000) * V;
+      avant = t;
+      if (niveau > NIVEAU_HAUT) niveau = Math.max(NIVEAU_HAUT, niveau - 16 * dt);
+      eauG.style.transform = `translate(0px, ${niveau.toFixed(1)}px)`;
+      if (!sousLEau && sous()) {
+        sousLEau = true;
+        bip('bulles');
+        const b = svgEl('g', { transform: `translate(8 ${MARCHES[marche] - 26})` }, L.effets);
+        b.innerHTML = [0, 1, 2].map((i) => `<circle class="e4-bulle-eau" style="animation-delay:${(i * 0.25).toFixed(2)}s" cx="${-4 + i * 5}" cy="0" r="${2 + i}" fill="none" stroke="#fff" stroke-width="1.4"/>`).join('');
+        plusTard(1600, () => b.remove());
+        if (!ditNoyee) { ditNoyee = true; dire(T.noyee); }
+      }
+      L.boucleEau = requestAnimationFrame(monter);
+    };
+    L.boucleEau = requestAnimationFrame(monter);
+    bip('plouf');
+    dire(T.crue);
+    L.etat = 'crue';
+    while (marche < MARCHES.length - 1) {
+      let h = null;
+      await L.attendre([c.g], { inactif: 4500, quandInactif: () => { h = halo(L.contenu, 8, MARCHES[marche] - 4, 24, 30); }, danger: TEXTES.rates.cuivre });
+      if (h) h.remove();
+      marche++;
+      if (sousLEau && !sous()) sousLEau = false;
+      bip('clic', 0.15 + marche * 0.1);
+      c.corps.classList.add('e4-rampe');
+      aller(c.g, 8, MARCHES[marche], 240, 'ease-out').then(() => c.corps.classList.remove('e4-rampe'));
+    }
+    L.etat = 'occupe';
+    await dormir(400);
+    cancelAnimationFrame(L.boucleEau);
+    bip('miam');
+    L.etinc(8, MARCHES[marche] - 10, 12, '#fff3a8', 100);
+    await raconter(T.sauvee, 2600);
+
+    // La décrue, le printemps, la métamorphose.
+    await animer(eauG, [{ transform: `translate(0px, ${niveau.toFixed(1)}px)` }, { transform: `translate(0px, ${LR + 40}px)` }], { duree: 1600, easing: 'ease-in' });
+    eauG.remove();
+    L.contenu.classList.remove('e4-automne');
+    dire(T.printemps);
+    grandir(c, 1.05);
+    c.corps.classList.add('e4-mange');
+    bip('croque');
+    await dormir(1300);
+    c.corps.classList.remove('e4-mange');
+    const chrys = chrysalideLoupe(L.contenu, 'cuivre', 16, -46, 2.4);
+    await disparaitre(c.g, 450);
     await dormir(900);
-    if (!enJeu) return;
-    stade(L, DESSINS.chrysalide(e.cle));
-    await vraiment(REGLES.chrysalide);
-    if (!enJeu) return;
-    if (T.adulte) {
-      stade(L, `<g transform="translate(2 22) scale(.6)">${M.paonFerme()}</g>`);
-      await dormir(700);
-      await jouerDanger(L, e, T.adulte);
-      if (!enJeu) return;
-      stade(L, `<g transform="translate(0 2) scale(.72)"><g class="e4-lent">${M.papillon('paon')}</g></g>`);
-      L.menace.innerHTML = '';
-      await dormir(700);
+    await eclore(chrys);
+    papillonLoupe(L, 'cuivre', 10, -64, 2.1);
+    dire(T.adulte);
+    await dormir(2600);
+  }
+
+  /* -------------------------------------------------- L'azuré des mouillères */
+
+  async function jeuAzure(L, e) {
+    const T = e.textes;
+    const SOL = 72;
+    const touffes = [-150, -118, -60, 40, 118, 150].map((x) => `<path d="M${x} ${SOL + 2} q2 -10 -1 -18 M${x + 6} ${SOL + 2} q-1 -12 3 -20" stroke="#7fb35a" stroke-width="2.2" fill="none" stroke-linecap="round"/>`).join('');
+    L.contenu.innerHTML = `
+      <path d="M-200 ${SOL} Q-80 ${SOL - 8} 0 ${SOL - 2} T200 ${SOL - 4} V240 H-200 Z" fill="#9b6b40"/>
+      <path d="M-200 ${SOL} Q-80 ${SOL - 8} 0 ${SOL - 2} T200 ${SOL - 4}" stroke="#7a5230" stroke-width="3" fill="none"/>
+      ${touffes}
+      <g class="e4-plante-loupe" transform="translate(0 80) scale(1.9)">${M.plante('gentiane')}</g>
+      <g class="e4-oeufs"></g>`;
+    const oeufs = L.contenu.querySelector('.e4-oeufs');
+    dire(T.ponte);
+    for (const [x, y] of [[-22, -64], [-26, -55], [25, -77], [5, -42]]) {
+      svgEl('g', { transform: `translate(${x} ${y}) scale(1.3)` }, oeufs).innerHTML = `<g class="e5-pop">${M.oeufAzure()}</g>`;
+      bip('poc');
+      await dormir(380);
     }
-    // le papillon s'envole de sa plante
-    L.scene.innerHTML = '<g class="e5-pop"><circle r="13" fill="#7fbf5a"/><path d="M-6 0 L-1.5 5 L7 -5" stroke="#fff" stroke-width="3.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>';
-    L.g.classList.add('e4-mini-fini');
+    await dormir(3200);
+
+    // Cachée dans une fleur, puis elle se laisse tomber.
+    const c = creerChenille(L.contenu, 'azure', { x: -22, y: -116, k: 0.7 });
+    apparaitre(c.g, 400);
+    c.corps.classList.add('e4-mange');
+    dire(T.fleur);
+    await dormir(2400);
+    c.corps.classList.remove('e4-mange');
+    bip('vol');
+    await aller(c.g, -34, SOL + 6, 650, 'cubic-bezier(.5,0,1,.6)');
+    bip('poc');
+    grandir(c, 0.9);
+    dire(T.tombe);
+
+    // Trois fourmis passent : laquelle l'adoptera ?
+    const sortes = [
+      { cle: 'lasius', de: [-230, SOL + 12], a: [-98, SOL + 12], sens: 1 },
+      { cle: 'myrmica', de: [230, SOL + 14], a: [92, SOL + 14], sens: -1 },
+      { cle: 'formica', de: [230, SOL + 42], a: [30, SOL + 42], sens: -1 },
+    ];
+    const fourmis = sortes.map((s) => {
+      const g = svgEl('g', { class: 'e4-marche-fourmi' }, L.contenu);
+      const sensG = svgEl('g', { transform: `scale(${s.sens * 3} 3)` }, g);
+      svgEl('g', { class: 'e4-fourmi' }, sensG).innerHTML = M.fourmi(s.cle);
+      const etiquette = svgEl('g', { transform: 'translate(0 7)' }, g);
+      etiquette.innerHTML = M.etiquette([M.FOURMIS[s.cle].nom]);
+      svgEl('rect', { x: -36, y: -28, width: 72, height: 58, fill: 'transparent' }, g);
+      placer(g, ...s.de);
+      return { ...s, g, sensG, etiquette };
+    });
+    await Promise.all(fourmis.map((f, i) => dormir(i * 300).then(() => aller(f.g, ...f.a, 1400, 'ease-out'))));
+    for (const f of fourmis) {
+      f.g.classList.remove('e4-marche-fourmi');
+      touchable(f.g, `Fourmi ${M.FOURMIS[f.cle].nom}`, `fourmi-${f.cle}`);
+    }
+    L.etat = 'fourmi';
+    let restantes = [...fourmis];
+    let erreurs = 0;
+    for (;;) {
+      const t = await L.attendre(restantes.map((f) => f.g), { inactif: 15000, quandInactif: () => dire(T.indiceFourmi) });
+      const choisie = restantes.find((f) => f.g === t.el);
+      if (choisie.cle === 'myrmica') break;
+      erreurs++;
+      L.etat = 'occupe';
+      // elle vient renifler la chenille… et repart
+      choisie.g.classList.add('e4-marche-fourmi');
+      const pres = positions.get(c.g).x + (choisie.a[0] < positions.get(c.g).x ? -30 : 30);
+      await aller(choisie.g, pres, choisie.a[1], 650);
+      choisie.g.classList.remove('e4-marche-fourmi');
+      bip('non');
+      dire(erreurs === 1 ? `${T.mauvaiseFourmi} ${T.indiceFourmi}` : T.mauvaiseFourmi);
+      await dormir(700);
+      choisie.sensG.setAttribute('transform', `scale(${(pres < positions.get(c.g).x ? -3 : 3)} 3)`);
+      choisie.g.classList.add('e4-marche-fourmi');
+      await aller(choisie.g, pres < positions.get(c.g).x ? -240 : 240, choisie.a[1], 1100, 'ease-in');
+      choisie.g.remove();
+      restantes = restantes.filter((f) => f !== choisie);
+      L.etat = 'fourmi';
+    }
+
+    // La bonne : une Myrmica l'emporte.
+    L.etat = 'occupe';
+    const myr = restantes.find((f) => f.cle === 'myrmica');
+    for (const f of restantes) if (f !== myr) disparaitre(f.g, 400);
+    disparaitre(myr.etiquette, 300);
+    bip('miam');
+    myr.g.classList.add('e4-marche-fourmi');
+    const ici = positions.get(c.g);
+    await aller(myr.g, ici.x + 34, ici.y + 6, 900);
+    myr.g.classList.remove('e4-marche-fourmi');
+    dire(T.adoptee);
+    await dormir(900);
+    myr.sensG.setAttribute('transform', 'scale(3 3)');
+    myr.g.classList.add('e4-marche-fourmi');
+    await aller(c.g, ici.x + 54, ici.y - 4, 300);
+    await Promise.all([aller(myr.g, 250, ici.y + 6, 1700, 'ease-in'), aller(c.g, 270, ici.y - 4, 1700, 'ease-in')]);
+
+    // Dans la fourmilière.
+    await animer(L.contenu, [{ opacity: 1 }, { opacity: 0 }], { duree: 400 });
+    L.contenu.innerHTML = M.fourmiliereCoupe();
+    const nourrices = [{ x: -86, y: 50, sens: 1 }, { x: 14, y: 52, sens: -1 }].map((n) => {
+      const g = svgEl('g', {}, L.contenu);
+      svgEl('g', { class: 'e4-fourmi' }, svgEl('g', { transform: `scale(${n.sens * 2.6} 2.6)` }, g)).innerHTML = M.fourmi('myrmica');
+      placer(g, n.x, n.y);
+      return { ...n, g };
+    });
+    const larve = creerChenille(L.contenu, 'azure', { x: -36, y: 46, k: 1.2 });
+    svgEl('rect', { x: -30, y: -30, width: 60, height: 40, fill: 'transparent' }, larve.g);
+    await animer(L.contenu, [{ opacity: 0 }, { opacity: 1 }], { duree: 400 });
+    touchable(larve.g, 'La chenille de l’azuré', 'chenille-azure');
+    dire(T.reclame);
+    L.etat = 'reclame';
+    for (let i = 0; i < 4; i++) {
+      let h = null;
+      await L.attendre([larve.g], { inactif: 6000, quandInactif: () => { h = halo(L.contenu, -36, 38, 30, 20); } });
+      if (h) h.remove();
+      const n = nourrices[i % 2];
+      bip('clic', 0.5);
+      relancer(larve.corps, 'e4-gigote-court');
+      await aller(n.g, n.sens > 0 ? -66 : -6, n.y, 280);
+      const goutte = svgEl('circle', { cx: n.sens > 0 ? -54 : -18, cy: n.y - 9, r: 3.2, fill: '#f7df7a', class: 'e5-pop' }, L.contenu);
+      bip('miam');
+      grandir(larve, 1.2 + 0.12 * (i + 1));
+      flotter(L.contenu, -36, 14, TEXTES.miam, '#8a5a2a');
+      plusTard(500, () => goutte.remove());
+      aller(n.g, n.x, n.y, 380);
+    }
+    L.etat = 'occupe';
+    dire(T.nourrie);
+    await dormir(2600);
+
+    // Près d'un an plus tard : la chrysalide, puis le papillon sort du nid.
+    const chrys = chrysalideLoupe(L.contenu, 'azure', -36, 50, 2.4);
+    await disparaitre(larve.g, 450);
+    await dormir(700);
+    await eclore(chrys);
+    const papillon = svgEl('g', {}, L.contenu);
+    const pk = svgEl('g', { transform: 'scale(1.5)' }, papillon);
+    svgEl('g', { class: 'e4-eclot e4-lent' }, pk).innerHTML = M.papillon('azure');
+    placer(papillon, -36, 30);
+    bip('eclosion');
+    dire(T.sortie);
+    await dormir(900);
+    await aller(papillon, 50, -16, 1100);
+    await aller(papillon, 76, -92, 900);
+    await aller(papillon, 76, -200, 700, 'ease-in');
+    await dormir(500);
+  }
+
+  /* ------------------------------------------------------------- Le machaon */
+
+  async function jeuMachaon(L, e) {
+    const T = e.textes;
+    L.contenu.innerHTML = `
+      <g class="e4-plante-loupe" transform="translate(0 140) scale(2.2)">${M.plante('carotte')}</g>
+      <g transform="translate(24 12) scale(2)"><g class="e4-oeuf e5-pop">${M.oeufMachaon()}</g></g>`;
+    dire(T.ponte);
+    await dormir(2400);
+    bip('eclosion');
+    await disparaitre(L.contenu.querySelector('.e4-oeuf').parentNode, 400);
+
+    // Laquelle de ces « fientes » est la chenille ?
+    const SPOTS = [[-26, 34], [48, 92], [26, 12]];
+    const vraie = Math.floor(Math.random() * SPOTS.length);
+    const spots = SPOTS.map(([x, y], i) => {
+      const g = svgEl('g', {}, L.contenu);
+      const k = svgEl('g', { transform: `scale(${i === vraie ? 1.5 : 1.9})` }, g);
+      const grand = svgEl('g', { class: 'e4-croissance' }, k);
+      const corps = svgEl('g', { class: i === vraie ? 'e4-corps' : 'e4-fiente' }, grand);
+      corps.innerHTML = i === vraie ? M.chenilleMachaonJeune() : M.fiente(i);
+      svgEl('rect', { x: -22, y: -18, width: 44, height: 28, fill: 'transparent' }, k);
+      placer(g, x, y);
+      touchable(g, `Petite chose noire et blanche n° ${i + 1}`, i === vraie ? 'chenille-machaon' : `fiente-${i}`);
+      return { g, grand, corps, x, y };
+    });
+    for (const s of spots) apparaitre(s.g, 400);
+    dire(T.fiente);
+    L.etat = 'fiente';
+    let rates = 0;
+    const trahir = () => spots[vraie].corps.classList.add('e4-rampe');
+    for (;;) {
+      const t = await L.attendre(spots.map((s) => s.g), { inactif: 12000, quandInactif: trahir });
+      const i = spots.findIndex((s) => s.g === t.el);
+      if (i === vraie) break;
+      rates++;
+      bip('beurk');
+      relancer(spots[i].corps, 'e4-secoue-petit');
+      L.bulle(spots[i].x, spots[i].y - 22, [T.vraieFiente]);
+      plusTard(1500, L.cacherBulle);
+      if (rates >= 2) trahir();
+    }
+    L.etat = 'occupe';
+    L.cacherBulle();
+    const s = spots[vraie];
+    s.corps.classList.remove('e4-rampe');
+    spots.forEach((q, i) => { if (i !== vraie) disparaitre(q.g, 400); });
+    bip('miam');
+    L.bulle(s.x, s.y - 24, [TEXTES.coucou]);
+    dire(T.trouvee);
+    await dormir(1200);
+    L.cacherBulle();
+
+    // Elle mange, grandit, mue.
+    L.etat = 'manger';
+    for (let i = 1; i <= 4; i++) {
+      await L.attendre([s.g], { inactif: 6000, quandInactif: () => dire(T.trouvee) });
+      bip('croque');
+      s.corps.classList.add('e4-mange');
+      L.etinc(s.x + 24, s.y - 6, 6, '#7fbf5a', 80);
+      flotter(L.contenu, s.x, s.y - 22, TEXTES.miam);
+      s.grand.style.transform = `scale(${(1 + i * 0.1).toFixed(2)})`;
+      plusTard(400, () => s.corps.classList.remove('e4-mange'));
+    }
+    L.etat = 'occupe';
+    await dormir(500);
+    bip('eclosion');
+    L.etinc(s.x, s.y - 8, 14, '#ffffff', 90);
+    s.corps.innerHTML = M.chenille('machaon');
+    s.grand.style.transform = 'scale(1.15)';
+    dire(T.mue);
+    await dormir(1200);
+    s.corps.classList.add('e4-rampe');
+    await aller(s.g, 14, 48, 1000);
+    s.corps.classList.remove('e4-rampe');
+    s.x = 14;
+    s.y = 48;
+    await dormir(600);
+
+    // Les fourmis : les cornes orange !
+    const venues = [{ de: [2, 200], a: [2, 86], angle: -90 }, { de: [2, -200], a: [2, 10], angle: 90 }];
+    for (let v = 0; v < venues.length; v++) {
+      const f = venues[v];
+      const fourmi = svgEl('g', { class: 'e4-marche-fourmi' }, L.contenu);
+      const tourne = svgEl('g', { transform: `rotate(${f.angle}) scale(3)` }, fourmi);
+      svgEl('g', { class: 'e4-fourmi' }, tourne).innerHTML = M.fourmi();
+      placer(fourmi, ...f.de);
+      await aller(fourmi, ...f.a, 1700, 'ease-out');
+      fourmi.classList.remove('e4-marche-fourmi');
+      L.etat = 'cornes';
+      dire(v === 0 ? T.fourmi : T.encore);
+      let h = null;
+      await L.attendre([s.g], { inactif: 5000, quandInactif: () => { h = halo(L.contenu, s.x + 20, s.y - 10, 46, 26); }, danger: TEXTES.rates.machaon });
+      if (h) h.remove();
+      L.etat = 'occupe';
+      s.corps.classList.add('e4-fache');
+      bip('pschitt');
+      odeur(L.contenu, s.x + 44, s.y - 30);
+      await dormir(450);
+      tourne.setAttribute('transform', `rotate(${-f.angle}) scale(3)`);
+      fourmi.classList.add('e4-marche-fourmi');
+      await aller(fourmi, ...f.de, 900, 'ease-in');
+      fourmi.remove();
+      s.corps.classList.remove('e4-fache');
+      if (v === 0) {
+        dire(T.cornes);
+        await dormir(3000);
+      }
+    }
+
+    // La chrysalide.
+    const chrys = chrysalideLoupe(L.contenu, 'machaon', 12, 56, 2.4, 8);
+    await disparaitre(s.g, 450);
+    dire(T.chrysalide);
+    await dormir(2200);
+    relancer(chrys.tremble, 'e4-tremble');
+    bip('clic', 0.2);
+    await dormir(900);
+  }
+
+
+
+  const JEUX = { paon: jeuPaon, aurore: jeuAurore, cuivre: jeuCuivre, azure: jeuAzure, machaon: jeuMachaon };
+
+  // La vie d'une ponte : sa loupe, son petit jeu, puis l'adulte s'envole.
+  async function vieALaLoupe(e, p) {
+    const L = ouvrirLoupePlante(e, p);
+    await dormir(500);
+    await JEUX[e.cle](L, e);
+    if (!enJeu) return;
+    await fermerLoupePlante(L);
     const point = e.cle === 'azure' ? await sortieFourmiliere(p) : (() => { const s = sommet(p); return { x: s.x, y: s.y + 6 }; })();
     const pap = creerPapillon(e.cle, point, e.cle === 'machaon' ? { chiffre: CODE[3] } : {});
     if (e.cle === 'machaon') papillonMachaon = pap;
-    pap.classList.add('e4-vite');
-    const c = ciel();
-    voler(pap, c.x, c.y, 1400, { hauteur: 40, ondule: 8 }).then(() => { pap.classList.remove('e4-vite'); errer(pap); });
-    dire(T.envol);
+    else {
+      await dormir(600);
+      pap.classList.add('e4-vite');
+      bip('vol');
+      const c = ciel();
+      voler(pap, c.x, c.y, 1600, { hauteur: 40, ondule: 8 }).then(() => { pap.classList.remove('e4-vite'); errer(pap); });
+    }
     ajouterPage(e);
     finis++;
     signaler();
   }
-
-  async function jouerDanger(L, e, d) {
-    const M2 = MENACES[d.menace](L);
-    const ok = await danger(L, { ...d, ...M2, choix: M2.choix ?? d.choix });
-    if (ok && d.menace === 'fourmi') {
-      // les cornes orange : la fourmi s'en va
-      const corps = L.scene.querySelector('.e4-corps');
-      if (corps) { corps.classList.add('e4-fache'); plusTard(900, () => corps.classList.remove('e4-fache')); }
-      bip('pschitt');
-    }
-    return ok;
-  }
-
-  // Les dangers dessinés dans les loupes.
-  const MENACES = {
-    mesange: () => ({ menace: `<g class="e4-mini-arrive"><g transform="translate(-20 -2) scale(.55)">${M.mesange()}</g></g>` }),
-    fourmi: () => ({
-      menace: `<g class="e4-mini-arrive"><g transform="translate(-22 22) scale(2)"><g class="e4-marche-fourmi"><g class="e4-fourmi">${M.fourmi()}</g></g></g></g>`,
-    }),
-    crue: (L) => {
-      L.eau.innerHTML = '<g class="e4-mini-crue"><rect x="-40" y="0" width="80" height="60" fill="#5aa6d6" opacity=".6"/><path d="M-40 0 q10 -4 20 0 t20 0 t20 0 t20 0" stroke="#e8f6fc" stroke-width="2" fill="none"/></g>';
-      const corps = L.scene.querySelector('.e5-pop');
-      return { surTouche: (n) => { corps.style.transform = `translateY(${-n * 9}px)`; corps.style.transition = 'transform .2s'; } };
-    },
-    fourmis: () => {
-      const gauche = Math.random() < 0.5 ? 'myrmica' : 'lasius';
-      const droite = gauche === 'myrmica' ? 'lasius' : 'myrmica';
-      const fourmiG = (sorte, x, s) => `<g transform="translate(${x} 22) scale(${s * 1.8} 1.8)">${M.fourmi(sorte)}</g>`;
-      return {
-        choix: 'myrmica',
-        menace: `${fourmiG(gauche, -18, 1)}${fourmiG(droite, 18, -1)}
-          <rect data-cote="${gauche}" data-e4="fourmi-${gauche}" x="-38" y="-38" width="38" height="76" fill="transparent"/>
-          <rect data-cote="${droite}" data-e4="fourmi-${droite}" x="0" y="-38" width="38" height="76" fill="transparent"/>`,
-      };
-    },
-    faim: () => ({ menace: `<g transform="translate(-20 20) scale(-1.8 1.8)">${M.fourmi('myrmica')}</g><circle class="e4-mini-goutte" cx="-8" cy="12" r="2.6" fill="#f7df7a"/>` }),
-  };
 
   // Le jeu du marais : les arrivées, l'horloge des patiences et des dangers.
   const signaux = [];
@@ -1158,7 +1764,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
         for (const c of [...comptes]) {
           c.reste -= dt;
           const k = Math.max(0, c.reste / c.total);
-          c.L.compte.setAttribute('stroke-dasharray', `${(k * ANNEAU_LOUPE).toFixed(1)} 999`);
+          c.anneau.setAttribute('stroke-dasharray', `${(k * ANNEAU).toFixed(1)} 9999`);
           if (c.reste <= 0) c.echec();
         }
       }
@@ -1339,7 +1945,8 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       get pages() { return pages.length; },
       get vies() { return vies; },
       get attente() { return femelles.filter((f) => f.attente).map((f) => f.e.cle); },
-      get dangers() { return comptes.map((c) => c.L.e.cle); },
+      get dangers() { return comptes.map((c) => c.cle); },
+      get loupes() { return loupes.map((L) => ({ cle: L.e.cle, etat: L.etat, grande: L.grande, attend: L.attentes > 0 })); },
       get question() { return question && question.f.e.cle; },
     };
   }

@@ -1981,19 +1981,17 @@ button.e5-case:disabled { opacity: .38; cursor: default; box-shadow: none; }
 .e4-secousse { animation: e4-secousse .35s; }
 @keyframes e4-secousse { 25% { transform: translateX(-5px); } 50% { transform: translateX(4px); } 75% { transform: translateX(-2px); } }
 
-.e4-mini { cursor: pointer; }
-.e4-mini:focus { outline: none; }
-.e4-mini:focus-visible > .e4-mini-pop { filter: drop-shadow(0 0 4px var(--violet)); }
-.e4-mini-pop { transform-box: fill-box; transform-origin: center; animation: e5-pop .34s cubic-bezier(.3, 1.6, .5, 1); }
-.e4-mini-alerte .e4-mini-pop { animation: e4-mini-alerte .5s ease-in-out infinite alternate; }
-@keyframes e4-mini-alerte { from { transform: scale(1); } to { transform: scale(1.12); } }
-.e4-mini-alerte .e4-mini-bord { stroke: #e04a2a; }
-.e4-mini-fini .e4-mini-pop { opacity: .8; }
-.e4-mini-arrive { animation: e4-mini-arrive .5s ease-out; }
-@keyframes e4-mini-arrive { from { transform: translateX(-30px); opacity: 0; } }
-.e4-mini-crue { animation: e4-mini-crue 1.2s ease-in-out infinite alternate; }
-@keyframes e4-mini-crue { from { transform: translateY(18px); } to { transform: translateY(8px); } }
-
+.e4-ploupe {
+  cursor: pointer;
+  transition: transform .4s cubic-bezier(.3, 1.25, .5, 1);
+}
+.e4-ploupe-grande { cursor: default; }
+/* elle attend Cyriel : un liseré doré qui respire */
+.e4-ploupe-attend:not(.e4-ploupe-grande) .e4-loupe-cadre { animation: e4-ploupe-attend .9s ease-in-out infinite alternate; }
+@keyframes e4-ploupe-attend { to { filter: drop-shadow(0 0 18px #f2c14e) drop-shadow(0 0 8px #f2c14e); } }
+/* un danger : la loupe clignote en rouge */
+.e4-ploupe-alerte .e4-loupe-cadre { animation: e4-ploupe-alerte .5s ease-in-out infinite alternate; }
+@keyframes e4-ploupe-alerte { to { filter: drop-shadow(0 0 22px #e04a2a) drop-shadow(0 0 8px #e04a2a); } }
 .e4-femelle { cursor: pointer; }
 .e4-patience { transition: stroke .3s; }
 .e4-choisie .e4-zoom { filter: drop-shadow(0 0 5px #f2c14e) drop-shadow(0 0 2px #f2c14e); }
@@ -2031,7 +2029,8 @@ button.e5-case:disabled { opacity: .38; cursor: default; box-shadow: none; }
   cursor: pointer;
 }
 @media (prefers-reduced-motion: reduce) {
-  .e4-mini-alerte .e4-mini-pop, .e4-mini-crue, .e4-secousse { animation: none; }
+  .e4-ploupe-attend .e4-loupe-cadre, .e4-ploupe-alerte .e4-loupe-cadre, .e4-secousse { animation: none; }
+  .e4-ploupe { transition: none; }
 }
 
 /* « Quel est ce papillon ? » : trois noms à toucher */
