@@ -11,8 +11,8 @@
 //   cuivré des marais     grimper au-dessus de l'eau pendant la crue d'hiver
 //   azuré des mouillères  choisir la fourmi qui l'adopte, puis réclamer à manger
 //   machaon               la chenille déguisée en fiente, puis ses cornes orange
-// Chaque papillon ajoute une page au carnet de terrain. Jamais coincée :
-// indices après deux erreurs, ou après un moment sans rien faire.
+// Chaque papillon ajoute une page au carnet de terrain. Pas d'indice dans
+// les loupes : leurs textes n'avancent que quand Cyriel touche la loupe.
 //
 // Deux chiffres du code : le 3e sur le panneau du marais (bien visible),
 // le 4e sur l'aile du machaon, à la fin.
@@ -147,7 +147,6 @@ const ESPECES = [
       fleur: 'La chenille grandit cachée dans la fleur…',
       tombe: '…puis elle se laisse tomber au sol et attend. Quelle fourmi doit l’adopter ?',
       mauvaiseFourmi: 'Pas celle-là : dans son nid, la chenille ne survivrait pas.',
-      indiceFourmi: 'Indice : elle sent comme les larves de Myrmica.',
       adoptee: 'Une Myrmica la ramasse et l’emporte dans son nid, avec ses propres larves !',
       reclame: 'Les fourmis la prennent pour une de leurs larves. Touche-la pour qu’elle réclame à manger !',
       nourrie: 'Nourrie au bouche-à-bouche par les fourmis… pendant près d’un an !',
@@ -887,7 +886,6 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       flotter(calques.bulles, s.x, s.y - 26, f.e.cle === 'machaon' ? TEXTES.refusMachaon : TEXTES.refus[refusVus++ % TEXTES.refus.length], '#d6336c');
       direFemelle(f, premierRefus ? TEXTES.premierRefus : f.e.indice);
       premierRefus = false;
-      if (f.erreurs >= 2) montrerPlante(f.e);
     }
     f.g.classList.add('e4-vite');
     await voler(f.g, f.place.x, f.place.y, 600, { hauteur: 16 });
@@ -896,15 +894,6 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
   }
 
   const lueurs = new Map();
-  function montrerPlante(e) {
-    if (lueurs.has(e.cle)) return;
-    const p = planteDe(e.plantes[0]);
-    const g = svgEl('g', { transform: `translate(${p.x} ${p.y})` }, calques.guide);
-    g.innerHTML = `<ellipse cx="0" cy="-56" rx="50" ry="74" fill="url(#e4-lueur)"/>
-      <ellipse class="e4-halo-anim" cx="0" cy="-56" rx="46" ry="68" fill="none" stroke="#f2c14e" stroke-width="3"/>`;
-    lueurs.set(e.cle, g);
-  }
-
   async function tambouriner(g) {
     const t = g.querySelector('.e4-tambour');
     t.classList.add('e4-tambourine');
@@ -989,7 +978,8 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       L.parole = null;
       if (!L.texte || !L.g.isConnected || (loupeOuverte && loupeOuverte !== L)) continue;
       const c = cibleLoupe(L);
-      L.parole = bulleParole(calques.bulles, c.x, c.y - LR * c.k - 2, L.texte, deja, L.texteVu !== L.texte);
+      const t = L.continuer ? `${L.texte} ▸` : L.texte;
+      L.parole = bulleParole(calques.bulles, c.x, c.y - LR * c.k - 2, t, deja, L.texteVu !== L.texte);
       L.texteVu = L.texte;
     }
   }
@@ -1047,7 +1037,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     const corps = p.el.querySelector('.e4-plante-corps');
     corps.style.transition = 'opacity .4s';
     corps.style.opacity = '0';
-    const g = svgEl('g', { class: 'e4-ploupe', 'data-e4': `loupe-${e.cle}` }, calques.loupes);
+    const g = svgEl('g', { class: 'e4-ploupe', 'data-e4': `loupe-${e.cle}`, tabindex: 0, role: 'button', 'aria-label': `Loupe : ${e.nom}` }, calques.loupes);
     const verre = svgEl('g', { 'clip-path': 'url(#e4-clip-loupe)' }, g);
     svgEl('circle', { r: LR, fill: 'url(#e4-fond-loupe)' }, verre);
     verre.insertAdjacentHTML('beforeend', M.bokeh());
@@ -1073,7 +1063,32 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       L.placerParole();
     };
     L.placerParole = rangerParoles;
-    L.raconter = async (t, min = 1800) => { L.dire(t); await dormir(Math.max(min, t.length * 55)); };
+    // Un texte qui attend Cyriel : la loupe brille ; un premier toucher
+    // l'agrandit, le suivant passe à la suite (rien n'avance sans elle).
+    L.continuer = false;
+    L.suite = () => new Promise((resolve) => {
+      L.attentes++;
+      L.g.classList.add('e4-ploupe-attend');
+      L.continuer = true;
+      rangerParoles();
+      const f = (ev) => {
+        if (!L.grande) return;
+        if (ev.type === 'keydown' && ev.key !== 'Enter' && ev.key !== ' ') return;
+        if (ev.type === 'pointerdown' && ev.button > 0) return;
+        ev.preventDefault();
+        L.g.removeEventListener('pointerdown', f);
+        L.g.removeEventListener('keydown', f);
+        L.attentes--;
+        if (!L.attentes) L.g.classList.remove('e4-ploupe-attend');
+        L.continuer = false;
+        rangerParoles();
+        bip('clic', 0.3);
+        resolve();
+      };
+      L.g.addEventListener('pointerdown', f);
+      L.g.addEventListener('keydown', f);
+    });
+    L.raconter = async (t) => { L.dire(t); await L.suite(); };
     L.etinc = (x, y, n, couleur, force) => {
       const c = cibleLoupe(L);
       etincelles(c.x + x * c.k, c.y + y * c.k, calme ? Math.ceil(n / 3) : Math.ceil(n * (L.grande ? 0.8 : 0.4)), couleur, force * c.k * 1.6);
@@ -1243,7 +1258,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     toile.style.opacity = '0';
     const feuilles = [...L.contenu.querySelectorAll('.e4-plante-loupe polygon')];
     for (const fe of feuilles) fe.classList.add('e4-feuille');
-    await L.raconter(T.ponte, 2600);
+    await L.raconter(T.ponte);
 
     // Éclosion : une colonie de petites chenilles noires dans leur toile.
     bip('eclosion');
@@ -1260,7 +1275,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     L.etat = 'nourrir';
     const N = 8;
     for (let i = 1; i <= N; i++) {
-      const t = await L.attendre([zoneTouche], { inactif: 7000, quandInactif: () => L.dire(T.eclosion) });
+      const t = await L.attendre([zoneTouche]);
       const x = t.x ?? 0;
       const y = t.y ?? -40;
       bip('croque');
@@ -1280,21 +1295,19 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     }
     zoneTouche.remove();
     L.etat = 'occupe';
-    await L.raconter(T.grandes, 1600);
+    await L.raconter(T.grandes);
     await Promise.all([disparaitre(colonieG, 700), disparaitre(toile, 700)]);
 
     // Une chrysalide pend sous une feuille, puis l'adulte, ailes fermées.
     const chrys = chrysalideLoupe(L.contenu, 'paon', 30, -22, 2.2);
-    L.dire(T.chrysalide);
-    await dormir(1500);
+    await L.raconter(T.chrysalide);
     await eclore(chrys);
     const adulte = svgEl('g', { transform: 'translate(32 26)' }, L.contenu);
     svgEl('rect', { x: -50, y: -96, width: 104, height: 112, fill: 'transparent' }, adulte);
     const ferme = svgEl('g', { transform: 'scale(1.5)' }, adulte);
     svgEl('g', { class: 'e5-pop' }, ferme).innerHTML = M.paonFerme();
     bip('eclosion');
-    L.dire(T.ferme);
-    await dormir(2000);
+    await L.raconter(T.ferme);
 
     // La mésange arrive.
     const oiseau = svgEl('g', {}, L.contenu);
@@ -1310,9 +1323,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     touchable(adulte, 'Le paon du jour, ailes fermées', 'paon-adulte');
     L.etat = 'mesange';
     L.dire(T.mesange);
-    let h = null;
-    await L.attendre([adulte], { inactif: 5000, quandInactif: () => { h = halo(L.contenu, 32, -12, 44, 52); }, danger: TEXTES.rates.paon });
-    if (h) h.remove();
+    await L.attendre([adulte], { danger: TEXTES.rates.paon });
     L.etat = 'occupe';
 
     // Il ouvre ses ailes : les ocelles !
@@ -1330,8 +1341,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     bip('vol');
     await voler(oiseau, -250, -200, 900, { hauteur: 20 });
     oiseau.remove();
-    L.dire(T.peur);
-    await dormir(2400);
+    await L.raconter(T.peur);
   }
 
   /* ------------------------------------------------------------- L'aurore */
@@ -1348,8 +1358,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       s.innerHTML = M.silique(l);
       return { s, g, y: y + DY, a, l };
     });
-    L.dire(T.ponte);
-    await dormir(1000);
+    await L.raconter(T.ponte);
     await animer(L.contenu.querySelector('.e4-coque'), [{ fill: '#f6f1d6' }, { fill: '#f28c28' }], { duree: 2000 });
     await dormir(800);
 
@@ -1358,7 +1367,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     const bebe = creerChenille(L.contenu, 'aurore', { x: 8, y: -112 + DY, k: 0.7 });
     bebe.corps.classList.add('e4-mange');
     disparaitre(L.contenu.querySelector('.e4-oeuf').parentNode, 1200);
-    await L.raconter(T.eclosion, 3600);
+    await L.raconter(T.eclosion);
     await disparaitre(bebe.g, 500);
 
     // Cache-cache : elle s'est allongée contre une silique.
@@ -1372,17 +1381,13 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     });
     L.dire(T.cache);
     L.etat = 'cherche-chenille';
-    let rates = 0;
-    const trahir = () => sc.s.classList.add('e4-gigote');
     for (;;) {
-      const t = await L.attendre(siliques.map((q) => q.s), { inactif: 12000, quandInactif: trahir });
+      const t = await L.attendre(siliques.map((q) => q.s));
       if (t.el === sc.s) break;
-      rates++;
       relancer(t.el, 'e4-secoue-petit');
       bip('non');
       L.bulle(t.x ?? 0, (t.y ?? 0) - 14, [T.pasCa]);
       plusTard(1400, L.cacherBulle);
-      if (rates >= 2) trahir();
     }
     L.etat = 'occupe';
     sc.s.classList.remove('e4-gigote');
@@ -1391,20 +1396,17 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     bip('miam');
     L.etinc(tete.x, tete.y, 12, '#fff3a8', 100);
     L.bulle(tete.x, tete.y - 12, [TEXTES.coucou]);
-    L.dire(T.trouvee);
-    await dormir(2600);
+    await L.raconter(T.trouvee);
     L.cacherBulle();
 
     // Chrysalide, puis l'hiver passe.
     await disparaitre(sc.s, 500);
     const chrys = chrysalideLoupe(L.contenu, 'aurore', 10, 40 + DY, 2.4, 14);
-    L.dire(T.hiver);
-    await dormir(1000);
+    await L.raconter(T.hiver);
     await hiver(L, 2800);
     await eclore(chrys);
     papillonLoupe(L, 'aurore', 4, -6, 2.2);
-    L.dire(T.printemps);
-    await dormir(3000);
+    await L.raconter(T.printemps);
   }
 
   /* ---------------------------------------------------- Le cuivré des marais */
@@ -1416,8 +1418,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       <g class="e4-fenetres"></g>
       <g transform="translate(-34 104) rotate(-32) scale(1.6)"><g class="e4-oeufs e5-pop">${M.oeufsCuivre()}</g></g>`;
     for (const fe of L.contenu.querySelectorAll('.e4-plante-loupe ellipse')) fe.classList.add('e4-feuille-saison');
-    L.dire(T.ponte);
-    await dormir(2200);
+    await L.raconter(T.ponte);
 
     // La petite chenille et ses « fenêtres ».
     bip('eclosion');
@@ -1437,7 +1438,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       c.corps.classList.remove('e4-mange');
     }
     grandir(c, 0.8);
-    await dormir(1300);
+    await L.suite();
 
     // L'automne : elle s'endort au pied de la plante.
     L.dire(T.automne);
@@ -1446,7 +1447,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     await aller(c.g, 18, 146, 1300);
     c.corps.classList.remove('e4-rampe');
     const dodo = zzz(L.contenu, 34, 124);
-    await dormir(2900);
+    await L.suite();
     dodo.remove();
 
     // La crue : l'eau monte, il faut grimper.
@@ -1487,9 +1488,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     L.dire(T.crue);
     L.etat = 'crue';
     while (marche < MARCHES.length - 1) {
-      let h = null;
-      await L.attendre([c.g], { inactif: 4500, quandInactif: () => { h = halo(L.contenu, 8, MARCHES[marche] - 4, 24, 30); }, danger: TEXTES.rates.cuivre });
-      if (h) h.remove();
+      await L.attendre([c.g], { danger: TEXTES.rates.cuivre });
       marche++;
       if (sousLEau && !sous()) sousLEau = false;
       bip('clic', 0.15 + marche * 0.1);
@@ -1501,7 +1500,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     cancelAnimationFrame(L.boucleEau);
     bip('miam');
     L.etinc(8, MARCHES[marche] - 10, 12, '#fff3a8', 100);
-    await L.raconter(T.sauvee, 2600);
+    await L.raconter(T.sauvee);
 
     // La décrue, le printemps, la métamorphose.
     await animer(eauG, [{ transform: `translate(0px, ${niveau.toFixed(1)}px)` }, { transform: `translate(0px, ${LR + 40}px)` }], { duree: 1600, easing: 'ease-in' });
@@ -1513,13 +1512,13 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     bip('croque');
     await dormir(1300);
     c.corps.classList.remove('e4-mange');
+    await L.suite();
     const chrys = chrysalideLoupe(L.contenu, 'cuivre', 16, -46, 2.4);
     await disparaitre(c.g, 450);
     await dormir(900);
     await eclore(chrys);
     papillonLoupe(L, 'cuivre', 10, -64, 2.1);
-    L.dire(T.adulte);
-    await dormir(2600);
+    await L.raconter(T.adulte);
   }
 
   /* -------------------------------------------------- L'azuré des mouillères */
@@ -1541,14 +1540,13 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       bip('poc');
       await dormir(380);
     }
-    await dormir(3200);
+    await L.suite();
 
     // Cachée dans une fleur, puis elle se laisse tomber.
     const c = creerChenille(L.contenu, 'azure', { x: -22, y: -116, k: 0.7 });
     apparaitre(c.g, 400);
     c.corps.classList.add('e4-mange');
-    L.dire(T.fleur);
-    await dormir(2400);
+    await L.raconter(T.fleur);
     c.corps.classList.remove('e4-mange');
     bip('vol');
     await aller(c.g, -34, SOL + 6, 650, 'cubic-bezier(.5,0,1,.6)');
@@ -1581,7 +1579,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     let restantes = [...fourmis];
     let erreurs = 0;
     for (;;) {
-      const t = await L.attendre(restantes.map((f) => f.g), { inactif: 15000, quandInactif: () => L.dire(T.indiceFourmi) });
+      const t = await L.attendre(restantes.map((f) => f.g));
       const choisie = restantes.find((f) => f.g === t.el);
       if (choisie.cle === 'myrmica') break;
       erreurs++;
@@ -1592,7 +1590,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       await aller(choisie.g, pres, choisie.a[1], 650);
       choisie.g.classList.remove('e4-marche-fourmi');
       bip('non');
-      L.dire(erreurs === 1 ? `${T.mauvaiseFourmi} ${T.indiceFourmi}` : T.mauvaiseFourmi);
+      L.dire(T.mauvaiseFourmi);
       await dormir(700);
       choisie.sensG.setAttribute('transform', `scale(${(pres < positions.get(c.g).x ? -3 : 3)} 3)`);
       choisie.g.classList.add('e4-marche-fourmi');
@@ -1612,8 +1610,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     const ici = positions.get(c.g);
     await aller(myr.g, ici.x + 34, ici.y + 6, 900);
     myr.g.classList.remove('e4-marche-fourmi');
-    L.dire(T.adoptee);
-    await dormir(900);
+    await L.raconter(T.adoptee);
     myr.sensG.setAttribute('transform', 'scale(3 3)');
     myr.g.classList.add('e4-marche-fourmi');
     await aller(c.g, ici.x + 54, ici.y - 4, 300);
@@ -1635,9 +1632,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     L.dire(T.reclame);
     L.etat = 'reclame';
     for (let i = 0; i < 4; i++) {
-      let h = null;
-      await L.attendre([larve.g], { inactif: 6000, quandInactif: () => { h = halo(L.contenu, -36, 38, 30, 20); } });
-      if (h) h.remove();
+      await L.attendre([larve.g]);
       const n = nourrices[i % 2];
       bip('clic', 0.5);
       relancer(larve.corps, 'e4-gigote-court');
@@ -1650,8 +1645,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       aller(n.g, n.x, n.y, 380);
     }
     L.etat = 'occupe';
-    L.dire(T.nourrie);
-    await dormir(2600);
+    await L.raconter(T.nourrie);
 
     // Près d'un an plus tard : la chrysalide, puis le papillon sort du nid.
     const chrys = chrysalideLoupe(L.contenu, 'azure', -36, 50, 2.4);
@@ -1663,8 +1657,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     svgEl('g', { class: 'e4-eclot e4-lent' }, pk).innerHTML = M.papillon('azure');
     placer(papillon, -36, 30);
     bip('eclosion');
-    L.dire(T.sortie);
-    await dormir(900);
+    await L.raconter(T.sortie);
     await aller(papillon, 50, -16, 1100);
     await aller(papillon, 76, -92, 900);
     await aller(papillon, 76, -200, 700, 'ease-in');
@@ -1678,8 +1671,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     L.contenu.innerHTML = `
       <g class="e4-plante-loupe" transform="translate(0 140) scale(2.2)">${M.plante('carotte')}</g>
       <g transform="translate(24 12) scale(2)"><g class="e4-oeuf e5-pop">${M.oeufMachaon()}</g></g>`;
-    L.dire(T.ponte);
-    await dormir(2400);
+    await L.raconter(T.ponte);
     bip('eclosion');
     await disparaitre(L.contenu.querySelector('.e4-oeuf').parentNode, 400);
 
@@ -1700,18 +1692,14 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     for (const s of spots) apparaitre(s.g, 400);
     L.dire(T.fiente);
     L.etat = 'fiente';
-    let rates = 0;
-    const trahir = () => spots[vraie].corps.classList.add('e4-rampe');
     for (;;) {
-      const t = await L.attendre(spots.map((s) => s.g), { inactif: 12000, quandInactif: trahir });
+      const t = await L.attendre(spots.map((s) => s.g));
       const i = spots.findIndex((s) => s.g === t.el);
       if (i === vraie) break;
-      rates++;
       bip('beurk');
       relancer(spots[i].corps, 'e4-secoue-petit');
       L.bulle(spots[i].x, spots[i].y - 22, [T.vraieFiente]);
       plusTard(1500, L.cacherBulle);
-      if (rates >= 2) trahir();
     }
     L.etat = 'occupe';
     L.cacherBulle();
@@ -1727,7 +1715,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     // Elle mange, grandit, mue.
     L.etat = 'manger';
     for (let i = 1; i <= 4; i++) {
-      await L.attendre([s.g], { inactif: 6000, quandInactif: () => L.dire(T.trouvee) });
+      await L.attendre([s.g]);
       bip('croque');
       s.corps.classList.add('e4-mange');
       L.etinc(s.x + 24, s.y - 6, 6, '#7fbf5a', 80);
@@ -1741,8 +1729,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
     L.etinc(s.x, s.y - 8, 14, '#ffffff', 90);
     s.corps.innerHTML = M.chenille('machaon');
     s.grand.style.transform = 'scale(1.15)';
-    L.dire(T.mue);
-    await dormir(1200);
+    await L.raconter(T.mue);
     s.corps.classList.add('e4-rampe');
     await aller(s.g, 14, 48, 1000);
     s.corps.classList.remove('e4-rampe');
@@ -1762,9 +1749,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       fourmi.classList.remove('e4-marche-fourmi');
       L.etat = 'cornes';
       L.dire(v === 0 ? T.fourmi : T.encore);
-      let h = null;
-      await L.attendre([s.g], { inactif: 5000, quandInactif: () => { h = halo(L.contenu, s.x + 20, s.y - 10, 46, 26); }, danger: TEXTES.rates.machaon });
-      if (h) h.remove();
+      await L.attendre([s.g], { danger: TEXTES.rates.machaon });
       L.etat = 'occupe';
       s.corps.classList.add('e4-fache');
       bip('pschitt');
@@ -1776,16 +1761,14 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       fourmi.remove();
       s.corps.classList.remove('e4-fache');
       if (v === 0) {
-        L.dire(T.cornes);
-        await dormir(3000);
+        await L.raconter(T.cornes);
       }
     }
 
     // La chrysalide.
     const chrys = chrysalideLoupe(L.contenu, 'machaon', 12, 56, 2.4, 8);
     await disparaitre(s.g, 450);
-    L.dire(T.chrysalide);
-    await dormir(2200);
+    await L.raconter(T.chrysalide);
     relancer(chrys.tremble, 'e4-tremble');
     bip('clic', 0.2);
     await dormir(900);
@@ -2031,7 +2014,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       get attente() { return femelles.filter((f) => f.attente).map((f) => f.e.cle); },
       get pontes() { return pontes.length; },
       get dangers() { return comptes.map((c) => c.cle); },
-      get loupes() { return loupes.map((L) => ({ cle: L.e.cle, etat: L.etat, grande: L.grande, attend: L.attentes > 0 })); },
+      get loupes() { return loupes.map((L) => ({ cle: L.e.cle, etat: L.etat, grande: L.grande, attend: L.attentes > 0, continuer: L.continuer })); },
       get question() { return question && question.f.e.cle; },
     };
   }
