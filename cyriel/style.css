@@ -691,108 +691,225 @@ body[data-fond="sombre"] {
   80% { transform: translateX(2px); }
 }
 
-/* Écran de connexion */
+/* Écran de connexion : « GoodCyriel Café », façon jeu de café en ligne */
 
-.e5-login {
+.e5-login.gc {
   position: absolute;
   inset: 0;
   z-index: 20;
+  overflow: hidden;
+  background: #ffe7c6;
+}
+.gc-decor {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.gc-contenu {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 14px;
-  padding: max(20px, env(safe-area-inset-top)) 16px max(28px, env(safe-area-inset-bottom));
-  overflow-y: auto;
-  background:
-    radial-gradient(60% 40% at 50% 18%, #ffffff 0%, rgba(255, 255, 255, 0) 100%),
-    linear-gradient(#efe4ff, #dccbff);
+  justify-content: safe center;
+  gap: 10px;
+  padding: max(14px, env(safe-area-inset-top)) 16px max(34px, env(safe-area-inset-bottom));
 }
-
-.e5-login-tete {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.gc-cache {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
-
-.e5-login-art {
+.gc-affiche {
   display: block;
-  width: min(300px, 78vw);
+  flex: 0 1 auto;
+  width: min(100%, 460px);
   height: auto;
+  max-height: 40vh;
   overflow: visible;
 }
+.gc-affiche text { font-family: var(--police); }
 
-.e5-titre {
-  margin: 4px 0 0;
-  color: var(--violet-fonce);
-  font-size: clamp(32px, 10vw, 46px);
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: -0.01em;
-  text-align: center;
-  text-shadow: 0 3px 0 #fff, 0 5px 0 #c9a8ff;
-}
-
-.e5-carte {
+/* Les gros boutons brillants */
+.gc-gros-boutons {
   display: grid;
+  justify-items: center;
   gap: 10px;
-  width: min(340px, 100%);
-  padding: 18px 18px 16px;
-  border: 2px solid var(--encre);
-  border-radius: 20px;
-  background: #fff;
-  box-shadow: 0 5px 0 var(--encre);
 }
+.gc-bouton {
+  position: relative;
+  padding: 12px 30px 14px;
+  border: 3px solid;
+  border-radius: 999px;
+  color: #fff;
+  font: 700 21px/1.1 var(--police);
+  text-shadow: 0 2px 0 rgba(40, 10, 60, .28);
+  cursor: pointer;
+}
+.gc-bouton::before {
+  content: "";
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  top: 4px;
+  height: 42%;
+  border-radius: 999px;
+  background: linear-gradient(rgba(255, 255, 255, .6), rgba(255, 255, 255, 0));
+  pointer-events: none;
+}
+.gc-jouer {
+  min-width: min(270px, 80vw);
+  border-color: #4a1fa8;
+  background: linear-gradient(#b48aff, #7a3cf0 70%);
+  box-shadow: 0 5px 0 #4a1fa8, 0 10px 18px rgba(80, 30, 10, .28);
+}
+.gc-inscrire {
+  padding: 8px 22px 10px;
+  border-color: #b8205f;
+  background: linear-gradient(#ffa6cf, #f0559a 70%);
+  font-size: 16px;
+  box-shadow: 0 4px 0 #b8205f, 0 8px 14px rgba(80, 30, 10, .22);
+}
+.gc-bouton:active { transform: translateY(3px); }
+.gc-jouer:active { box-shadow: 0 2px 0 #4a1fa8, 0 4px 10px rgba(80, 30, 10, .25); }
+.gc-inscrire:active { box-shadow: 0 1px 0 #b8205f; }
+.gc-bouton:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
 
-.e5-champ {
+/* Le panneau de connexion, sous son store rayé */
+.e5-carte.gc-panneau {
+  position: relative;
   display: grid;
-  gap: 4px;
-  color: #4a3a66;
-  font-size: 14px;
-  font-weight: 600;
+  gap: 8px;
+  width: min(360px, 100%);
+  margin-top: 16px;
+  padding: 26px 16px 12px;
+  border: 3px solid #4a1fa8;
+  border-radius: 18px;
+  background: #fffaf2;
+  box-shadow: 0 6px 0 #4a1fa8, 0 14px 26px rgba(80, 30, 10, .28);
 }
-
-.e5-champ input {
+.gc-store {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: -16px;
+  height: 22px;
+  border: 3px solid #4a1fa8;
+  border-bottom: 0;
+  border-radius: 10px 10px 0 0;
+  background: repeating-linear-gradient(90deg, #7a3cf0 0 22px, #fff 22px 44px);
+}
+.gc-store::after {
+  content: "";
+  position: absolute;
+  left: -3px;
+  right: -3px;
+  top: 100%;
+  height: 11px;
+  background:
+    radial-gradient(circle at 11px 0, #7a3cf0 0 10px, transparent 10.5px) 0 0 / 44px 11px repeat-x,
+    radial-gradient(circle at 33px 0, #fff 0 10px, transparent 10.5px) 0 0 / 44px 11px repeat-x;
+}
+.gc-champ {
+  display: grid;
+  gap: 3px;
+  color: #6b4426;
+  font-size: 13px;
+  font-weight: 700;
+}
+.gc-champ input {
   width: 100%;
-  padding: 10px 12px;
-  border: 2px solid #cdb8f2;
-  border-radius: 12px;
-  background: #faf6ff;
+  padding: 9px 12px;
+  border: 2px solid #dcc2a0;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: inset 0 2px 3px rgba(90, 45, 10, .14);
   color: var(--encre);
-  font: 600 18px/1.2 var(--police);
+  font: 600 17px/1.2 var(--police);
   -webkit-user-select: text;
   user-select: text;
 }
-.e5-champ input[readonly] { color: #6b5a88; }
-.e5-champ input:focus { outline: none; border-color: var(--violet); box-shadow: 0 0 0 3px #e3d2ff; }
+.gc-champ input[readonly] { color: #7a6a8f; background: #fbf6ee; }
+.gc-champ input:focus { outline: none; border-color: var(--violet); box-shadow: 0 0 0 3px #e3d2ff, inset 0 2px 3px rgba(90, 45, 10, .1); }
 .e5-mdp { -webkit-text-security: disc; letter-spacing: .3em; }
+.gc-ligne {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 2px;
+}
+.gc-souvenir {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #6b4426;
+  font-size: 13px;
+  cursor: pointer;
+}
+.gc-souvenir input {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  border: 2px solid #b08a63;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: inset 0 2px 2px rgba(90, 45, 10, .14);
+}
+.gc-souvenir input:checked {
+  border-color: #4a1fa8;
+  background: #7a3cf0 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 10.5 L8.6 14 L15 6.5' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 100% no-repeat;
+}
+.gc-souvenir input:focus-visible { outline: 3px solid #c9a8ff; outline-offset: 2px; }
+.e5-jouer.gc-connexion {
+  position: relative;
+  flex: none;
+  padding: 9px 20px 11px;
+  border: 3px solid #4a1fa8;
+  border-radius: 12px;
+  background: linear-gradient(#a77cff, #6a2fe0 75%);
+  color: #fff;
+  font: 700 17px/1.1 var(--police);
+  text-shadow: 0 2px 0 rgba(40, 10, 60, .25);
+  box-shadow: 0 4px 0 #4a1fa8;
+}
+.e5-jouer.gc-connexion::before {
+  content: "";
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  top: 3px;
+  height: 40%;
+  border-radius: 8px;
+  background: linear-gradient(rgba(255, 255, 255, .55), rgba(255, 255, 255, 0));
+}
+.e5-jouer.gc-connexion:active { transform: translateY(2px); box-shadow: 0 2px 0 #4a1fa8; }
 
 .e5-erreur {
   min-height: 1.2em;
-  margin: -2px 0 0;
+  margin: 0;
   color: #b8204f;
-  font-size: 14px;
+  font-size: 13.5px;
+  line-height: 1.35;
 }
-
-.e5-jouer {
-  padding: 12px;
-  border: 0;
-  border-radius: 14px;
-  background: var(--violet);
-  color: #fff;
-  font-size: 20px;
-  font-weight: 700;
-  box-shadow: 0 4px 0 var(--violet-fonce);
-}
-.e5-jouer:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--violet-fonce); }
+.e5-erreur.gc-info { color: #5a2bc4; }
 
 .e5-oubli {
   justify-self: center;
-  padding: 4px 8px;
+  padding: 2px 8px;
   border: 0;
   background: none;
-  color: var(--violet-fonce);
-  font-size: 14px;
+  color: #6a2fe0;
+  font-size: 13.5px;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -800,20 +917,65 @@ body[data-fond="sombre"] {
 
 .e5-indice {
   margin: 0;
-  padding: 10px 12px;
-  border-radius: 12px;
+  padding: 9px 12px;
+  border-radius: 10px;
   background: #f3ecff;
   font-size: 14px;
   line-height: 1.45;
 }
 
-.e5-version {
+.gc-version {
   position: absolute;
-  right: 14px;
+  left: 12px;
   bottom: max(8px, env(safe-area-inset-bottom));
   margin: 0;
-  color: #8f7bb3;
+  color: rgba(90, 45, 15, .7);
   font-size: 12px;
+  pointer-events: none;
+}
+
+/* Le chargement : la partie pas encore arrivée reste noire */
+.gc-rideau {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 5;
+  background: #160e24;
+}
+.gc-rideau.gc-balayage::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -1px;
+  height: 3px;
+  background: rgba(255, 255, 255, .8);
+  box-shadow: 0 0 14px 3px rgba(190, 150, 255, .7);
+}
+.gc-serveur {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: grid;
+  gap: 10px;
+  width: min(280px, 80vw);
+  transform: translate(-50%, -50%);
+  color: #eadcff;
+  text-align: center;
+}
+.gc-serveur-texte { margin: 0; font-size: 17px; font-weight: 600; }
+.gc-serveur .e5-barre { border-color: #8f6fd0; background: #2a1d42; }
+.gc-statut {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: max(10px, env(safe-area-inset-bottom));
+  margin: 0;
+  color: #b9a3e6;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
 }
 
 .e5-charge-texte { margin: 0; font-weight: 600; text-align: center; }
@@ -831,11 +993,89 @@ body[data-fond="sombre"] {
 }
 .e5-pourcent { margin: 0; font-size: 14px; text-align: center; font-variant-numeric: tabular-nums; }
 
-@media (orientation: landscape) and (max-height: 560px) {
-  .e5-login { flex-direction: row; flex-wrap: wrap; gap: 8px 32px; }
-  .e5-login-art { width: min(220px, 34vw); }
-  .e5-titre { font-size: 34px; }
+/* Grand écran : l'affiche un peu plus grande */
+@media (min-width: 900px) and (min-height: 880px) {
+  .gc-affiche { max-height: 44vh; }
 }
+
+/* Écran large mais pas très haut */
+@media (orientation: landscape) and (min-height: 561px) and (max-height: 820px) {
+  .gc-affiche { max-height: 36vh; }
+  .gc-contenu { gap: 8px; padding-bottom: max(26px, env(safe-area-inset-bottom)); }
+}
+
+/* Téléphone un peu court : tout se resserre */
+@media (orientation: portrait) and (max-height: 720px) {
+  .gc-contenu { gap: 8px; padding-bottom: max(26px, env(safe-area-inset-bottom)); }
+  .gc-affiche { max-height: 34vh; }
+  .gc-gros-boutons { gap: 8px; }
+  .gc-jouer { padding: 10px 26px 12px; font-size: 19px; }
+  .gc-inscrire { padding: 6px 18px 8px; font-size: 15px; }
+  .e5-carte.gc-panneau { gap: 6px; padding: 22px 14px 8px; }
+  .gc-champ input { padding: 7px 11px; }
+}
+
+/* Écran bas (téléphone couché) : l'affiche à gauche, le reste à droite */
+@media (orientation: landscape) and (max-height: 560px) {
+  .gc-contenu {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 330px);
+    grid-template-rows: auto auto;
+    align-content: center;
+    align-content: safe center;
+    justify-content: center;
+    column-gap: 20px;
+    row-gap: 6px;
+    padding: max(8px, env(safe-area-inset-top)) max(62px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  }
+  .gc-affiche { grid-row: 1 / span 2; align-self: center; width: 100%; max-height: 92vh; }
+  .gc-gros-boutons { grid-template-columns: auto auto; align-items: center; gap: 8px; }
+  .gc-bouton { white-space: nowrap; }
+  .gc-jouer { min-width: 0; padding: 8px 16px 10px; font-size: 16px; }
+  .gc-inscrire { padding: 6px 14px 8px; font-size: 14px; }
+  .e5-carte.gc-panneau { margin-top: 12px; padding: 18px 12px 6px; gap: 4px; }
+  .gc-store { top: -12px; height: 16px; }
+  .gc-champ { font-size: 12px; }
+  .gc-champ input { padding: 5px 10px; font-size: 15px; }
+  .e5-jouer.gc-connexion { padding: 6px 14px 8px; font-size: 15px; }
+  .e5-erreur { min-height: 0; }
+  .gc-version { display: none; }
+}
+
+/* Pipistrelle propose de recommencer la partie */
+.e5-relance {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(26, 16, 38, .45);
+}
+.e5-relance-boite {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  width: min(340px, 100%);
+  padding: 16px 18px 18px;
+  border: 2px solid var(--encre);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 5px 0 var(--encre);
+  text-align: center;
+}
+.e5-relance-avatar { width: 84px; height: auto; overflow: visible; }
+.e5-relance-boite p { margin: 0; font-size: 16px; line-height: 1.4; }
+.e5-relance-boutons { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.e5-relance-boutons button {
+  padding: 9px 16px 10px;
+  border: 2px solid var(--violet);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--violet-fonce);
+  font: 600 15px/1.2 var(--police);
+}
+.e5-relance-boutons .e5-principal { background: var(--violet); color: #fff; box-shadow: 0 3px 0 var(--violet-fonce); }
 
 /* Boutons du haut : livre de recettes et frigo */
 

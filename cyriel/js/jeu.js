@@ -80,6 +80,7 @@ function aller(n) {
     debug: params.get('debug'),   // null, '' ou 'carte'
     suivante: () => aller(numero + 1),
     derniere: n === ETAPES.length,
+    numero: n,
     aller,
   });
 

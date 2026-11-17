@@ -13,6 +13,8 @@
 //   cyrielClin()      clin d'œil, la main sur la joue (pour le café)
 //   cyrielNatte()     sa natte sur l'épaule et sa polaire
 //   cyrielColRoule()  chignon, col roulé et regard en coin
+//   cyrielCheffe()    en cheffe : toque, veste blanche, tablier rose, un plat
+//                     levé sur la main droite ({ plat: '…' }, origine sur la main)
 //
 // Pour en placer un :  `<g transform="translate(x y) scale(1.4)">${cyrielChapeau()}</g>`
 
@@ -318,4 +320,34 @@ export function cyrielColRoule() {
   ${cheveuxDessus()}`;
 }
 
-export const CLINS = { duoSpeleo, cyrielChapeau, duoCamargue, cyrielClin, cyrielNatte, cyrielColRoule };
+/** Cyriel en cheffe : toque, veste blanche croisée, foulard violet, tablier
+ *  rose et sa natte ; elle porte un plat sur la main droite levée. */
+export function cyrielCheffe({ plat = '' } = {}) {
+  const veste = '#ffffff';
+  const liseré = '#cdbfe8';
+  return `
+  ${ombreSol()}
+  ${jambes('#3a3f55', '#3b2a52')}
+  <path d="M-7.5 -19 Q-10 -15 -9.5 -11" stroke="${liseré}" stroke-width="5.4" stroke-linecap="round" fill="none"/>
+  <path d="M-7.5 -19 Q-10 -15 -9.5 -11" stroke="${veste}" stroke-width="4" stroke-linecap="round" fill="none"/>
+  <circle cx="-9.4" cy="-10.3" r="2.4" fill="${PEAU}"/>
+  <path d="M-8 -9 Q-9 -21 -6 -23 H6 Q9 -21 8 -9 Z" fill="${veste}" stroke="${liseré}" stroke-width=".8" stroke-linejoin="round"/>
+  <path d="M-5.6 -16.8 H5.6 L6.8 -8.6 Q0 -7.4 -6.8 -8.6 Z" fill="#ff8cc0" stroke="#e0609a" stroke-width=".6" stroke-linejoin="round"/>
+  <path d="M-5.6 -16.8 Q0 -18 5.6 -16.8" stroke="#e0609a" stroke-width=".9" fill="none"/>
+  <path d="M0 -10.4 C-2.1 -11.9 -2.5 -13.3 -1.4 -13.8 C-.7 -14.1 -.2 -13.7 0 -13.3 C.2 -13.7 .7 -14.1 1.4 -13.8 C2.5 -13.3 2.1 -11.9 0 -10.4 Z" fill="#fff"/>
+  <circle cx="-2.6" cy="-20.6" r=".7" fill="${liseré}"/><circle cx="2.6" cy="-20.6" r=".7" fill="${liseré}"/>
+  <circle cx="-2.6" cy="-18.4" r=".7" fill="${liseré}"/><circle cx="2.6" cy="-18.4" r=".7" fill="${liseré}"/>
+  <path d="M-4 -23.4 L0 -19.8 L4 -23.4 Z" fill="#7a3cf0"/>
+  ${visageCyriel({ expression: 'sourire' })}
+  ${cheveuxDessus()}
+  ${natte(-1)}
+  <path d="M-8.4 -40.6 L-8 -45.2 H8 L8.4 -40.6 Q0 -42.2 -8.4 -40.6 Z" fill="#fff" stroke="${liseré}" stroke-width=".7" stroke-linejoin="round"/>
+  <path d="M-8.2 -44.8 C-13.4 -45.6 -13.8 -53.4 -8.2 -54.6 C-7.6 -59.8 -1.8 -61.4 0 -57.6 C1.8 -61.4 7.6 -59.8 8.2 -54.6 C13.8 -53.4 13.4 -45.6 8.2 -44.8 Z" fill="#fff" stroke="${liseré}" stroke-width=".8" stroke-linejoin="round"/>
+  <path d="M-4.6 -46 Q-5 -50 -3.2 -52.6 M2.4 -46 Q2.8 -50.4 4.4 -52.4" stroke="#e6def5" stroke-width=".9" fill="none" stroke-linecap="round"/>
+  <path d="M7.4 -20 Q12.6 -20.6 13.6 -27.4" stroke="${liseré}" stroke-width="5.4" stroke-linecap="round" fill="none"/>
+  <path d="M7.4 -20 Q12.6 -20.6 13.6 -27.4" stroke="${veste}" stroke-width="4" stroke-linecap="round" fill="none"/>
+  <circle cx="13.7" cy="-28.8" r="2.4" fill="${PEAU}"/>
+  <g transform="translate(13.7 -31)">${plat}</g>`;
+}
+
+export const CLINS = { duoSpeleo, cyrielChapeau, duoCamargue, cyrielClin, cyrielNatte, cyrielColRoule, cyrielCheffe };

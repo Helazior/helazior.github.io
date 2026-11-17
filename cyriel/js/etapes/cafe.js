@@ -1,7 +1,8 @@
-// Étape 5 — le café de Cyriel.
+// Étape 6 — le café de Cyriel.
 //
 // Un petit jeu de café, en hommage à celui qu'elle adorait :
-//   1. connexion : le mot de passe est le code à 4 chiffres trouvé en chemin ;
+//   1. connexion (« GoodCyriel Café ») : le mot de passe est le code à 4
+//      chiffres trouvé en chemin ; l'écran apparaît ligne par ligne ;
 //   2. le livre de recettes dit quoi acheter ; au marché, on touche un étal
 //      pour ouvrir sa vitrine et acheter à l'unité (tout va au frigo) ;
 //   3. les clients s'installent et commandent, chacun avec son exigence
@@ -15,8 +16,10 @@
 //
 // Les aliments qu'elle déteste sont vendus au marché. Si elle en met dans la
 // casserole, le plat part quand même et le client trouve ça affreux, comme
-// elle. Il manque un ingrédient ? Retour au marché. On ne peut jamais perdre :
-// après deux essais ratés, le livre donne la liste exacte.
+// elle. Il manque un ingrédient ? Retour au marché. Les pièces sont comptées :
+// à zéro, on ne peut plus rien acheter (les clients paient en partant) ; si
+// elle ne peut vraiment plus finir les commandes, Pipistrelle propose de
+// recommencer la partie. Après deux essais ratés, le livre donne la liste exacte.
 //
 // Tous les textes sont regroupés juste en dessous. Le mot et le cadeau
 // sont à écrire par Clément : TEXTES.lettre et TEXTES.cadeau.
@@ -43,17 +46,30 @@ const TEXTES = {
   // (visibles seulement sur écran large), puis Angelounette et Rachou.
   joueurs: ['Clément', 'Xx-Chachoux-xX', 'Estelou du Luxou', 'Gaston_du_43', 'Bichette', 'Angelounette', 'Rachou'],
 
+  // L'écran de connexion, façon jeu de café en ligne d'autrefois.
   connexion: {
-    pseudo: 'Pseudo',
+    marque: 'GoodCyriel',
+    mot: 'Café',
+    titre: 'GoodCyriel Café',
+    edition: 'Édition anniversaire',
+    jouerMaintenant: 'Jouer maintenant',
+    inscrire: 'S’inscrire',
+    pseudo: 'Pseudo ou e-mail',
     pseudoValeur: 'Cyriel',
     motDePasse: 'Mot de passe',
-    jouer: 'Jouer',
+    souvenir: 'Se souvenir de moi',
+    jouer: 'Connexion',
     erreur: 'Mauvais mot de passe.',
+    dAbord: 'Entre d’abord ton mot de passe, juste en dessous.',
+    dejaInscrite: 'Tu es déjà inscrite, Cyriel ! Il ne manque que ton mot de passe.',
     oubli: 'Mot de passe oublié ?',
     indice: '4 chiffres violets qui apparaissent dans le jeu.',
     coupDePouce: 'Coup de pouce :',
+    serveur: 'Connexion au serveur…',
+    connecte: 'Connectée !',
+    transfert: (p) => `Téléchargement de l’écran d’accueil… ${p} %`,
     chargement: 'Chargement du café…',
-    version: 'Version 23.11',
+    version: 'Client v23.11',
   },
 
   // Ce que dit Pipistrelle, la serveuse.
@@ -64,7 +80,8 @@ const TEXTES = {
   marche: 'Touche un étal pour voir ce qu’il vend. Le livre et le frigo sont en haut, si besoin.',
   astuceMarche: 'Le livre de recettes, en haut, dit tout ce qu’il faut acheter.',
   achatDeteste: (a) => `${cap(a.partitif)} ? Tu es sûre ? Bon… c’est toi la cheffe.`,
-  avance: 'Plus assez de pièces ? Je t’avance mes pourboires !',
+  pasAssez: 'Plus assez de pièces ! Sers d’abord des clients : ils paient en partant.',
+  bloquee: 'Oh non… il ne reste plus assez de pièces pour finir les commandes. On recommence la partie ?',
   manqueEncore: (liste) => `Il manque encore ${liste}. On rentre quand même ?`,
   rangement: 'Je range les courses au frigo…',
   ouverture: 'On ouvre ! Les premiers clients arrivent.',
@@ -195,6 +212,8 @@ const TEXTES = {
     cuisiner: 'Cuisiner',
     relire: 'Relire le mot',
     rejouer: 'Rejouer',
+    recommencer: 'Recommencer la partie',
+    continuer: 'Continuer',
     ouvrirCadeau: 'Ouvrir le cadeau',
     relireMot: 'Relire le mot',
     fermer: 'Fermer',
@@ -262,10 +281,11 @@ const SONS = {
   marche: { fichier: 'sons/cafe-marche.mp3', volume: 1 },
 };
 
-const PIECES_DEPART = 40;
+// Les courses des trois premières commandes coûtent 24 pièces : il reste un
+// peu de marge pour une erreur ou deux.
+const PIECES_DEPART = 30;
 const PAIEMENT = 10;        // ce que laisse un client content
 const PAIEMENT_BEURK = 2;   // … et un client dégoûté
-const AVANCE = 20;          // ce que Pipistrelle avance quand la bourse est vide
 const VITESSE_MARCHE = 95;  // pixels du décor par seconde
 const NS = 'http://www.w3.org/2000/svg';
 const L = D.LIEUX;
@@ -312,6 +332,7 @@ const puces = (map, { toujours = false } = {}) => [...map].map(([k, n]) => `
 
 function gabarit() {
   const T = TEXTES;
+  const C = TEXTES.connexion;
   return `
   <div class="e5-jeu">
     <header class="e5-haut">
@@ -349,26 +370,43 @@ function gabarit() {
       </div>
     </footer>
   </div>
-  <div class="e5-login">
-    <div class="e5-login-tete">
-      <svg class="e5-login-art" viewBox="-150 -104 300 162" aria-hidden="true">${D.affiche()}</svg>
-      <h1 class="e5-titre">${esc(T.nomCafe)}</h1>
+  <div class="e5-login gc gc-en-charge">
+    <svg class="gc-decor" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMin slice" aria-hidden="true">${D.decorLogin()}</svg>
+    <div class="gc-contenu">
+      <h1 class="gc-cache">${esc(C.titre)}</h1>
+      <svg class="gc-affiche" viewBox="-190 -150 380 300" role="img" aria-label="${esc(C.titre)}">${D.afficheLogin({ marque: C.marque, mot: C.mot, edition: C.edition })}</svg>
+      <div class="gc-gros-boutons">
+        <button type="button" class="gc-bouton gc-jouer" data-e5="jouer-maintenant">${esc(C.jouerMaintenant)}</button>
+        <button type="button" class="gc-bouton gc-inscrire" data-e5="inscrire">${esc(C.inscrire)}</button>
+      </div>
+      <form class="e5-carte gc-panneau" novalidate autocomplete="off">
+        <div class="gc-store" aria-hidden="true"></div>
+        <label class="gc-champ"><span>${esc(C.pseudo)}</span>
+          <input type="text" value="${esc(C.pseudoValeur)}" readonly tabindex="-1"></label>
+        <label class="gc-champ"><span>${esc(C.motDePasse)}</span>
+          <input class="e5-mdp" type="text" inputmode="numeric" maxlength="4" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="e5-erreur"></label>
+        <div class="gc-ligne">
+          <label class="gc-souvenir"><input type="checkbox"><span>${esc(C.souvenir)}</span></label>
+          <button type="submit" class="e5-jouer gc-connexion">${esc(C.jouer)}</button>
+        </div>
+        <p class="e5-erreur" id="e5-erreur" role="alert"></p>
+        <button type="button" class="e5-oubli">${esc(C.oubli)}</button>
+        <p class="e5-indice" hidden></p>
+      </form>
     </div>
-    <form class="e5-carte" novalidate autocomplete="off">
-      <label class="e5-champ"><span>${esc(T.connexion.pseudo)}</span>
-        <input type="text" value="${esc(T.connexion.pseudoValeur)}" readonly tabindex="-1"></label>
-      <label class="e5-champ"><span>${esc(T.connexion.motDePasse)}</span>
-        <input class="e5-mdp" type="text" inputmode="numeric" maxlength="4" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="e5-erreur"></label>
-      <p class="e5-erreur" id="e5-erreur" role="alert"></p>
-      <button type="submit" class="e5-jouer">${esc(T.connexion.jouer)}</button>
-      <button type="button" class="e5-oubli" hidden>${esc(T.connexion.oubli)}</button>
-      <p class="e5-indice" hidden></p>
-    </form>
-    <p class="e5-version">${esc(T.connexion.version)}</p>
+    <p class="gc-version">${esc(C.version)}</p>
+    <div class="gc-rideau" aria-hidden="true">
+      <div class="gc-serveur">
+        <p class="gc-serveur-texte">${esc(C.serveur)}</p>
+        <div class="e5-barre"><div></div></div>
+        <p class="e5-pourcent">0 %</p>
+      </div>
+      <p class="gc-statut"></p>
+    </div>
   </div>`;
 }
 
-function demarrer({ scene, son, fx, memoire, debug }) {
+function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero }) {
   const V = debug === 'vite' ? 4 : 1;
   let vivant = true;
   const minuteurs = new Set();
@@ -960,8 +998,12 @@ function demarrer({ scene, son, fx, memoire, debug }) {
   function acheter(carte) {
     const k = carte.dataset.cle;
     if (pieces < PRIX[k]) {
-      ajouterPieces(AVANCE);
-      direUnInstant(TEXTES.avance, 3200);
+      bip('non');
+      secouer(bourse);
+      secouer(carte);
+      if (bloquee()) proposerRecommencer();
+      else direUnInstant(TEXTES.pasAssez, 3600);
+      return;
     }
     ajouterPieces(-PRIX[k]);
     frigo.set(k, nb(k) + 1);
@@ -978,6 +1020,44 @@ function demarrer({ scene, son, fx, memoire, debug }) {
       commentes.add(k);
       direUnInstant(TEXTES.achatDeteste(D.ARTICLES[k]), 3400);
     }
+  }
+
+  // Plus assez de pièces pour finir une seule des commandes restantes, et
+  // rien qui puisse en rapporter (pas de pièces sur les tables, pas de plat
+  // en route) : elle est coincée.
+  function bloquee() {
+    if (ramasseurs.size) return false;
+    if (commandes.some((c) => c.etat === 'cuisine' || c.etat === 'comptoir' || c.etat === 'servie')) return false;
+    const restantes = commandes.filter((c) => c.etat === 'dehors' || c.etat === 'assise');
+    if (!restantes.length) return false;
+    const cout = (c) => [...besoins(c)].reduce((t, [k, n]) => t + Math.max(0, n - nb(k)) * PRIX[k], 0);
+    return Math.min(...restantes.map(cout)) > pieces;
+  }
+
+  // Pipistrelle propose de recommencer la partie (sans repasser par la
+  // connexion).
+  function proposerRecommencer() {
+    if (racine.querySelector('.e5-relance')) return;
+    const el = document.createElement('div');
+    el.className = 'e5-relance';
+    el.innerHTML = `
+      <div class="e5-relance-boite" role="dialog" aria-modal="true" aria-labelledby="e5-relance-texte">
+        <svg class="e5-relance-avatar" viewBox="-40 -29 80 58" aria-hidden="true">${D.pipistrelle()}</svg>
+        <p id="e5-relance-texte">${esc(TEXTES.bloquee)}</p>
+        <div class="e5-relance-boutons">
+          <button type="button" data-e5="continuer">${esc(TEXTES.boutons.continuer)}</button>
+          <button type="button" class="e5-principal" data-e5="recommencer">${esc(TEXTES.boutons.recommencer)}</button>
+        </div>
+      </div>`;
+    racine.append(el);
+    el.querySelector('[data-e5="continuer"]').addEventListener('click', () => { bip('clic', 0.4); el.remove(); });
+    const oui = el.querySelector('[data-e5="recommencer"]');
+    oui.addEventListener('click', () => {
+      bip('clic', 0.6);
+      memoire.ecrire('cafe-relance', true);
+      allerEtape(numero);
+    });
+    oui.focus({ preventScroll: true });
   }
 
   for (const e of ETALS) {
@@ -1874,6 +1954,68 @@ function demarrer({ scene, son, fx, memoire, debug }) {
     await dormir(250);
   }
 
+  // L'écran de connexion apparaît comme sur une vieille connexion : d'abord
+  // le serveur, puis l'image qui se dessine ligne par ligne, de haut en bas,
+  // avec deux arrêts juste avant le nom du café (le temps de deviner).
+  async function apparition(ecran) {
+    const contenu = ecran.querySelector('.gc-contenu');
+    const rideau = ecran.querySelector('.gc-rideau');
+    const serveur = rideau.querySelector('.gc-serveur');
+    const barre = serveur.querySelector('.e5-barre div');
+    const pourcent = serveur.querySelector('.e5-pourcent');
+    const statut = rideau.querySelector('.gc-statut');
+    const C = TEXTES.connexion;
+    // plus court les fois suivantes, ou si les animations sont réduites
+    const reduit = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const f = (memoire.lire('cafe-login-vu', false) ? 0.35 : 1) * (reduit ? 0.6 : 1);
+    contenu.inert = true;
+    try { await document.fonts.load('700 20px DynaPuff'); } catch { /* tant pis */ }
+
+    // 1. La connexion au serveur.
+    const total = 2300 * f;
+    let fait = 0;
+    while (fait < total && vivant) {
+      const pas = 60 + Math.random() * 120;
+      await dormir(pas * (Math.random() < 0.12 ? 4 : 1));
+      fait += pas;
+      const n = Math.min(100, Math.round((fait / total) * 100));
+      barre.style.width = `${n}%`;
+      pourcent.textContent = `${n} %`;
+    }
+    serveur.querySelector('.gc-serveur-texte').textContent = C.connecte;
+    bip('ding');
+    await dormir(450 * f);
+    await animer(serveur, [{ opacity: 1 }, { opacity: 0 }], { duree: 250 });
+    serveur.remove();
+
+    // 2. L'image, ligne par ligne.
+    rideau.classList.add('gc-balayage');
+    const H = ecran.clientHeight || 1;
+    const haut = ecran.getBoundingClientRect().top;
+    const a = ecran.querySelector('.gc-affiche').getBoundingClientRect();
+    const auNiveau = (fraction) => ((a.top - haut + a.height * fraction) / H) * 100;
+    const arrets = [
+      { a: auNiveau(0.32), ms: 1000 },   // juste avant « GoodCyriel »
+      { a: auNiveau(0.44), ms: 1300 },   // juste avant « Café »
+    ];
+    let p = 0;
+    while (p < 100 && vivant) {
+      let suivant = Math.min(100, p + 1.2 + Math.random() * 3.4);
+      const arret = arrets.find((x) => !x.fait && suivant >= x.a && p < x.a);
+      if (arret) suivant = Math.max(p, arret.a - 0.4);
+      p = suivant;
+      rideau.style.top = `${p.toFixed(2)}%`;
+      statut.textContent = C.transfert(Math.round(p));
+      await dormir((55 + Math.random() * 130) * (Math.random() < 0.1 ? 3 : 1) * f);
+      if (arret) { arret.fait = true; await dormir(arret.ms * f); }
+    }
+    rideau.remove();
+    ecran.classList.remove('gc-en-charge');
+    contenu.inert = false;
+    memoire.ecrire('cafe-login-vu', true);
+    if (window.matchMedia('(hover: hover)').matches) ecran.querySelector('.e5-mdp').focus({ preventScroll: true });
+  }
+
   function connexion() {
     const ecran = $('.e5-login');
     const carte = $('.e5-carte');
@@ -1882,6 +2024,7 @@ function demarrer({ scene, son, fx, memoire, debug }) {
     const oubli = $('.e5-oubli');
     const indice = $('.e5-indice');
     let echecs = 0;
+    apparition(ecran);
     const majIndice = () => {
       const n = Math.max(0, echecs - 3);   // à partir du 4e échec, un chiffre de plus par échec
       const pouce = n ? ` ${TEXTES.connexion.coupDePouce} ${CODE.map((c, i) => (i < n ? c : '_')).join(' ')}` : '';
@@ -1892,10 +2035,24 @@ function demarrer({ scene, son, fx, memoire, debug }) {
       erreur.textContent = '';
     });
     oubli.addEventListener('click', () => {
+      bip('clic', 0.4);
       majIndice();
       indice.hidden = false;
       oubli.hidden = true;
     });
+    // Les deux gros boutons : ils ramènent au mot de passe.
+    const info = (t) => {
+      bip('clic', 0.3);
+      erreur.textContent = t;
+      erreur.classList.add('gc-info');
+      champ.focus({ preventScroll: false });
+    };
+    $('[data-e5="jouer-maintenant"]').addEventListener('click', () => {
+      if (champ.value.length === 4) carte.requestSubmit();
+      else info(TEXTES.connexion.dAbord);
+    });
+    $('[data-e5="inscrire"]').addEventListener('click', () => info(TEXTES.connexion.dejaInscrite));
+    champ.addEventListener('input', () => erreur.classList.remove('gc-info'));
     return new Promise((resolve) => {
       carte.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -1912,9 +2069,9 @@ function demarrer({ scene, son, fx, memoire, debug }) {
         }
         echecs++;
         bip('non');
+        erreur.classList.remove('gc-info');
         erreur.textContent = TEXTES.connexion.erreur;
         secouer(carte);
-        if (echecs >= 2 && indice.hidden) oubli.hidden = false;
         if (echecs >= 4) {
           majIndice();
           indice.hidden = false;
@@ -1928,7 +2085,11 @@ function demarrer({ scene, son, fx, memoire, debug }) {
   /* ------------------------------------------------------------- La partie */
 
   async function scenario() {
-    await connexion();
+    if (memoire.lire('cafe-relance', false)) {
+      // une partie recommencée : pas besoin de se reconnecter
+      memoire.ecrire('cafe-relance', false);
+      $('.e5-login').remove();
+    } else await connexion();
 
     if (memoire.lire('cafe-fini', false)) {
       for (;;) {
