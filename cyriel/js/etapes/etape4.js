@@ -754,7 +754,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
   }
 
   // « Quel est ce papillon ? » : trois noms à toucher dans le panneau. Une
-  // mauvaise réponse se grise (on en touche vite une autre) ; la bonne nomme
+  // mauvaise réponse se grise et coûte une vie (on en touche une autre) ; la bonne nomme
   // la femelle, l'étiquette reste sous elle, et elle est prête à pondre.
   function poserQuestion(f) {
     fermerQuestion();
@@ -775,10 +775,12 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       b.addEventListener('click', () => {
         if (question?.f !== f) return;
         if (x !== f.e) {
-          bip('non');
+          // Un mauvais nom coûte une vie.
           b.disabled = true;
           b.classList.add('e4-faux');
           texte.textContent = TEXTES.faux;
+          const p = positions.get(f.g) || { x: 200, y: 200 };
+          perdreVie(p.x, p.y - 30);
           return;
         }
         b.classList.add('e4-juste');
@@ -905,6 +907,8 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
       flotter(calques.bulles, s.x, s.y - 26, f.e.cle === 'machaon' ? TEXTES.refusMachaon : TEXTES.refus[refusVus++ % TEXTES.refus.length], '#d6336c');
       direFemelle(f, premierRefus ? TEXTES.premierRefus : f.e.indice);
       premierRefus = false;
+      perdreVie(s.x, s.y - 46);   // une mauvaise plante coûte une vie
+      if (!enJeu) return;
     }
     f.g.classList.add('e4-vite');
     await voler(f.g, f.place.x, f.place.y, 600, { hauteur: 16 });
