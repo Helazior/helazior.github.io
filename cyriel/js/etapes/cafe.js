@@ -69,6 +69,7 @@ const TEXTES = {
     jouerMaintenant: 'Jouer maintenant !',
     pseudo: 'Nom d’utilisateur / E-mail',
     pseudoValeur: 'Cyriel',
+    tourner: 'Tourne ton téléphone pour jouer en grand !',
     motDePasse: 'Mot de passe',
     souvenir: 'Se souvenir de moi',
     jouer: 'Connexion',
@@ -3279,7 +3280,15 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
     // un parchemin posé sur le panneau du dessin, avec la barre de chargement
     const boite = document.createElement('div');
     boite.className = 'gc-charge';
-    boite.innerHTML = `
+    // Sur un téléphone tenu debout : tourne-le, le café se joue couché.
+    const debout = () => window.matchMedia('(orientation: portrait) and (pointer: coarse)').matches;
+    const tourner = debout() ? `
+      <div class="e5-tourner" aria-hidden="true">
+        <svg viewBox="-40 -30 80 60"><g class="e5-tourner-tel"><rect x="-11" y="-20" width="22" height="40" rx="4" fill="#fffaf0" stroke="#4b3a28" stroke-width="3"/><rect x="-7" y="-14" width="14" height="26" rx="1.5" fill="#bfe4f5"/><circle cy="16" r="1.6" fill="#4b3a28"/></g>
+        <path d="M20 -18 A26 26 0 0 1 26 6" fill="none" stroke="#8f5cf7" stroke-width="3" stroke-linecap="round"/><path d="M21 3 L26 9 L31 2" fill="none" stroke="#8f5cf7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <p class="e5-tourner-texte">${esc(TEXTES.connexion.tourner)}</p>` : '';
+    boite.innerHTML = `${tourner}
       <p class="e5-charge-texte">${esc(TEXTES.connexion.chargement)}</p>
       <div class="e5-barre"><div></div></div>
       <p class="e5-pourcent">0 %</p>`;
@@ -3300,6 +3309,8 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
       };
       requestAnimationFrame(pas);
     });
+    // le temps de tourner le téléphone (au plus quelques secondes)
+    for (let i = 0; i < 16 && vivant && debout(); i++) await dormir(250);
     await dormir(250);
   }
 

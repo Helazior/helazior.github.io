@@ -2931,3 +2931,12 @@ svg.e5-m { display: block; overflow: visible; }
   font: 700 11px/1.1 Arial, Helvetica, sans-serif;
   white-space: nowrap;
 }
+
+/* Pendant le chargement, sur un téléphone debout : tourne-le */
+.e5-tourner { display: grid; place-items: center; }
+.e5-tourner svg { width: 16cqw; height: 12cqw; overflow: visible; }
+.e5-tourner-tel { transform-box: fill-box; transform-origin: 50% 50%; animation: e5-tourner 2s ease-in-out infinite; }
+@keyframes e5-tourner { 0%, 25% { transform: rotate(0); } 55%, 85% { transform: rotate(90deg); } 100% { transform: rotate(0); } }
+.e5-tourner-texte { margin: 0; text-align: center; font-weight: 700; font-size: max(13px, 3.4cqw); line-height: 1.2; color: #5a2a90; }
+@media (orientation: landscape) { .e5-tourner, .e5-tourner-texte { display: none; } }
+@media (prefers-reduced-motion: reduce) { .e5-tourner-tel { animation: none; transform: rotate(90deg); } }

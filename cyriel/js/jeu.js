@@ -143,6 +143,14 @@ function pleinEcran() {
 for (const geste of ['pointerup', 'touchend', 'click', 'keydown']) {
   window.addEventListener(geste, demanderPlein, { capture: true, passive: true });
 }
+// Quand le téléphone passe en paysage, on remet le plein écran (au prochain
+// toucher si le navigateur l'exige), même si elle l'avait quitté.
+const paysage = window.matchMedia('(orientation: landscape)');
+paysage.addEventListener('change', () => {
+  if (!paysage.matches || !pleinVoulu) return;
+  pleinQuitte = false;
+  demanderPlein();
+});
 let etaitPlein = false;
 for (const ev of ['fullscreenchange', 'webkitfullscreenchange']) {
   document.addEventListener(ev, () => {
