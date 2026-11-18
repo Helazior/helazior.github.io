@@ -788,7 +788,7 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
         nommer(f);
         fermerQuestion();
         if (f.attente) selectionner(f);
-        direFemelle(f, f.e.arrivee);
+        direFemelle(f, f.e.arrivee, 120);   // l'explication reste longtemps
       });
       zoneBoutons.append(b);
     }
@@ -818,12 +818,13 @@ function demarrer({ scene, son, fx, suivante, aller: allerEtape, debug }) {
   }
 
   // Une femelle parle : sa bulle la suit et s'efface après lecture.
-  function direFemelle(f, t) {
+  function direFemelle(f, t, msParLettre = 85) {
     if (f.parole) f.parole.remove();
     const p = positions.get(f.g) || { x: 200, y: 200 };
     const b = bulleParole(calques.bulles, p.x, p.y - 26, t);
     f.parole = b;
-    plusTard(Math.max(2600, t.length * 60), () => { if (f.parole === b) { b.remove(); f.parole = null; } });
+    // Le temps de lecture n'est pas accéléré par RYTHME (plusTard divise par R).
+    plusTard(Math.max(4000, t.length * msParLettre) * RYTHME, () => { if (f.parole === b) { b.remove(); f.parole = null; } });
   }
 
   function selectionner(f) {
