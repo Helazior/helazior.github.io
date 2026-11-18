@@ -2940,3 +2940,12 @@ svg.e5-m { display: block; overflow: visible; }
 .e5-tourner-texte { margin: 0; text-align: center; font-weight: 700; font-size: max(13px, 3.4cqw); line-height: 1.2; color: #5a2a90; }
 @media (orientation: landscape) { .e5-tourner, .e5-tourner-texte { display: none; } }
 @media (prefers-reduced-motion: reduce) { .e5-tourner-tel { animation: none; transform: rotate(90deg); } }
+
+/* La lettre sur un écran couché peu haut : plus serrée, pour tout voir d'un coup */
+@media (max-height: 520px) {
+  .e5-finale { gap: 8px; padding-top: max(8px, env(safe-area-inset-top)); padding-bottom: max(8px, env(safe-area-inset-bottom)); }
+  .e5-feuille { width: min(560px, 100%); max-height: calc(100% - 56px); padding: 12px 22px 10px; }
+  .e5-lettre h2 { margin-bottom: 6px; font-size: 19px; }
+  .e5-lettre p { margin-bottom: 6px; font-size: 14.5px; line-height: 1.4; }
+  .e5-finale-boutons button { padding-top: 7px; padding-bottom: 7px; }
+}
