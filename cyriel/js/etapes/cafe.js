@@ -2585,6 +2585,7 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
       special.etat = 'servie';
       special.objets = await fete(special, f);
       special.etat = 'partie';
+      signaler();
       return;
     }
     // Cyriel prend le plat et le pose sur le comptoir ; le fourneau reste sale.
@@ -3072,6 +3073,7 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
       }
     }
     cacherGuide();
+    signaler();                // la serveuse voit que c'est fini
     await travail;
     while (repas.length) await repas.shift();   // (de nouveaux repas s'ajoutent en route)
   }
