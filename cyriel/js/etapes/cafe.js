@@ -362,7 +362,7 @@ const TEXTES = {
     titre: 'Pour Cyriel',
     paragraphes: [
       'Bon anniversaire ma caille, ma poulette, ma dinde, ma tourterelle turque, ma grande aigrette que je ne raigrette pas.',
-      'Cette année va être belle et radieuse comme le soleil que tu es.',
+      'Cette année va être aussi belle et radieuse que le soleil que tu es.',
       'J’ai hâte de te revoir,',
     ],
     signature: 'Clément',
