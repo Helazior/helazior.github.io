@@ -507,6 +507,7 @@ body.e5-en-jeu #son { display: none; }
   .e5-zone:hover { background: rgba(255, 255, 255, .18); }
 }
 .e5-zone:active { background: rgba(70, 35, 0, .16); }
+.e5-cabane { position: absolute; inset: 4% 6%; width: 88%; height: 92%; pointer-events: none; }
 .e5-zone:focus { outline: none; }
 .e5-zone:focus-visible { outline: 3px solid #fff; outline-offset: 1px; box-shadow: 0 0 0 6px rgba(122, 60, 240, .55); }
 /* Son coupé : la note est barrée. */
@@ -624,6 +625,9 @@ body.e5-en-jeu #son { display: none; }
 .e5-sf[data-etat="pret"] .e5-sf-bulle { display: block; }
 .e5-sf[data-etat="action"] .e5-sf-minuteur,
 .e5-sf[data-etat="cuisson"] .e5-sf-minuteur { display: block; }
+/* Cyriel fait une étape : la bulle de la suivante attend au-dessus de la barre */
+.e5-sf[data-etat="action"][data-suite] .e5-sf-bulle { display: block; width: max-content; margin: 0 0 calc(var(--z) * 4px) auto; }
+.e5-sf[data-etat="action"][data-suite] .e5-sf-bulle .e5-sf-pointe { display: none; }
 
 .e5-sf-bulle {
   position: relative;
@@ -765,6 +769,9 @@ body.e5-en-jeu #son { display: none; }
 
 /* Dans la salle : la casserole du plat prêt brille. */
 .e5-fourneau-pret .e5-casserole { filter: drop-shadow(0 0 3px #ffd23f); }
+.e5-bouillon { animation: e5-bouillon .9s ease-in-out infinite; }
+@keyframes e5-bouillon { 50% { transform: translateY(-1.2px); opacity: .6; } }
+@media (prefers-reduced-motion: reduce) { .e5-bouillon { animation: none; } }
 
 @media (prefers-reduced-motion: reduce) {
   .e5-sf-vite[aria-pressed="false"], .e5-sf[data-etat="pret"] .e5-sf-bulle, .e5-sf-pop { animation: none; }
@@ -1805,6 +1812,40 @@ button.e5-case:disabled { opacity: .38; cursor: default; box-shadow: none; }
 .e5-rpanier { background: linear-gradient(#ffe27a, #f4bb33); }
 .e5-rfouet { background: linear-gradient(#b4e05a, #7fb52a); }
 .e5-rbouton-vide { background: #efe3c8; border-style: dashed; box-shadow: none; }
+.e5-ractif {
+  grid-template-rows: 1fr auto;
+  gap: 0;
+  padding: 3px 0 2px;
+  color: #2d1a0a;
+  font: 400 11.5px/1 "Patua One", Georgia, serif;
+  cursor: pointer;
+  transition: transform .12s, filter .12s;
+}
+.e5-ractif svg { width: 34px; height: 34px; }
+.e5-ractif img { width: 38px; height: 38px; }
+.e5-ractif span { text-shadow: 0 1px 0 rgba(255, 255, 255, .55); }
+.e5-ractif:hover { filter: brightness(1.06); }
+.e5-ractif:active { transform: translateY(2px); }
+.e5-ractif:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+/* La recette commandée : la photo du client dans le coin, et le bouton qui invite */
+.e5-rcommandee { --bord: #5d8f2a; box-shadow: inset 0 0 0 2px #f7edd6, 0 0 0 3px rgba(150, 204, 70, .55); }
+.e5-rpour {
+  position: absolute;
+  top: -12px;
+  right: -8px;
+  z-index: 1;
+  display: flex;
+}
+.e5-rpour .e5-mini {
+  width: 34px;
+  height: 34px;
+  margin-left: -10px;
+  border: 2px solid #5d8f2a;
+  border-radius: 50%;
+  background: #fff8e8;
+}
+.e5-rcommandee .e5-ractif.e5-rfouet { animation: e5-invite 1.5s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .e5-rcommandee .e5-ractif.e5-rfouet { animation: none; } }
 .e5-rsecrete { border-style: dashed; }
 /* Téléphone couché : une carte par page, un peu plus serrée */
 .e5[data-mise="paysage"] .e5-gl-page { padding: 14px 12px 10px; }
@@ -2219,9 +2260,21 @@ svg.e5-m { display: block; overflow: visible; }
 .e5-montre .e5-gcoule { animation: e5-coule .7s cubic-bezier(.3, 1.4, .5, 1) both; }
 @keyframes e5-coule { from { transform: scale(.25, .1); } }
 .e5-gprix svg { width: 1.15em; height: 1.15em; }
+/* La morsure dans le cupcake choisi (et la confiture, si c'était le bon) */
+.e5-gmorsure, .e5-gdedans { visibility: hidden; }
+.e5-gmorsure.e5-croque, .e5-fourre .e5-gdedans { visibility: visible; }
+.e5-gcroc { transform-box: view-box; }
+.e5-croque .e5-gcroc { animation: e5-gcroc .28s steps(2, end) both; }
+@keyframes e5-gcroc { from { transform: scale(.45); } }
+.e5-gmiettes circle { opacity: 0; }
+.e5-croque .e5-gmiettes circle { animation: e5-gmiette .6s ease-in both; }
+.e5-croque .e5-gmiettes circle:nth-child(2) { animation-delay: .06s; }
+.e5-croque .e5-gmiettes circle:nth-child(3) { animation-delay: .12s; }
+@keyframes e5-gmiette { from { opacity: 1; transform: translate(4px, -14px); } 70% { opacity: 1; } to { opacity: 0; transform: translate(-3px, 8px); } }
+.e5-fourre .e5-gcoule { animation: e5-coule .7s cubic-bezier(.3, 1.4, .5, 1) both; }
 
 @media (prefers-reduced-motion: reduce) {
-  .e5-gsaut, .e5-mtoque, .e5-montre .e5-gcoule, .e5-roue-part.e5-gagnant { animation: none; }
+  .e5-gsaut, .e5-mtoque, .e5-montre .e5-gcoule, .e5-roue-part.e5-gagnant, .e5-croque .e5-gcroc, .e5-fourre .e5-gcoule, .e5-croque .e5-gmiettes circle { animation: none; }
 }
 
 
@@ -2730,3 +2783,151 @@ svg.e5-m { display: block; overflow: visible; }
 @keyframes e2-coeurs-touche { 20% { transform: translateX(-5px); } 45% { transform: translateX(5px); } 70% { transform: translateX(-3px); } }
 @media (prefers-reduced-motion: reduce) { .e2-coeur-pop, .e2-coeurs-touche { animation: none; } }
 .e5-cyriel { pointer-events: none; }
+
+/* Le tableau noir du marché : cadre de bois doré, ardoise, titre à la craie.
+   Pour le décor : rien n'y est touchable, sauf la croix. */
+.e5-ardoise .e5-cadre {
+  width: min(380px, 100%);
+  border: 9px solid #e0b04a;
+  border-radius: 14px;
+  background: radial-gradient(120% 90% at 40% 30%, #4d5a52, #353f3a 70%);
+  box-shadow: inset 0 0 0 2px #8a6420, 0 0 0 2px #8a6420, 0 6px 0 rgba(60, 35, 10, .45);
+}
+.e5-ardoise .e5-cadre-tete {
+  border-bottom: 0;
+  background: transparent;
+  padding: 10px 8px 0 16px;
+}
+.e5-ardoise .e5-cadre-tete h2 {
+  color: #f4f1e8;
+  font: 400 24px/1.1 "Patua One", Georgia, serif;
+  text-align: center;
+  text-shadow: 0 0 1px rgba(255, 255, 255, .6);
+  padding-left: 34px;
+}
+.e5-ardoise .e5-croix { background: #f7c8c0; color: #b53a2e; border-color: #8a3a2e; box-shadow: 0 2px 0 #8a3a2e; }
+.e5-ardoise .e5-cadre-corps { padding: 0 10px 12px; overflow: hidden; }
+.e5-ardoise-dessin { display: block; width: 100%; height: auto; pointer-events: none; font-family: "Patua One", Georgia, serif; }
+
+/* La popularité du café (le pouce vert) : +0,1 par client content */
+.e5-popularite {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #43301c;
+  font: 400 calc(var(--u) * 30)/1 "Patua One", Georgia, serif;
+  pointer-events: none;
+  transform-origin: 50% 50%;
+}
+.e5-popularite.e5-monte { animation: e5-monte .6s cubic-bezier(.3, 1.6, .5, 1); color: #3c8a1e; }
+@keyframes e5-monte { 40% { transform: scale(1.3); } }
+.e5-pieces-or { opacity: .85; }
+/* Le pouce vert d'un client content qui quitte sa table */
+.e5-pouce { animation: e5-pouce 1.6s ease-out both; transform-box: fill-box; transform-origin: 50% 100%; }
+@keyframes e5-pouce {
+  0% { opacity: 0; transform: translateY(6px) scale(.3); }
+  20% { opacity: 1; transform: translateY(0) scale(1.15); }
+  30% { transform: scale(1); }
+  80% { opacity: 1; transform: translateY(-6px); }
+  100% { opacity: 0; transform: translateY(-14px); }
+}
+@media (prefers-reduced-motion: reduce) { .e5-pouce, .e5-popularite.e5-monte { animation: none; } }
+
+/* La cuisson : rien au-dessus du fourneau tant qu'on ne le touche pas ;
+   au toucher, une bulle parchemin avec le nom du plat, la barre en %, ce
+   qui se passe et le temps restant (et le 60x). */
+.e5-sf-titre, .e5-sf-pourcent, .e5-sf-temps { display: none; }
+.e5-sf[data-etat="cuisson"]:not([data-info]) { display: none; }
+.e5-sf[data-etat="cuisson"] .e5-sf-minuteur {
+  width: calc(var(--z) * 150px);
+  padding: calc(var(--z) * 5px) calc(var(--z) * 8px) calc(var(--z) * 6px);
+  border: calc(var(--z) * 2.5px) solid #4b3a28;
+  border-radius: calc(var(--z) * 9px);
+  background: #f3e5c6;
+  box-shadow: 0 calc(var(--z) * 2px) 0 rgba(60, 35, 10, .25);
+}
+.e5-sf[data-etat="cuisson"] .e5-sf-minuteur > .e5-sf-pointe path { fill: #f3e5c6; stroke: #4b3a28; stroke-width: 2.5; stroke-linejoin: round; }
+.e5-sf[data-etat="cuisson"] .e5-sf-titre {
+  display: block;
+  margin: 0 0 calc(var(--z) * 4px);
+  overflow: hidden;
+  color: #3d2c1c;
+  font: 400 calc(var(--z) * 13px)/1.1 "Patua One", Georgia, serif;
+  text-align: center;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.e5-sf-jauge { position: relative; }
+.e5-sf[data-etat="cuisson"] .e5-sf-pourcent {
+  display: block;
+  position: absolute;
+  right: calc(var(--z) * 6px);
+  top: 50%;
+  transform: translateY(-50%);
+  color: #fff;
+  font: 700 calc(var(--z) * 10px)/1 Arial, Helvetica, sans-serif;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, .6);
+}
+.e5-sf[data-etat="cuisson"] .e5-sf-pied { flex-wrap: wrap; row-gap: calc(var(--z) * 2px); }
+.e5-sf[data-etat="cuisson"] .e5-sf-legende {
+  flex: 1 1 100%;
+  padding: calc(var(--z) * 2px) calc(var(--z) * 4px);
+  border-radius: calc(var(--z) * 3px);
+  background: #3a3029;
+  color: #f3e5c6;
+  font-size: calc(var(--z) * 10px);
+  text-align: left;
+}
+.e5-sf[data-etat="cuisson"] .e5-sf-temps {
+  display: block;
+  flex: 1;
+  color: #3d2c1c;
+  font: 700 calc(var(--z) * 13px)/1.1 Arial, Helvetica, sans-serif;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Les fourneaux : la poêle n'apparaît que pendant la préparation et la
+   cuisson ; prêt, il ne reste que le plat fini ; pris, le fourneau est sale. */
+.e5-fourneau:not(.e5-actif) .e5-casserole { visibility: hidden; }
+.e5-fourneau-pret .e5-poele { visibility: hidden; }
+.e5-salete { display: none; }
+.e5-sale .e5-salete { display: inline; }
+.e5-stock .e5-pop { transform-box: fill-box; transform-origin: 50% 100%; }
+
+/* L'horloge d'un client qui attend trop : elle tremble quand il va partir */
+.e5-horloge-in { transform-box: fill-box; transform-origin: 50% 50%; }
+.e5-horloge-in.e5-presse { animation: e5-tremble .4s ease-in-out infinite; }
+@keyframes e5-tremble { 25% { transform: rotate(-8deg); } 75% { transform: rotate(8deg); } }
+@media (prefers-reduced-motion: reduce) { .e5-horloge-in.e5-presse { animation: none; } }
+/* Au fourneau : ce qui est déjà au comptoir ou en train de cuire */
+.e5-rstatut {
+  position: absolute;
+  top: -12px;
+  left: -6px;
+  z-index: 1;
+  margin: 0;
+  padding: 3px 8px;
+  border: 2px solid #3f86c8;
+  border-radius: 10px;
+  background: #e8f3fd;
+  color: #24527d;
+  font: 700 11px/1.1 Arial, Helvetica, sans-serif;
+  white-space: nowrap;
+}
+/* Au fourneau : ce qui est déjà au comptoir ou en train de cuire */
+.e5-rstatut {
+  position: absolute;
+  top: -12px;
+  left: -6px;
+  z-index: 1;
+  margin: 0;
+  padding: 3px 8px;
+  border: 2px solid #3f86c8;
+  border-radius: 10px;
+  background: #e8f3fd;
+  color: #24527d;
+  font: 700 11px/1.1 Arial, Helvetica, sans-serif;
+  white-space: nowrap;
+}

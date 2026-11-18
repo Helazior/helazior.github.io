@@ -9,24 +9,27 @@
 //      au frigo) ;
 //   3. les clients (les joueurs du marché) s'installent et commandent,
 //      chacun une recette du livre ;
-//   4. au fourneau, le livre s'ouvre : on choisit la commande, on met dans la
-//      casserole les bons ingrédients du frigo. Puis la bulle du fourneau
-//      demande les ingrédients, puis chaque étape (on touche le fourneau) ;
-//      la barre se remplit, et la cuisson démarre, avec son minuteur et son
-//      bouton 60x au-dessus du fourneau. Il y a trois fourneaux : pendant
-//      qu'un plat cuit, on en lance un autre ;
-//   5. Cyriel sert. Le dernier client, Clément, commande la spécialité,
+//   4. on touche un fourneau : le livre s'ouvre, la photo du client est sur
+//      sa recette. « Cuisiner » lance la recette (s'il manque un ingrédient,
+//      le bouton est le panier : la boutique d'ingrédients s'ouvre dans le
+//      café). La bulle du fourneau montre chaque ingrédient puis chaque geste :
+//      on la touche, Cyriel le fait (on peut en toucher plusieurs d'affilée).
+//      La cuisson démarre ; on touche le fourneau pour voir où elle en est.
+//      Il y a trois fourneaux : pendant qu'un plat cuit, on en lance un autre ;
+//   5. prêt, on touche le plat : Cyriel le pose sur le comptoir bleu, avec
+//      ses portions ; le fourneau sale se nettoie d'un toucher. La serveuse
+//      sert les clients, ils paient (au compteur), lèvent le pouce et partent ;
+//      elle débarrasse. Le dernier client, Clément, commande la spécialité,
 //      puis laisse son mot.
 //
 // La roue de la fortune (au marché) et le camion du chef pâtissier (à droite
-// du café) font gagner des pièces ou des ingrédients : de quoi se débloquer.
+// du café) font gagner des billets ou des ingrédients : de quoi se débloquer.
 //
-// Les aliments qu'elle déteste sont vendus au marché. Si elle en met dans la
-// casserole, le plat part quand même et le client trouve ça affreux, comme
-// elle. Il manque un ingrédient ? Retour au marché. Les pièces sont comptées :
-// à zéro, on ne peut plus rien acheter (les clients paient en partant) ; si
+// Les aliments qu'elle déteste sont vendus au marché (Pipistrelle s'étonne
+// si elle en achète). L'argent (les billets) est compté : sans assez
+// d'argent, on ne peut plus rien acheter (les clients paient en partant) ; si
 // elle ne peut vraiment plus finir les commandes, Pipistrelle propose de
-// recommencer la partie. Après deux essais ratés, le livre donne la liste exacte.
+// recommencer la partie.
 //
 // L'écran du restaurant reprend la maquette de Clément : les menus sont
 // découpés dans images/hud/ et posés aux mêmes places (voir HUD plus bas).
@@ -47,7 +50,6 @@ const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
 const TEXTES = {
   joueuse: 'Cyriel',   // le nom dans le bandeau, en haut
   nomCafe: 'Café de Cyriel',
-  ramasser: 'Ramasser les pièces',
   ouvert: 'Ouvert',
   panneauCafe: 'Café',
 
@@ -55,6 +57,8 @@ const TEXTES = {
   // Chachoux qui se promène, Estel sur le banc, Angelounette et Rachou ;
   // Maximeunpeudifferent et Inesquiressemblepas ne viennent qu'au café, pour manger.
   joueurs: ['Clément', 'Xx-Chachoux-xX', 'Esteloux', 'Maximeunpeudifferent', 'Inesquiressemblepas', 'Angelounette', 'Rachou'],
+  // Les clients de passage (ils mangent ce qu'il y a sur le comptoir).
+  passants: ['Tom_63', 'Lulu', 'Mimi_Crêpe', 'Jojo', 'Nina42', 'Léo'],
 
   // L'écran de connexion : l'image de Clément (images/connexion-cafe.webp),
   // avec les vrais champs posés exactement sur ceux du dessin. Les textes
@@ -82,28 +86,33 @@ const TEXTES = {
   // Ce que dit Pipistrelle, qui conseille la cheffe.
   retour: 'Te revoilà, cheffe ! Tu veux relire ton mot, ou rejouer une partie ?',
   intro: 'Bienvenue dans ton café, cheffe Cyriel ! Moi, c’est Pipistrelle : je te donnerai des conseils. Ce soir, on rouvre.',
-  livre: (plats) => `Le frigo est vide… Les premiers clients ont réservé ${plats}. Regarde dans le livre de recettes ce qu’il faut acheter !`,
+  livre: (plats) => `Le frigo est vide… Ce soir, il va y avoir du monde ! Les premiers clients mangeront ce qu’il y a sur le comptoir ; ensuite, certains ont réservé ${plats}. Regarde dans le livre de recettes ce qu’il faut acheter !`,
   versMarche: 'Allons au marché faire les courses !',
   marche: 'Touche un étal pour voir ce qu’il vend. Le livre de recettes et le panier (ton frigo) sont en bas à droite.',
   astuceMarche: 'Le livre de recettes, en bas à droite, dit tout ce qu’il faut acheter.',
   achatDeteste: (a) => `${cap(a.partitif)} ? Tu es sûre ? Bon… c’est toi la cheffe.`,
-  pasAssez: 'Plus assez de pièces ! Sers d’abord des clients (ils paient en partant), ou tente ta chance à la roue de la fortune.',
-  bloquee: 'Oh non… il ne reste plus assez de pièces pour finir les commandes. Tente ta chance à la roue de la fortune, au marché, ou au camion du chef pâtissier, à droite du café ! Sinon, on peut recommencer la partie.',
-  astuceRoue: 'Psst ! La roue de la fortune, à droite du marché, fait gagner des pièces et des ingrédients.',
+  pasAssez: 'Plus assez d’argent ! Sers d’abord des clients (ils paient en partant), ou tente ta chance à la roue de la fortune.',
+  bloquee: 'Oh non… il ne reste plus assez d’argent pour finir les commandes. Tente ta chance à la roue de la fortune, au marché, ou au camion du chef pâtissier, à droite du café ! Sinon, on peut recommencer la partie.',
+  astuceRoue: 'Psst ! La roue de la fortune, à droite du marché, fait gagner de l’argent et des ingrédients.',
   astuceCamion: 'Tiens, le camion du chef pâtissier est garé à droite du café : touche-le pour jouer à « Trouve la garniture » !',
   manqueEncore: (liste) => `Il manque encore ${liste}. On rentre quand même ?`,
   rangement: 'Je range les courses au frigo…',
   ouverture: 'On ouvre ! Les premiers clients arrivent.',
-  premiereCommande: 'Un client s’est installé ! Touche un fourneau : le livre de recettes te dira ce qu’il veut.',
+  premierPassant: 'Un client s’est installé ! Il mangera ce qu’il y a sur le comptoir : touche un fourneau, puis « Cuisiner » sur une recette (une salade fait 10 portions).',
+  premiereCommande: 'Un client s’est installé ! Touche un fourneau pour ouvrir le livre, puis « Cuisiner » sur la recette qu’il a commandée.',
   commandeSuivante: 'Touche un fourneau libre pour préparer une autre commande.',
   enParallele: 'Pendant que ça cuit, lance la commande suivante sur un autre fourneau : tu en as trois !',
   cuissonEnCours: 'Ça cuit… Le bouton jaune 60x, au-dessus du fourneau, accélère le plat.',
+  parti: (nom) => `${nom} en a eu assez d’attendre… Il est parti sans manger.`,
+  cyOccupee: 'Cyriel s’active aux fourneaux…',
   rienAPreparer: 'Aucune autre commande pour l’instant.',
   astuce60x: 'Pour aller plus vite : le bouton jaune 60x, au-dessus du fourneau.',
   attenteClient: 'On attend le prochain client…',
-  preparation: 'Touche le fourneau : sa bulle te montre quoi faire, étape par étape.',
+  preparation: 'Touche la bulle au-dessus du fourneau : Cyriel y va. Tu peux en toucher plusieurs d’affilée, elle les fait dans l’ordre !',
   vraiTemps: 'Comme dans le vrai jeu, la cuisson prend du vrai temps ! Pour ne pas attendre, touche le bouton jaune 60x, au-dessus du fourneau.',
-  pret: (n) => `C’est prêt sur le fourneau ${n} ! Touche-le pour poser le plat sur le comptoir.`,
+  pret: (n) => `C’est prêt sur le fourneau ${n} ! Touche-le : Cyriel pose le plat sur le comptoir bleu.`,
+  auComptoir: (r, n) => `${cap(r.dans)} sur le comptoir : ${n} portions ! La serveuse les apporte aux clients qui l’ont commandé.`,
+  sale: 'Le fourneau est sale : touche-le pour que Cyriel le nettoie.',
   pretSpecial: (n) => `Le gâteau est prêt sur le fourneau ${n} ! Touche-le pour le sortir du four.`,
   service: 'Bon appétit !',
   calme: 'Ouf, tout le monde est servi.',
@@ -141,36 +150,25 @@ const TEXTES = {
   rappels: {},
 
   recettes: {
-    salade: { nom: 'Salade du jardin', dans: 'une salade du jardin', cuit: 'La salade se prépare…' },
-    soupe: { nom: 'Soupe à la tomate', dans: 'une soupe à la tomate', cuit: 'La soupe mijote…' },
-    omelette: { nom: 'Omelette', dans: 'une omelette', cuit: 'L’omelette dore dans la poêle…' },
-    mousse: { nom: 'Mousse au chocolat', dans: 'une mousse au chocolat', cuit: 'La mousse prend au frais… pendant trois heures ! Touche le fourneau pour la finir tout de suite.' },
-    chocolat: { nom: 'Chocolat chaud', dans: 'un chocolat chaud', cuit: 'Le chocolat chauffe…' },
-    tarte: { nom: 'Tarte à la rhubarbe', dans: 'une tarte à la rhubarbe', cuit: 'La tarte dore au four…' },
-    crepes: { nom: 'Crêpes à la crème de marron', dans: 'des crêpes', cuit: 'Les crêpes dorent dans la poêle…' },
-    gateau: { nom: 'Gâteau rhubarbe et crème de marron', dans: 'ce gâteau', cuit: 'Le gâteau cuit… Ça sent bon la rhubarbe et la crème de marron.' },
+    salade: { nom: 'Salade du jardin', dans: 'une salade du jardin', etape: 'La salade marine', cuit: 'La salade se prépare…' },
+    soupe: { nom: 'Soupe à la tomate', dans: 'une soupe à la tomate', etape: 'La soupe mijote', cuit: 'La soupe mijote…' },
+    omelette: { nom: 'Omelette', dans: 'une omelette', etape: 'L’omelette dore', cuit: 'L’omelette dore dans la poêle…' },
+    mousse: { nom: 'Mousse au chocolat', dans: 'une mousse au chocolat', etape: 'La mousse prend au frais', cuit: 'La mousse prend au frais… pendant trois heures ! Touche le fourneau pour la finir tout de suite.' },
+    chocolat: { nom: 'Chocolat chaud', dans: 'un chocolat chaud', etape: 'Le chocolat chauffe', cuit: 'Le chocolat chauffe…' },
+    tarte: { nom: 'Tarte à la rhubarbe', dans: 'une tarte à la rhubarbe', etape: 'La tarte dore au four', cuit: 'La tarte dore au four…' },
+    crepes: { nom: 'Crêpes à la crème de marron', dans: 'des crêpes', etape: 'Les crêpes dorent', cuit: 'Les crêpes dorent dans la poêle…' },
+    gateau: { nom: 'Gâteau rhubarbe et crème de marron', dans: 'ce gâteau', etape: 'Le gâteau cuit', cuit: 'Le gâteau cuit… Ça sent bon la rhubarbe et la crème de marron.' },
   },
   // Les étapes au fourneau : le nom sous la barre qui se remplit.
   gestes: {
     ingredients: 'Ajouter les ingrédients',
+    ingredient: (a) => `+ ${a.nom}`,
+    nettoyer: 'Nettoyer',
     remuer: 'Remuer', etaler: 'Étaler la pâte', enfourner: 'Enfourner',
     verser: 'Verser la pâte', retourner: 'Retourner la crêpe', melanger: 'Mélanger',
     couper: 'Couper les légumes', battre: 'Battre les œufs', plier: 'Plier l’omelette', fondre: 'Faire fondre le chocolat',
   },
 
-  // La vérification de la casserole.
-  verif: {
-    vide: 'La casserole est vide : touche les ingrédients du frigo pour les ajouter.',
-    sans: (a) => `Pas ${a.de} dans cette commande !`,
-    intrus: (a, r) => `${cap(a.defini)} ${a.pluriel ? 'ne vont' : 'ne va'} pas dans ${r.dans}.`,
-    trop: (a) => `Il y a trop ${a.de}.`,
-    manque: 'Il manque quelque chose… Relis bien la recette et la commande.',
-    manqueFrigoFlou: 'Il manque quelque chose, et le frigo n’a pas tout ce qu’il faut. Relis bien la commande, puis va au marché !',
-    manqueFrigo: (liste) => `Il manque ${liste}, et le frigo n’en a plus : direction le marché !`,
-    detesteSpecial: (a) => `${cap(a.defini)} dans la spécialité de la maison ? Sûrement pas : elle doit être parfaite !`,
-    aide: 'Coup de pouce : il faut exactement',
-  },
-  audacieux: 'Audacieux…',
 
   // Les aliments détestés : la réaction des clients.
   reactions: ['Beurk !', 'Pouah !', 'Affreux !'],   // ce que dit chaque client
@@ -192,14 +190,21 @@ const TEXTES = {
     recettes: 'Les recettes',
     secretTitre: 'Spécialité de la maison',
     secret: 'Recette réservée à un client très spécial…',
-    portions: 'Portions : 1',
+    portions: (n) => `Portions : ${n}`,
+    portionsSecret: 'Portions : 1',
     pret: (t) => `Prête en : ${t}`,
     parPortion: (n) => `${n} par portion`,
     inconnu: 'Prête en : ???',
     epice: (a) => `Épice (facultative) : ${a.nom}`,
     etoiles: (n) => (n ? `Servie ${n} fois ce soir` : 'Pas encore servie ce soir'),
     toutLa: 'Tout est au frigo : touche un fourneau pour cuisiner !',
-    manque: 'Il manque des ingrédients : direction le marché !',
+    cuisiner: 'Cuisiner',
+    marche: 'Boutique',
+    auComptoir: (n) => `Au comptoir : ${n}`,
+    enRoute: 'Au fourneau',
+    personne: (r) => `Personne n’a commandé ${r.dans} pour l’instant.`,
+    commandePar: (noms) => `Commandée par ${noms.join(', ')}`,
+    manque: 'Il manque des ingrédients : touche le panier au fourneau, ou va au marché !',
     avant: 'Page précédente',
     apres: 'Page suivante',
     page: (n, total) => `${n} / ${total}`,
@@ -208,7 +213,7 @@ const TEXTES = {
     reste: (n) => `${n} au frigo`,
   },
   frigo: { titre: 'Frigo', vide: 'Le frigo est vide. Les courses se font au marché !' },
-  boutique: { acheter: 'Acheter', vendre: 'Revendre', auFrigo: 'Au frigo :', bourse: 'Tes pièces', etals: 'Les étals du marché', vitrine: 'La vitrine', cadeau: 'Cadeau' },
+  boutique: { acheter: 'Acheter', vendre: 'Revendre', auFrigo: 'Au frigo :', bourse: 'Ton argent', etals: 'Les étals du marché', vitrine: 'La vitrine', cadeau: 'Cadeau', titreCafe: 'Boutique d’ingrédients' },
 
   // Le Café chat, en bas à gauche.
   chat: {
@@ -228,9 +233,12 @@ const TEXTES = {
     recettes: 'Livre de recettes',
     frigo: 'Frigo',
     fouet: 'Cuisiner',
+    dejaMarche: 'On est déjà au marché ! Le panneau « Café » ramène au café.',
+    marchePlusTard: 'Le marché, c’est juste après : écoute d’abord Pipistrelle.',
     niveau: (n) => `Niveau ${n}`,
     xp: 'Expérience',
-    pieces: 'Pièces',
+    pieces: 'Argent',
+    popularite: 'Popularité du café',
     sonCouper: 'Couper le son',
     sonRemettre: 'Remettre le son',
     aide: 'Aide',
@@ -240,7 +248,7 @@ const TEXTES = {
     envoyer: 'Envoyer',
     etiquettes: {
       carte: 'Carte', reglages: 'Réglages', porte: 'Quitter',
-      cadeau: 'Cadeaux', toques: 'Équipe', marmite: 'Cuisine', noeud: 'Serveuse', toque: 'Cheffe',
+      cadeau: 'Cadeaux', marche: 'Aller au marché', marmite: 'Cuisine', noeud: 'Serveuse', toque: 'Cheffe',
       onglets: ['Café chat', 'Amis', 'Cuisine', 'Ustensiles'],
     },
     messages: {
@@ -248,7 +256,6 @@ const TEXTES = {
       reglages: 'Les réglages ? Tout est déjà parfait, cheffe.',
       porte: 'Tu pars déjà ? Pas avant la fin du service !',
       cadeau: 'Les cadeaux ? Patience… une surprise t’attend à la fin de la soirée.',
-      toques: 'L’équipe au complet : toi en cuisine, moi en salle !',
       marmite: 'Pour cuisiner, touche un fourneau.',
       noeud: 'Le nœud papillon, c’est ma petite touche chic !',
       toque: 'La toque de cheffe, c’est toi qui la portes !',
@@ -268,8 +275,8 @@ const TEXTES = {
     titre: 'Roue de la fortune !',
     sousTitre: 'Fais tourner la roue et gagne de super prix !',
     gratuit: 'Le premier tour est gratuit !',
-    offert: 'Bourse vide ? Ce tour est offert !',
-    prix: 'Un tour coûte 1 pièce.',
+    offert: 'Caisse vide ? Ce tour est offert !',
+    prix: 'Un tour coûte 10 billets.',
     bouton: 'Faire tourner !',
     libre: 'gratuit',
   },
@@ -278,7 +285,7 @@ const TEXTES = {
     titre: 'Hourra !',
     bravo: 'Félicitations !',
     frigo: 'Ton prix se trouve dans ton frigo !',
-    bourse: 'Tes pièces sont dans ta bourse !',
+    bourse: 'Les billets sont dans ta caisse !',
     ok: 'OK',
   },
   // Relever un plat avec son épice (celle du livre : vanille, persil…),
@@ -288,8 +295,8 @@ const TEXTES = {
     question: (a) => `Veux-tu relever ce plat avec ${a.partitif} ?`,
     oui: 'oui',
     non: 'non',
-    xp: 5,
-    pieces: 4,
+    xp: 3,
+    pieces: 10,
     miam: (client, a) => `${client} adore la touche ${a.de} !`,
   },
   // Cuisiner tout de suite : on touche un fourneau qui cuit.
@@ -297,23 +304,25 @@ const TEXTES = {
     question: 'Cuisiner tout de suite ?',
     encore: (n) => `Encore possible ${n} fois !`,
     fini: 'Plus possible ce soir !',
-    pasAssez: 'Il te faut 1 pièce !',
-    utiliser: 'Cuisiner tout de suite pour 1 pièce',
+    pasAssez: 'Il te faut 10 billets !',
+    utiliser: 'Cuisiner tout de suite pour 10 billets',
     non: 'non',
     fois: 25,
   },
+  // Le tableau noir du marché (pour le décor : rien n'y est touchable).
+  tableau: { aria: 'Tableau noir : permis de travail', titre: 'Permis de travail', compte: '4 sur 5', recharger: 'Recharger les permis' },
   // Le petit jeu du camion du chef pâtissier, garé à droite du café.
   garniture: {
     aria: 'Camion du chef pâtissier : Trouve la garniture !',
     titre: 'Trouve la garniture !',
     consigne: 'Le chef a caché de la confiture dans un seul de ses cupcakes. Touche une flèche pour choisir !',
     partie: 'Une partie :',
-    offerte: 'Bourse vide : partie offerte !',
+    offerte: 'Caisse vide : partie offerte !',
     gagne: 'Miam, délicieux ! Tu as trouvé la garniture ! Réessaie tout de suite.',
     rate: 'Raté ! Réessaie !',
-    pieces: 'Tes pièces',
-    cout: 1,
-    prix: 3,
+    pieces: 'Ton argent',
+    cout: 10,
+    prix: 30,
     cupcake: (n) => `Cupcake ${n} : choisir`,
   },
 
@@ -321,12 +330,15 @@ const TEXTES = {
 
   fourneau: {
     toucher: 'touche le fourneau',
+    arrive: 'Cyriel arrive…',
+    dejaDemande: 'Cyriel s’en occupe !',
     accelerer: 'Accélérer la cuisson 60 fois',
   },
   // Ce qui s'affiche au-dessus des fourneaux (pour les lecteurs d'écran).
   feux: {
     nom: (n) => `Fourneau ${n}`,
     pret: 'prêt !',
+    sale: 'à nettoyer',
   },
 
   boutons: {
@@ -364,31 +376,44 @@ const TEXTES = {
 // prix : ce que laisse le client (par portion) ; xp : l'expérience gagnée ;
 // epice : facultative, elle relève le plat (voir TEXTES.epice).
 // Les quatre premières viennent de la maquette du livre de Clément.
+// La couleur du plat dans la casserole (dessus, bord), une fois mélangé.
+const COULEURS_CASSEROLE = {
+  salade: ['#8fcf5a', '#5c9a2c'], soupe: ['#e2553e', '#a8301f'], omelette: ['#f6d24c', '#d6a828'],
+  mousse: ['#7a4728', '#4f2a14'], chocolat: ['#8a5530', '#5a3218'], tarte: ['#e9b85e', '#b97f30'],
+  crepes: ['#f2cf8a', '#cf9a4c'], gateau: ['#d9a06a', '#a46a38'],
+};
+
 const RECETTES = {
-  salade: { plat: 'saladier', categorie: 'feuille', ingredients: { tomates: 1, oignon: 1, salade: 1 }, gestes: ['couper', 'melanger'], cuisson: 3, prix: 9, xp: 18, epice: 'persil' },
-  soupe: { plat: 'soupe', categorie: 'louche', ingredients: { tomates: 1, oignon: 1, creme: 1 }, gestes: ['couper', 'remuer'], cuisson: 10, prix: 10, xp: 22, epice: 'basilic' },
-  omelette: { plat: 'omelette', categorie: 'plat', ingredients: { oeufs: 1 }, gestes: ['battre', 'plier'], cuisson: 1, prix: 6, xp: 12, epice: 'piment' },
-  mousse: { plat: 'mousse', categorie: 'dessert', ingredients: { oeufs: 1, chocolat: 1, creme: 1 }, gestes: ['fondre', 'battre'], cuisson: 180, prix: 14, xp: 30, epice: 'vanille' },
-  chocolat: { plat: 'tasse', categorie: 'boisson', ingredients: { lait: 1, chocolat: 1 }, gestes: ['remuer'], cuisson: 5, prix: 10, xp: 20, epice: 'vanille' },
-  tarte: { plat: 'tarte', categorie: 'dessert', ingredients: { farine: 1, beurre: 1, sucre: 1, rhubarbe: 1 }, gestes: ['etaler', 'enfourner'], cuisson: 12, four: true, prix: 12, xp: 26, epice: 'vanille' },
-  crepes: { plat: 'crepes', categorie: 'dessert', ingredients: { farine: 1, oeufs: 1, lait: 1, marron: 1 }, gestes: ['verser', 'retourner'], cuisson: 8, prix: 14, xp: 28, epice: 'vanille' },
-  gateau: { plat: 'gateau', categorie: 'dessert', ingredients: { rhubarbe: 1, farine: 1, oeufs: 1, sucre: 1, marron: 1 }, gestes: ['melanger', 'enfourner'], cuisson: 15, four: true, prix: 0, xp: 0, secret: true },
+  salade: { plat: 'saladier', categorie: 'feuille', ingredients: { tomates: 1, oignon: 1, salade: 1 }, gestes: ['couper', 'melanger'], cuisson: 3, prix: 24, xp: 5, portions: 10, epice: 'persil' },
+  soupe: { plat: 'soupe', categorie: 'louche', ingredients: { tomates: 1, oignon: 1, creme: 1 }, gestes: ['couper', 'remuer'], cuisson: 10, prix: 14, xp: 17, portions: 12, epice: 'basilic' },
+  omelette: { plat: 'omelette', categorie: 'plat', ingredients: { oeufs: 1 }, gestes: ['battre', 'plier'], cuisson: 1, prix: 100, xp: 2, portions: 5, epice: 'piment' },
+  mousse: { plat: 'mousse', categorie: 'dessert', ingredients: { oeufs: 1, chocolat: 1, creme: 1 }, gestes: ['fondre', 'battre'], cuisson: 180, prix: 40, xp: 25, portions: 12, epice: 'vanille' },
+  chocolat: { plat: 'tasse', categorie: 'boisson', ingredients: { lait: 1, chocolat: 1 }, gestes: ['remuer'], cuisson: 5, prix: 30, xp: 6, portions: 8, epice: 'vanille' },
+  tarte: { plat: 'tarte', categorie: 'dessert', ingredients: { farine: 1, beurre: 1, sucre: 1, rhubarbe: 1 }, gestes: ['etaler', 'enfourner'], cuisson: 12, four: true, prix: 45, xp: 12, portions: 8, epice: 'vanille' },
+  crepes: { plat: 'crepes', categorie: 'dessert', ingredients: { farine: 1, oeufs: 1, lait: 1, marron: 1 }, gestes: ['verser', 'retourner'], cuisson: 8, prix: 35, xp: 10, portions: 10, epice: 'vanille' },
+  gateau: { plat: 'gateau', categorie: 'dessert', ingredients: { rhubarbe: 1, farine: 1, oeufs: 1, sucre: 1, marron: 1 }, gestes: ['melanger', 'enfourner'], cuisson: 15, four: true, prix: 0, xp: 0, portions: 1, secret: true },
 };
 const ACCELERATION = 60;
 
 // Les clients (les joueurs du marché), leur table et leur commande : la
 // recette du livre, telle quelle (on pourrait ajouter plus: { oeufs: 1 } ou
-// sans: ['sucre'], le jeu sait encore les gérer). Trois tables : les trois
-// derniers attendent qu'une table se libère.
+// sans: ['sucre'], le jeu sait encore les gérer). Quatre tables : les deux
+// derniers attendent qu'une table se libère (et soit débarrassée).
 const CLIENTS = [
   { sorte: 'bichette', table: 1, recette: 'omelette' },
   { sorte: 'chachoux', table: 0, recette: 'crepes' },
   { sorte: 'estel', table: 2, recette: 'salade' },
-  { sorte: 'gaston', table: 1, recette: 'soupe' },
-  { sorte: 'angeloune', table: 0, recette: 'mousse' },
+  { sorte: 'gaston', table: 3, recette: 'soupe' },
+  { sorte: 'angeloune', table: 1, recette: 'mousse' },
   { sorte: 'rachou', table: 2, recette: 'tarte' },
 ];
-const ARRIVEES = [600, 5200, 6400, 2500, 3500, 3500];   // millisecondes avant chaque arrivée
+// Avant eux, beaucoup de clients de passage qui ne demandent rien de précis :
+// la serveuse leur apporte ce qu'il y a sur le comptoir.
+const PASSANTS = ['passant0', 'passant1', 'passant2', 'passant3', 'passant4', 'passant5'];
+const NB_LIBRES = 14;
+const CLIENTS_LIBRES = Array.from({ length: NB_LIBRES }, (_, i) => ({ sorte: PASSANTS[(i * 5) % PASSANTS.length], recette: null }));
+const SOIREE = [...CLIENTS_LIBRES, ...CLIENTS];
+const ARRIVEES = (i) => (i === 0 ? 600 : i < NB_LIBRES ? 3600 : 4200);   // millisecondes avant chaque arrivée
 // Les joueurs du marché, dans l'ordre de TEXTES.joueurs (pour leurs pseudos).
 const SORTES = ['clement', 'chachoux', 'estel', 'gaston', 'bichette', 'angeloune', 'rachou'];
 
@@ -401,10 +426,10 @@ const DETESTES = ['poivron', 'aubergine', 'gingembre', 'coriandre', 'balsamique'
 
 // Les cases de la roue de la fortune (k : 'pieces' ou un aliment, n : combien).
 const SEGMENTS_ROUE = [
-  { k: 'pieces', n: 5 }, { k: 'chocolat', n: 1 }, { k: 'vanille', n: 1 }, { k: 'tomates', n: 2 },
-  { k: 'pieces', n: 10 }, { k: 'oeufs', n: 2 }, { k: 'persil', n: 1 }, { k: 'pieces', n: 5 },
+  { k: 'pieces', n: 50 }, { k: 'chocolat', n: 1 }, { k: 'vanille', n: 1 }, { k: 'tomates', n: 2 },
+  { k: 'pieces', n: 100 }, { k: 'oeufs', n: 2 }, { k: 'persil', n: 1 }, { k: 'pieces', n: 50 },
   { k: 'creme', n: 1 }, { k: 'marron', n: 1 }, { k: 'basilic', n: 1 }, { k: 'farine', n: 2 },
-  { k: 'pieces', n: 20 }, { k: 'piment', n: 1 }, { k: 'vanille', n: 1 }, { k: 'rhubarbe', n: 1 },
+  { k: 'pieces', n: 200 }, { k: 'piment', n: 1 }, { k: 'vanille', n: 1 }, { k: 'rhubarbe', n: 1 },
 ];
 
 // Chaque étal a son dessin au marché (cabane, cagettes, panneau, kiosque) ;
@@ -416,10 +441,11 @@ const ETALS = [
   { cle: 'cave', nom: 'Cave et marée', couleur: '#e39b2d', fonce: '#a8641a', articles: ['vin', 'champagne', 'huitres'] },
 ];
 
+// Les prix, en billets (comme dans le jeu : la salade 30, l'oignon 60, les tomates 90).
 const PRIX = {
-  rhubarbe: 3, farine: 1, sucre: 1, marron: 4, chocolat: 3, oeufs: 2, lait: 1, beurre: 2,
-  tomates: 2, oignon: 1, salade: 2, creme: 2, vanille: 3, persil: 1, basilic: 1, piment: 1,
-  poivron: 2, aubergine: 2, gingembre: 2, coriandre: 1, balsamique: 4, vin: 5, champagne: 9, huitres: 6,
+  rhubarbe: 60, farine: 30, sucre: 30, marron: 90, chocolat: 70, oeufs: 40, lait: 30, beurre: 50,
+  tomates: 90, oignon: 60, salade: 30, creme: 50, vanille: 80, persil: 30, basilic: 30, piment: 30,
+  poivron: 60, aubergine: 60, gingembre: 50, coriandre: 30, balsamique: 100, vin: 150, champagne: 300, huitres: 200,
 };
 
 // Les sons de fond du café (dans sons/) et leur volume (1 = normal) : la
@@ -430,10 +456,16 @@ const SONS = {
   marche: { fichier: 'sons/cafe-marche.mp3', volume: 1 },
 };
 
-// Les courses des trois premières commandes coûtent 15 pièces : il reste de
-// la marge pour une erreur ou deux (et la roue, le camion, si ça coince).
-const PIECES_DEPART = 30;
-const PAIEMENT_BEURK = 2;   // ce que laisse un client dégoûté
+// L'argent, en billets. Toutes les recettes du soir coûtent environ 1 200
+// billets d'ingrédients ; les clients paient en partant (le prix d'une
+// portion), et il reste de la marge pour une erreur ou deux (et la roue, le
+// camion, si ça coince).
+const PIECES_DEPART = 1200;
+const PAIEMENT_BEURK = 5;
+const PRIX_TOUR = 10;        // un tour de roue
+const PRIX_EXPRESS = 10;     // cuisiner tout de suite
+const PATIENCE = { horloge: 120000, depart: 360000 };   // ms d'attente : l'horloge, puis il s'en va
+const POPULARITE = 19.9;   // la popularité du café au départ (+0,1 par client content)   // ce que laisse un client dégoûté
 const VITESSE_MARCHE = 95;  // pixels du décor par seconde
 const NS = 'http://www.w3.org/2000/svg';
 const L = D.LIEUX;
@@ -443,9 +475,9 @@ const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 // … et les espaces avant ! ? : ; » (et après «) deviennent insécables.
 const fr = (t) => esc(t).replace(/ ([!?:;»])/g, '\u00a0$1').replace(/« /g, '«\u00a0');
 const recette = (cle) => ({ ...RECETTES[cle], ...TEXTES.recettes[cle] });
-const nomDe = (sorte) => TEXTES.joueurs[SORTES.indexOf(sorte)];
+const nomDe = (sorte) => (sorte.startsWith('passant') ? TEXTES.passants[+sorte.slice(7)] : TEXTES.joueurs[SORTES.indexOf(sorte)]);
 const icone = (k) => `<svg viewBox="-24 -24 48 48" aria-hidden="true">${D.ARTICLES[k].dessin()}</svg>`;
-const ICONE_PIECE = `<svg viewBox="-12 -12 24 24" aria-hidden="true">${D.pieceSeule()}</svg>`;
+const ICONE_PIECE = `<svg viewBox="-12 -12 24 24" aria-hidden="true">${D.billet()}</svg>`;
 // Les icônes de la boutique et du livre, comme dans les maquettes.
 const ICONE_CHARIOT = `<svg viewBox="-12 -12 24 24" aria-hidden="true"><path d="M-10 -7 H-6.6 L-3.8 5 H6.8 L9.2 -3.6 H-5.4" fill="none" stroke="#5a2a0e" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M-10 -7 H-6.6 L-3.8 5 H6.8 L9.2 -3.6 H-5.4" fill="none" stroke="#f2832e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M-4.6 -0.6 H8" stroke="#f2832e" stroke-width="1.4"/><circle cx="-2.2" cy="8.4" r="2" fill="#f2832e" stroke="#5a2a0e" stroke-width="1"/><circle cx="5.6" cy="8.4" r="2" fill="#f2832e" stroke="#5a2a0e" stroke-width="1"/></svg>`;
 const ICONE_CAISSE = `<svg viewBox="-12 -12 24 24" aria-hidden="true"><rect x="-6.4" y="-10" width="12.8" height="7.6" rx="1.2" fill="#fffdf6" stroke="#5a3a1a" stroke-width="1.3"/><path d="M-3.6 -6.2 H3.6" stroke="#5a3a1a" stroke-width="1.2"/><path d="M-10 -1.6 H10 L9 9 H-9 Z" fill="#fffdf6" stroke="#5a3a1a" stroke-width="1.3" stroke-linejoin="round"/><path d="M-6 2 H-2.4 M1 2 H6 M-6 5.4 H-2.4 M1 5.4 H6" stroke="#5a3a1a" stroke-width="1.3" stroke-linecap="round"/></svg>`;
@@ -476,25 +508,6 @@ function besoins(cmd) {
   for (const [k, n] of Object.entries(cmd.plus || {})) m.set(k, (m.get(k) || 0) + n);
   for (const k of cmd.sans || []) m.delete(k);
   return m;
-}
-
-// Vérifie la casserole. Les aliments détestés sont toujours acceptés : le
-// client les goûtera…
-function verifier(cmd, potComplet) {
-  const b = besoins(cmd);
-  // L'épice de la recette (facultative) peut être dans la casserole : elle
-  // relève le plat, elle ne compte pas comme un intrus.
-  const pot = new Map(potComplet);
-  pot.delete(RECETTES[cmd.recette].epice);
-  // La spécialité doit être parfaite : pas d'aliment détesté.
-  const deteste = cmd.special && [...pot.keys()].find((k) => DETESTES.includes(k));
-  if (deteste) return { ok: false, type: 'deteste', k: deteste };
-  for (const k of cmd.sans || []) if (pot.get(k)) return { ok: false, type: 'sans', k };
-  for (const k of pot.keys()) if (!DETESTES.includes(k) && !b.has(k)) return { ok: false, type: 'intrus', k };
-  for (const [k, n] of pot) if (b.has(k) && n > b.get(k)) return { ok: false, type: 'trop', k };
-  const manque = [...b].filter(([k, n]) => (pot.get(k) || 0) < n);
-  if (manque.length) return { ok: false, type: 'manque', manque };
-  return { ok: true, extra: [...pot.keys()].find((k) => DETESTES.includes(k)) || null };
 }
 
 const puces = (map, { toujours = false } = {}) => [...map].map(([k, n]) => `
@@ -529,7 +542,7 @@ const ZONES = {
   },
   actions: {
     recettes: [604, 1398, 708, 1496], fouet: [708, 1394, 798, 1502], frigo: [798, 1390, 910, 1496],
-    cadeau: [426, 1520, 562, 1646], toques: [562, 1524, 650, 1646], marmite: [650, 1530, 730, 1630],
+    cadeau: [426, 1520, 562, 1646], marche: [562, 1524, 650, 1646], marmite: [650, 1530, 730, 1630],
     noeud: [730, 1530, 826, 1630], toque: [826, 1514, 908, 1650],
   },
 };
@@ -542,11 +555,11 @@ function hudHtml() {
     carte: E.carte, son: H.sonCouper, reglages: E.reglages, aide: H.aide, plein: H.plein, porte: E.porte,
     'chat-haut': H.chatHaut, 'chat-bas': H.chatBas, envoyer: H.envoyer,
     recettes: H.recettes, fouet: H.fouet, frigo: H.frigo,
-    cadeau: E.cadeau, toques: E.toques, marmite: E.marmite, noeud: E.noeud, toque: E.toque,
+    cadeau: E.cadeau, marche: E.marche, marmite: E.marmite, noeud: E.noeud, toque: E.toque,
   };
   const etiquette = (nom) => NOMS[nom] ?? E.onglets[+nom.split('-')[1]];
   const zones = (bloc) => Object.entries(ZONES[bloc]).map(([nom, r]) => `
-        <button type="button" class="e5-zone e5-z" data-hud="${nom}" style="${place(HUD[bloc], r)}" aria-label="${esc(etiquette(nom))}">${nom === 'frigo' ? '<b class="e5-badge" hidden>0</b>' : ''}</button>`).join('');
+        <button type="button" class="e5-zone e5-z" data-hud="${nom}" style="${place(HUD[bloc], r)}" aria-label="${esc(etiquette(nom))}">${nom === 'frigo' ? '<b class="e5-badge" hidden>0</b>' : ''}${nom === 'marche' ? `<svg class="e5-cabane" viewBox="-44 -60 88 120" aria-hidden="true">${D.cabaneMarche()}</svg>` : ''}</button>`).join('');
   const G = HUD.gauche;
   const CH = HUD.chat;
   const A = HUD.actions;
@@ -558,12 +571,14 @@ function hudHtml() {
         <img class="e5-bloc-img" src="images/hud/gauche.webp" alt="" draggable="false">
         <svg class="e5-niveau e5-z" style="${place(G, [86, 38, 150, 86])}" viewBox="0 0 64 48" role="img"><text x="32" y="36" text-anchor="middle"></text></svg>
         <div class="e5-xp e5-z" style="${place(G, [31, 107, 241, 135])}" role="progressbar" aria-label="${esc(H.xp)}" aria-valuemin="0"><span class="e5-xp-plein"></span><span class="e5-xp-texte"></span></div>
-        <span class="e5-pieces-icone e5-z" style="${place(G, [16, 252, 86, 304])}" aria-hidden="true"></span>
-        <div class="e5-pieces e5-z" style="${place(G, [92, 262, 210, 296])}" role="status" aria-label="${esc(H.pieces)}"><span>${PIECES_DEPART}</span></div>
+        <span class="e5-pieces-icone e5-z" style="${place(G, [14, 182, 92, 248])}" aria-hidden="true"></span>
+        <div class="e5-pieces e5-z" style="${place(G, [92, 202, 222, 238])}" role="status" aria-label="${esc(H.pieces)}"><span>${PIECES_DEPART}</span></div>
+        <div class="e5-pieces e5-pieces-or e5-z" style="${place(G, [92, 262, 210, 296])}" aria-hidden="true"><span>0</span></div>
       </div>
       <div class="e5-bloc e5-bloc-centre">
         <img class="e5-bloc-img" src="images/hud/centre.webp" alt="" draggable="false">
         <p class="e5-joueuse e5-z" style="${place(HUD.centre, [270, 16, 612, 64])}">${esc(TEXTES.joueuse)}</p>
+        <p class="e5-popularite e5-z" style="${place(HUD.centre, [268, 92, 364, 128])}" role="status" aria-label="${esc(H.popularite)}">${POPULARITE.toFixed(1)}</p>
       </div>
       <div class="e5-bloc e5-bloc-droite">
         <img class="e5-bloc-img" src="images/hud/droite.webp" alt="" draggable="false">${zones('droite')}
@@ -595,9 +610,11 @@ const surFeuHtml = (k) => `
       <div class="e5-sf" data-k="${k}" data-etat="libre">
         <button type="button" class="e5-sf-bulle"><span class="e5-sf-icones"></span>${POINTE}</button>
         <div class="e5-sf-minuteur">
-          <div class="e5-sf-barre" aria-hidden="true">${'<span><i></i></span>'.repeat(SEGMENTS)}</div>
+          <p class="e5-sf-titre"></p>
+          <div class="e5-sf-jauge"><div class="e5-sf-barre" aria-hidden="true">${'<span><i></i></span>'.repeat(SEGMENTS)}</div><b class="e5-sf-pourcent"></b></div>
           <div class="e5-sf-pied">
             <span class="e5-sf-legende"></span>
+            <span class="e5-sf-temps"></span>
             <button type="button" class="e5-sf-vite" aria-pressed="false" hidden><svg viewBox="0 0 16 12" aria-hidden="true"><path d="M1 1 L7.5 6 L1 11 Z M8.5 1 L15 6 L8.5 11 Z"/></svg><span>60x</span></button>
           </div>${POINTE}
         </div>
@@ -669,12 +686,12 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
       ${D.tables()}
       <g class="e5-calque-tables"></g>
       ${D.decorAvant()}
-      ${D.camion(TEXTES.garniture.aria)}
+      ${D.camion(TEXTES.garniture.aria, L.camion.x, L.camion.y)}
       <g class="e5-calque-volants"></g>
       <g class="e5-calque-bulles"></g>
     </g>
     <g class="e5-vue" data-vue="marche" style="visibility:hidden">
-      ${D.marche(ETALS, TEXTES.joueurs, TEXTES.panneauCafe, TEXTES.roue.aria)}
+      ${D.marche(ETALS, TEXTES.joueurs, TEXTES.panneauCafe, TEXTES.roue.aria, TEXTES.tableau.aria)}
     </g>
     <g class="e5-guidage" pointer-events="none">
       <g class="e5-halo" style="display:none"><ellipse class="e5-halo-anim" rx="40" ry="32" fill="none" stroke="#9b6bff" stroke-width="3"/></g>
@@ -863,7 +880,19 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
     const haut = boite(blocCentre).y1 + m;
     const chat = boite(repereChat);
     const plat = boite(reperePlateaux);
-    const c = cadreCourant;
+    let c = cadreCourant;
+    // Couché, la salle prend toute la hauteur de l'écran, comme dans le jeu :
+    // les menus se posent par-dessus ses coins.
+    if (paysage && cadreCourant === CADRES.cafe) {
+      c = D.CADRE_CAFE_PAYSAGE;
+      const kp = Math.min(l / c.l, h / c.h);
+      const vxp = c.x + c.l / 2 - l / 2 / kp;
+      const vyp = c.y + c.h / 2 - h / 2 / kp;
+      svg.setAttribute('viewBox', `${vxp.toFixed(1)} ${vyp.toFixed(1)} ${(l / kp).toFixed(1)} ${(h / kp).toFixed(1)}`);
+      surfeux.style.setProperty('--z', Math.min(1.5, Math.max(0.8, kp)).toFixed(3));
+      placerSurFeux();
+      return;
+    }
     const espaces = [
       { x0: 0, x1: l, y0: haut, y1: Math.min(chat.y0, plat.y0) - m },
       { x0: chat.x1 + m, x1: plat.x0 - m, y0: haut, y1: h - m },
@@ -979,6 +1008,23 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
     ligne(CH.pipistrelle, t);
   }
 
+  // Ce qu'elle écrit apparaît aussi dans une bulle au-dessus de sa tête,
+  // comme dans le jeu, et la suit quand elle se déplace.
+  let bulleCy = null;
+  let finBulle = 0;
+  function parler(t) {
+    bulleCy?.remove();
+    clearTimeout(finBulle);
+    bulleCy = svgEl('g', { class: 'e5-parole', 'aria-hidden': 'true' }, cy.g);
+    bulleCy.innerHTML = `<g transform="translate(0 ${CY_HAUT})"><g class="e5-pop">${D.bulleParole(t)}</g></g>`;
+    const b = bulleCy;
+    finBulle = setTimeout(() => {
+      animer(b, [{ opacity: 1 }, { opacity: 0 }], { duree: 300, garder: false }).then(() => b.remove());
+      if (bulleCy === b) bulleCy = null;
+    }, 2500 + t.length * 60);
+    minuteurs.add(finBulle);
+  }
+
   // Elle peut écrire aussi ; Pipistrelle répond.
   const saisie = $('.e5-saisie');
   const champ = saisie.querySelector('input');
@@ -990,6 +1036,7 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
     champ.value = '';
     bip('clic', 0.4);
     ligne(TEXTES.joueuse, t, 'e5-de-moi');
+    parler(t);
     const r = CH.reponses.length ? CH.reponses[reponse++ % CH.reponses.length] : '';
     if (r) dormir(900).then(() => { if (vivant) ligne(CH.pipistrelle, r); });
   });
@@ -1000,7 +1047,7 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
   const bourseIcone = $('.e5-pieces-icone');
   function ajouterPieces(n) {
     pieces += n;
-    compteur.textContent = String(pieces);
+    compteur.textContent = pieces.toLocaleString('fr-FR');
     animer(bourse, [{ transform: 'scale(1.15)' }, { transform: 'scale(1)' }], { duree: 260, garder: false });
   }
 
@@ -1053,15 +1100,10 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
   cy.corps = svgEl('g', { class: 'e5-corps' }, cy.g);
   cy.corps.innerHTML = `<g transform="scale(${L.echelle})">${D.cheffe()}</g>`;
   const cyPlat = cy.corps.querySelector('.e5-cy-plat');
+  const CY_HAUT = -86 * L.echelle;      // le haut de sa toque, au-dessus de ses pieds
   placer(cy.g, L.cyriel.x, L.cyriel.y);
   let cyLibre = Promise.resolve();
-  let cyEnService = 0;
-  // Pendant la cuisson, si elle n'a rien à servir, elle va au fourneau.
-  function cyVersFeu(k) {
-    if (cyEnService) return;
-    const p = L.devantFeu[k];
-    cyLibre = cyLibre.then(() => (cyEnService || !vivant ? null : marcher(cy, [[p.x, p.y]])));
-  }
+
 
   /* -------------------------------------------------------------- Les vues */
 
@@ -1212,7 +1254,7 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
   const croix = (m, b) => `<button type="button" class="e5-m e5-mcroix" style="${ici(m, b)}" aria-label="${esc(TEXTES.boutons.fermer)}"></button>`;
 
   // Un dessin d'aliment ou de pièce, pour les fenêtres et les envols.
-  const dessinPrix = (k) => (k === 'pieces' ? { dessin: D.pieceSeule(), boite: '-12 -12 24 24' } : { dessin: D.ARTICLES[k].dessin(), boite: '-24 -24 48 48' });
+  const dessinPrix = (k) => (k === 'pieces' ? { dessin: D.billet(), boite: '-12 -12 24 24' } : { dessin: D.ARTICLES[k].dessin(), boite: '-24 -24 48 48' });
 
   // « Hourra ! » : le prix gagné (à la roue, au camion du chef).
   function hourra(k, n, message) {
@@ -1239,7 +1281,7 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
   // Le prix arrive : les pièces dans la bourse, les aliments au frigo.
   function encaisser(k, n, de) {
     if (k === 'pieces') {
-      return envolee(D.pieceSeule(), de, centre(bourseIcone), { taille: 30, boite: '-12 -12 24 24', duree: 650 })
+      return envolee(D.billet(), de, centre(bourseIcone), { taille: 30, boite: '-12 -12 24 24', duree: 650 })
         .then(() => { ajouterPieces(n); bip('piece'); });
     }
     frigo.set(k, nb(k) + n);
@@ -1307,8 +1349,8 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
     const note = f.el.querySelector('.e5-mnote');
     const bouton = f.el.querySelector('[data-e5="roue-tourner"]');
     disque.style.transform = `rotate(${angleRoue}deg)`;
-    const prixTour = () => (toursDeRoue === 0 || pieces === 0 ? 0 : 1);
-    const majNote = () => { note.innerHTML = fr(toursDeRoue === 0 ? T.gratuit : pieces === 0 ? T.offert : T.prix); };
+    const prixTour = () => (toursDeRoue === 0 || pieces < PRIX_TOUR ? 0 : PRIX_TOUR);
+    const majNote = () => { note.innerHTML = fr(toursDeRoue === 0 ? T.gratuit : pieces < PRIX_TOUR ? T.offert : T.prix); };
     majNote();
 
     async function tourner() {
@@ -1381,7 +1423,7 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
         <p class="e5-m e5-mtitre" style="${ici(m, [50, 40, 366, 138], 6.2)}">${fr(T.question(a))}</p>
         ${k === 'vanille' ? '' : `<div class="e5-m e5-mplaque" style="${ici(m, [161, 172, 248, 236])}"><svg viewBox="-24 -24 48 48" aria-hidden="true">${a.dessin()}</svg></div>`}
         <p class="e5-m e5-mgain" style="${ici(m, [184, 252, 270, 282], 4.4)}">+ ${T.xp}</p>
-        <svg class="e5-m" style="${ici(m, [145, 286, 173, 314])}" viewBox="-12 -12 24 24" aria-hidden="true">${D.pieceSeule()}</svg>
+        <svg class="e5-m" style="${ici(m, [145, 286, 173, 314])}" viewBox="-12 -12 24 24" aria-hidden="true">${D.billet()}</svg>
         <p class="e5-m e5-mgain" style="${ici(m, [184, 286, 270, 314], 4.4)}">+ ${T.pieces}</p>
         <button type="button" class="e5-m e5-mbouton" data-e5="epice-oui" style="${ici(m, [62, 362, 162, 396], 4.4)}">${esc(T.oui)}</button>
         <button type="button" class="e5-m e5-mbouton e5-orange" data-e5="epice-non" style="${ici(m, [250, 362, 352, 396], 4.4)}">${esc(T.non)}</button>`,
@@ -1410,7 +1452,7 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
     f.el.querySelector('[data-e5="express-non"]').addEventListener('click', () => { bip('clic', 0.3); f.fermer(false); });
     f.el.querySelector('[data-e5="express-oui"]').addEventListener('click', () => {
       if (feu.etat !== 'cuisson') { f.fermer(false); return; }
-      if (pieces < 1) {
+      if (pieces < PRIX_EXPRESS) {
         bip('non');
         secouer(bourse);
         const l = f.el.querySelector('.e5-mencore');
@@ -1418,7 +1460,7 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
         secouer(l);
         return;
       }
-      ajouterPieces(-1);
+      ajouterPieces(-PRIX_EXPRESS);
       expressRestant -= 1;
       feu.fait = feu.total;
       bip('eclat');
@@ -1435,6 +1477,24 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
   // Une partie coûte une pièce (offerte si la bourse est vide) ; trouver la
   // garniture en rapporte trois.
   const CUPCAKES = [120, 267, 414];   // le milieu de chaque cupcake, dans l'image
+  const FONDS_CUPCAKES = ['#fcf6f0', '#ffffff', '#b4d9cf'];   // ce qu'il y a derrière leur côté droit
+  // La morsure, en haut à droite du dôme : des marques de dents qui
+  // entament le chocolat, la mie autour, et la confiture si c'était le bon.
+  const MORSURE = (() => {
+    const dome = [[316, -21, 21], [320, -28, 29], [324, -34, 35], [328, -39, 40], [332, -43, 44], [336, -47, 48], [340, -51, 51], [344, -54, 54], [348, -56, 56], [352, -58, 58], [356, -59, 59], [360, -61, 60], [368, -61, 60], [372, -60, 59], [376, -55, 56], [380, -51, 50]];
+    const pts = [...dome.map(([y, , d]) => [d + 2, y]), ...dome.slice().reverse().map(([y, g]) => [g - 2, y])];
+    const cx = 50, cy = 314, R = 31, n = 8, a0 = Math.PI * 0.32, a1 = Math.PI * 1.62;
+    const P = (a, r) => [cx + r * Math.cos(a), cy + r * Math.sin(a)].map((v) => v.toFixed(1)).join(' ');
+    let trou = `M${P(a0, R)}`;
+    for (let i = 1; i <= n; i++) trou += ` Q${P(a0 + (a1 - a0) * (i - 0.5) / n, R + 9)} ${P(a0 + (a1 - a0) * i / n, R)}`;
+    trou += ` L${P(a1, R + 40)} L${cx + 60} ${cy - 60} L${P(a0, R + 40)} Z`;
+    // La confiture : un croissant le long de la morsure, et deux coulures.
+    let arc = `M${P(Math.PI * 0.72, R + 7)}`;
+    for (let k = 1; k <= 8; k++) arc += ` L${P(Math.PI * (0.72 + 0.4 * k / 8), R + 7)}`;
+    const [bx, by] = [cx + (R + 7) * Math.cos(Math.PI * 0.8), cy + (R + 7) * Math.sin(Math.PI * 0.8)];
+    const coulures = `M${(bx - 2).toFixed(1)} ${by.toFixed(1)} q-1 10 1 16 q2 5 4 0 q1 -7 -1 -14 Z M${(bx + 9).toFixed(1)} ${(by + 3).toFixed(1)} q0 6 1.5 9 q2 3 3 -1 q0 -4 -2 -8 Z`;
+    return { dome: `M${pts.map((p) => p.join(' ')).join(' L')} L0 310 Z`, trou, arc, coulures, ox: cx, oy: cy };
+  })();
   function fenetreGarniture() {
     const m = MAQ.garniture;
     const T = TEXTES.garniture;
@@ -1450,6 +1510,22 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
         <path d="M-14 -5 Q-5 -9 6 -7" stroke="#ff8c9a" stroke-width="3" fill="none" stroke-linecap="round"/>
         <circle cx="13" cy="-2" r="2" fill="#ff8c9a"/>
       </g></g>`;
+    const morsure = (x, i) => `
+      <g class="e5-gmorsure" data-i="${i}" transform="translate(${x} 0)">
+        <clipPath id="e5-gdome-${i}"><path d="${MORSURE.dome}"/></clipPath>
+        <g clip-path="url(#e5-gdome-${i})"><g class="e5-gcroc" style="transform-origin:${x + MORSURE.ox}px ${MORSURE.oy}px">
+          <path d="${MORSURE.trou}" fill="#c98a52" stroke="#c98a52" stroke-width="18" stroke-linejoin="round"/>
+          <path d="${MORSURE.trou}" fill="none" stroke="#e2a86e" stroke-width="7" stroke-linejoin="round"/>
+          <path d="${MORSURE.trou}" fill="${FONDS_CUPCAKES[i]}" stroke="#5a2f17" stroke-width="1.6" stroke-linejoin="round"/>
+        </g></g>
+        <g class="e5-gmiettes" fill="#c98a52"><circle cx="40" cy="352" r="1.8"/><circle cx="52" cy="366" r="1.4"/><circle cx="46" cy="384" r="1.6"/></g>
+        <g class="e5-gdedans" clip-path="url(#e5-gdome-${i})"><g class="e5-gcoule">
+          <path d="${MORSURE.arc}" fill="none" stroke="#97142a" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="${MORSURE.arc}" fill="none" stroke="#d42a3d" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="${MORSURE.coulures}" fill="#d42a3d" stroke="#97142a" stroke-width="1.2"/>
+          <path d="${MORSURE.arc}" fill="none" stroke="#ff8c9a" stroke-width="1.6" stroke-dasharray="4 9" stroke-linecap="round" transform="translate(-1.5 -1.5)"/>
+        </g></g>
+      </g>`;
     const f = maquette('garniture', {
       genre: 'garniture',
       aria: T.titre,
@@ -1458,7 +1534,7 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
         ${croix(m, [474, 20, 530, 74])}
         <p class="e5-m e5-mcompte" style="${ici(m, [66, 109, 136, 131], 3.4)}" aria-label="${esc(T.pieces)}"></p>
         <svg class="e5-m e5-gscene" style="${ici(m, [0, 0, 532, 588])}" viewBox="0 0 532 588" aria-hidden="true">
-          ${CUPCAKES.map(confiture).join('')}${CUPCAKES.map(fleche).join('')}
+          ${CUPCAKES.map(morsure).join('')}${CUPCAKES.map(confiture).join('')}${CUPCAKES.map(fleche).join('')}
         </svg>
         ${CUPCAKES.map((x, i) => `<button type="button" class="e5-m e5-gchoix" data-i="${i}" data-e5="cupcake-${i}" style="${ici(m, [x - 62, 232, x + 62, 434])}" aria-label="${esc(T.cupcake(i + 1))}"></button>`).join('')}
         <p class="e5-m e5-mtexte e5-gras e5-gprix" style="${ici(m, [92, 446, 350, 506], 4)}"></p>`,
@@ -1466,17 +1542,18 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
     const compte = f.el.querySelector('.e5-mcompte');
     const prix = f.el.querySelector('.e5-gprix');
     const confitures = [...f.el.querySelectorAll('.e5-gconfiture')];
+    const morsures = [...f.el.querySelectorAll('.e5-gmorsure')];
     const scene = f.el.querySelector('.e5-gscene');
     const majPrix = () => {
       compte.textContent = String(pieces);
-      prix.innerHTML = pieces === 0 ? fr(T.offerte) : `${fr(T.partie)} <b>${T.cout}</b> ${ICONE_PIECE}`;
+      prix.innerHTML = pieces < T.cout ? fr(T.offerte) : `${fr(T.partie)} <b>${T.cout}</b> ${ICONE_PIECE}`;
     };
     majPrix();
     direUnInstant(T.consigne);
 
     async function choisir(i) {
       if (f.bloque || f.ferme) return;
-      const cout = pieces === 0 ? 0 : T.cout;
+      const cout = pieces < T.cout ? 0 : T.cout;
       f.bloque = true;
       scene.classList.add('e5-gjoue');
       if (cout) ajouterPieces(-cout);
@@ -1485,8 +1562,13 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
       const bonne = Math.floor(Math.random() * 3);
       const btn = f.el.querySelector(`.e5-gchoix[data-i="${i}"]`);
       btn.classList.add('e5-choisi');
+      await dormir(300);
+      // On croque dans le cupcake choisi.
+      morsures[i].classList.add('e5-croque');
+      bip('croque');
       await dormir(450);
-      confitures[bonne].classList.add('e5-montre');
+      if (i === bonne) morsures[i].classList.add('e5-fourre');
+      else confitures[bonne].classList.add('e5-montre');
       if (i === bonne) {
         bip('miam');
         const c = centre(btn);
@@ -1501,6 +1583,7 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
       }
       if (!vivant) return;
       confitures[bonne].classList.remove('e5-montre');
+      morsures[i].classList.remove('e5-croque', 'e5-fourre');
       btn.classList.remove('e5-choisi');
       scene.classList.remove('e5-gjoue');
       f.bloque = false;
@@ -1517,11 +1600,11 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
   }
 
   // Le livre et le panier (le frigo), en bas à droite : consultables à tout
-  // moment, sauf pendant qu'on remplit la casserole.
+  // moment.
   function boutonHaut(genre, ouvrir) {
     return () => {
       if (enTransition) return;
-      if (fenetreCourante?.genre === 'cuisine' || fenetreCourante?.bloque) return;
+      if (fenetreCourante?.bloque) return;
       bip('clic', 0.5);
       if (fenetreCourante?.genre === genre) { fermerFenetre(); return; }
       ouvrir();
@@ -1542,8 +1625,7 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
   const nomClient = (cmd) => nomDe(cmd.sorte);
 
   function demandeHtml(cmd, { avecRecette = false } = {}) {
-    const aide = avecRecette && cmd.erreurs >= 2
-      ? `<div class="e5-aide"><span>${esc(TEXTES.verif.aide)}</span><div class="e5-ings">${puces(besoins(cmd), { toujours: true })}</div></div>` : '';
+    const aide = '';
     return `
       <section class="e5-demande">
         ${visageSvg(cmd.sorte)}
@@ -1577,7 +1659,7 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
   };
   const icoXp = '<i class="e5-xp-ico" aria-hidden="true">XP</i>';
 
-  function carteRecette(cle, { bouton = true, manque = true } = {}) {
+  function carteRecette(cle, { bouton = true, manque = true, actif = false, pour = [] } = {}) {
     const r = recette(cle);
     const T = TEXTES.livreTexte;
     const n = servis.get(cle) || 0;
@@ -1589,7 +1671,7 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
         <h4>${fr(T.secretTitre)}</h4>
         <div class="e5-rmilieu">
           <div class="e5-rplat"><b class="e5-rquestion">?</b></div>
-          <ul class="e5-rinfos"><li>${fr(T.portions)}</li><li>${fr(T.inconnu)}</li><li class="e5-rnote">${fr(T.secret)}</li></ul>
+          <ul class="e5-rinfos"><li>${fr(T.portionsSecret)}</li><li>${fr(T.inconnu)}</li><li class="e5-rnote">${fr(T.secret)}</li></ul>
         </div>
         <div class="e5-rbas"><div class="e5-ringr">${'<span class="e5-ri e5-ri-vide">?</span>'.repeat(5)}<span class="e5-ri e5-ri-vide e5-ri-epice">?</span></div>${bouton ? '<span class="e5-rbouton e5-rbouton-vide"></span>' : ''}</div>
       </article>`;
@@ -1601,14 +1683,25 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
     const epice = r.epice
       ? `<span class="e5-ri e5-ri-epice${manque && !nb(r.epice) ? ' e5-manque' : ''}" title="${esc(T.epice(D.ARTICLES[r.epice]))}">${icone(r.epice)}<b>×1</b></span>`
       : '<span class="e5-ri e5-ri-vide e5-ri-epice"></span>';
+    const qui = pour.length
+      ? `<span class="e5-rpour" title="${esc(T.commandePar(pour.map(nomClient)))}">${pour.map((c) => visageSvg(c.sorte, 'e5-mini')).join('')}</span>` : '';
+    const libelle = tout ? T.cuisiner : T.marche;
+    // Au fourneau : ce qui est déjà au comptoir ou en route pour cette recette.
+    const auComptoir = actif ? portionsDispo(cle) : 0;
+    const enRoute = actif ? feux.filter((f) => f.cle === cle && ['gestes', 'cuisson', 'pret', 'prise'].includes(f.etat)).length : 0;
+    const statut = actif && (auComptoir || enRoute)
+      ? `<p class="e5-rstatut">${[auComptoir ? T.auComptoir(auComptoir) : '', enRoute ? T.enRoute : ''].filter(Boolean).map(fr).join(' · ')}</p>` : '';
+    const btn = actif
+      ? `<button type="button" class="e5-rbouton e5-ractif ${tout ? 'e5-rfouet' : 'e5-rpanier'}" data-cle="${cle}" data-e5="${tout ? 'cuisiner' : 'marche'}-${cle}" aria-label="${esc(`${libelle} : ${r.nom}`)}">${tout ? ICONE_FOUET : '<img src="images/hud/panier.webp" alt="">'}<span>${esc(libelle)}</span></button>`
+      : `<span class="e5-rbouton ${tout ? 'e5-rfouet' : 'e5-rpanier'}" role="img" aria-label="${esc(tout ? T.toutLa : T.manque)}" title="${esc(tout ? T.toutLa : T.manque)}">${tout ? ICONE_FOUET : '<img src="images/hud/panier.webp" alt="">'}</span>`;
     return `
-      <article class="e5-rcarte">
-        <div class="e5-retoiles" title="${esc(T.etoiles(n))}">${etoiles}</div>
+      <article class="e5-rcarte${pour.length ? ' e5-rcommandee' : ''}" data-avenir="${actif ? portionsAVenir(cle) : ''}">
+        <div class="e5-retoiles" title="${esc(T.etoiles(n))}">${etoiles}</div>${qui}${statut}
         <h4>${fr(r.nom)}</h4>
         <div class="e5-rmilieu">
           <div class="e5-rplat"><svg viewBox="-22 -22 44 44" aria-hidden="true">${D.PLATS[r.plat]({ vapeur: false })}</svg><span class="e5-rcat"><svg viewBox="-11 -11 22 22" aria-hidden="true">${CATEGORIES[r.categorie] || ''}</svg></span></div>
           <ul class="e5-rinfos">
-            <li>${fr(T.portions)}</li>
+            <li>${fr(T.portions(r.portions))}</li>
             <li>${fr(T.pret(dureeLivre(r.cuisson)))}</li>
             <li class="e5-rgain">${ICONE_PIECE}<span>${fr(T.parPortion(r.prix))}</span></li>
             <li class="e5-rgain">${icoXp}<span>${r.xp}</span></li>
@@ -1616,7 +1709,7 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
         </div>
         <div class="e5-rbas">
           <div class="e5-ringr">${cases.join('')}${epice}</div>
-          ${bouton ? `<span class="e5-rbouton ${tout ? 'e5-rfouet' : 'e5-rpanier'}" role="img" aria-label="${esc(tout ? T.toutLa : T.manque)}" title="${esc(tout ? T.toutLa : T.manque)}">${tout ? ICONE_FOUET : '<img src="images/hud/panier.webp" alt="">'}</span>` : ''}
+          ${bouton ? btn : ''}
         </div>
       </article>`;
   }
@@ -1633,21 +1726,29 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
   }
 
   // Le livre en lecture : toutes les recettes, et les commandes en cours.
-  function livreConsultation() {
+  // Ouvert depuis un fourneau (cuisine : les commandes du service), chaque
+  // recette a son bouton, comme dans le jeu : « Cuisiner » si tout est au
+  // frigo, « Marché » s'il manque quelque chose. Il donne alors
+  // { action: 'cuisiner', cmd } ou { action: 'marche' } (null : fermé).
+  function livreConsultation({ cuisine = null } = {}) {
     const T = TEXTES.livreTexte;
-    const enCours = commandes.filter((c) => c.etat === 'assise');
-    const f = fenetre({ titre: T.titre, couleur: '#a86f3f', genre: 'livre', classe: 'e5-livre e5-gglivre' });
+    const enCours = (cuisine || commandes).filter((c) => c.etat === 'assise' && c.recette);
+    const f = fenetre({ titre: T.titre, couleur: '#a86f3f', genre: 'livre', classe: `e5-livre e5-gglivre${cuisine ? ' e5-au-feu' : ''}` });
     const cles = Object.keys(RECETTES);
-    let premiere = 0;                   // la première page visible
+    const pour = (k) => (cuisine ? enCours.filter((c) => c.recette === k) : []);
+    // Au fourneau, le livre s'ouvre sur la première recette commandée.
+    const cible = cuisine ? Math.max(0, cles.findIndex((k) => pour(k).length)) : 0;
+    let premiere = null;                // la première page visible
     function rendre() {
       const { parPage, pagesParVue } = miseEnPage();
+      if (premiere === null) premiere = Math.floor(cible / parPage);
       const pages = [];
       for (let i = 0; i < cles.length; i += parPage) pages.push(cles.slice(i, i + parPage));
       premiere = Math.max(0, Math.min(premiere - (premiere % pagesParVue), pages.length - 1));
       const visibles = pages.slice(premiere, premiere + pagesParVue);
       f.corps.innerHTML = `
         <div class="e5-gl" style="--pages:${pagesParVue};--cartes:${parPage}">
-          <div class="e5-gl-pages">${visibles.map((pg, i) => `<section class="e5-gl-page${i ? ' e5-gl-droite' : ''}">${pg.map((k) => carteRecette(k)).join('')}</section>`).join('')}</div>
+          <div class="e5-gl-pages">${visibles.map((pg, i) => `<section class="e5-gl-page${i ? ' e5-gl-droite' : ''}">${pg.map((k) => carteRecette(k, { actif: !!cuisine, pour: pour(k) })).join('')}</section>`).join('')}</div>
           ${premiere > 0 ? `<button type="button" class="e5-gl-fleche e5-gl-avant" data-e5="livre-avant" aria-label="${esc(T.avant)}"></button>` : ''}
           ${premiere + pagesParVue < pages.length ? `<button type="button" class="e5-gl-fleche e5-gl-apres" data-e5="livre-apres" aria-label="${esc(T.apres)}"></button>` : ''}
           <p class="e5-gl-num">${T.page(Math.floor(premiere / pagesParVue) + 1, Math.ceil(pages.length / pagesParVue))}</p>
@@ -1658,136 +1759,24 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
     }
     rendre();
     f.corps.addEventListener('click', (e) => {
+      const action = e.target.closest('.e5-ractif');
+      if (action) {
+        const k = action.dataset.cle;
+        if (action.classList.contains('e5-rpanier')) {
+          bip('clic', 0.5);
+          f.fermer({ action: 'marche', cle: k });
+          return;
+        }
+        bip('clic', 1);
+        f.fermer({ action: 'cuisiner', cle: k });
+        return;
+      }
       const b = e.target.closest('.e5-gl-fleche');
       if (!b) return;
       bip('papier');
       premiere += (b.classList.contains('e5-gl-apres') ? 1 : -1) * f.pagesParVue;
       rendre();
     });
-    return f.resultat;
-  }
-
-  const livreHtml = (gauche, droite) => `<div class="e5-pages"><div class="e5-page e5-page-g">${gauche}</div><div class="e5-page e5-page-d">${droite}</div></div>`;
-
-  // Le livre au fourneau : choisir la commande et remplir la casserole.
-  // Renvoie { action: 'cuisiner' | 'marche', cmd, extra } ou null (fermé).
-  function livreCuisine(pretes, choisie) {
-    let cmd = pretes.includes(choisie) ? choisie : pretes[0];
-    let alerte = '';
-    let marcheConseille = false;
-    const f = fenetre({
-      titre: TEXTES.livreTexte.titre,
-      couleur: '#a86f3f',
-      genre: 'cuisine',
-      classe: 'e5-livre e5-gglivre e5-cuisine',
-      pied: `
-        <button type="button" class="e5-ggbouton e5-ggjaune" data-e5="livre-marche"><img src="images/hud/panier.webp" alt="">${esc(TEXTES.boutons.marche)}</button>
-        <button type="button" class="e5-ggbouton e5-ggvert" data-e5="livre-cuisiner">${ICONE_FOUET}${esc(TEXTES.boutons.cuisiner)}</button>`,
-    });
-
-    function rendre() {
-      const hauts = [...f.corps.querySelectorAll('.e5-page')].map((p) => p.scrollTop);
-      const dispo = ORDRE.filter((k) => nb(k) > 0);
-      const gauche = `
-        <h3 class="e5-titre-page">${esc(TEXTES.livreTexte.commande)}</h3>
-        ${pretes.length > 1 ? `
-        <div class="e5-onglets" role="tablist" aria-label="${esc(TEXTES.livreTexte.pourQui)}">
-          ${pretes.map((c, i) => `<button type="button" role="tab" class="e5-onglet" data-i="${i}" data-e5="onglet-${c.sorte}" aria-selected="${c === cmd}">${visageSvg(c.sorte, 'e5-mini')}<span>${esc(recette(c.recette).nom)}</span></button>`).join('')}
-        </div>` : ''}
-        ${demandeHtml(cmd, { avecRecette: true })}
-        ${carteRecette(cmd.recette, { bouton: false })}`;
-      const droite = `
-        <section class="e5-section">
-          <h3 class="e5-titre-page">${esc(TEXTES.livreTexte.frigo)}</h3>
-          ${dispo.length ? `<p class="e5-note">${esc(TEXTES.livreTexte.toucher)}</p>
-          <div class="e5-grille">${dispo.map((k) => {
-            const reste = nb(k) - (pot.get(k) || 0);
-            return `<button type="button" class="e5-case" data-cle="${k}" data-e5="frigo-${k}" ${reste ? '' : 'disabled'} aria-label="${esc(D.ARTICLES[k].nom)}, ${esc(TEXTES.livreTexte.reste(reste))}">${icone(k)}<b>${reste}</b><span>${esc(D.ARTICLES[k].nom)}</span></button>`;
-          }).join('')}</div>` : `<p class="e5-note">${esc(TEXTES.livreTexte.frigoVide)}</p>`}
-        </section>
-        <div class="e5-plan-travail">
-          <p class="e5-alerte" role="status">${esc(alerte)}</p>
-          <section class="e5-pot" aria-live="polite">
-            <svg class="e5-pot-icone" viewBox="-24 -14 48 30" aria-hidden="true">${D.iconeCasserole()}</svg>
-            <div class="e5-pot-contenu">${pot.size
-              ? [...pot].map(([k, n]) => `<button type="button" class="e5-ing e5-dans" data-cle="${k}" data-e5="pot-${k}" aria-label="${esc(D.ARTICLES[k].nom)} (${n})">${icone(k)}<span>${esc(D.ARTICLES[k].nom)}</span>${n > 1 ? `<b>×${n}</b>` : ''}</button>`).join('')
-              : `<p class="e5-note">${esc(TEXTES.livreTexte.casseroleVide)}</p>`}</div>
-          </section>
-        </div>`;
-      f.corps.innerHTML = livreHtml(gauche, droite);
-      f.corps.querySelectorAll('.e5-page').forEach((p, k) => { p.scrollTop = hauts[k] || 0; });
-      f.el.querySelector('[data-e5="livre-marche"]').classList.toggle('e5-clignote', marcheConseille);
-    }
-    rendre();
-
-    const potEl = () => f.corps.querySelector('.e5-pot');
-    f.corps.addEventListener('click', (e) => {
-      const onglet = e.target.closest('.e5-onglet');
-      const caseFrigo = e.target.closest('.e5-case');
-      const dans = e.target.closest('.e5-dans');
-      if (onglet) {
-        cmd = pretes[+onglet.dataset.i];
-        alerte = '';
-        marcheConseille = false;
-        bip('clic', 0.5);
-        rendre();
-      } else if (caseFrigo && !caseFrigo.disabled) {
-        const k = caseFrigo.dataset.cle;
-        pot.set(k, (pot.get(k) || 0) + 1);
-        alerte = '';
-        bip('plouf');
-        rendre();
-        rebondir(potEl());
-        if (DETESTES.includes(k)) direUnInstant(TEXTES.audacieux, 2200);
-      } else if (dans) {
-        const k = dans.dataset.cle;
-        const n = (pot.get(k) || 0) - 1;
-        if (n > 0) pot.set(k, n); else pot.delete(k);
-        bip('clic', 0.3);
-        rendre();
-      }
-    });
-
-    f.el.querySelector('[data-e5="livre-marche"]').addEventListener('click', () => {
-      bip('clic', 0.5);
-      f.fermer({ action: 'marche', cmd });
-    });
-    f.el.querySelector('[data-e5="livre-cuisiner"]').addEventListener('click', () => {
-      if (!pot.size) {
-        alerte = TEXTES.verif.vide;
-        bip('non');
-        rendre();
-        secouer(potEl());
-        return;
-      }
-      const v = verifier(cmd, pot);
-      if (v.ok) {
-        bip('clic', 1);
-        f.fermer({ action: 'cuisiner', cmd, extra: v.extra });
-        return;
-      }
-      cmd.erreurs = (cmd.erreurs || 0) + 1;
-      marcheConseille = false;
-      const a = (k) => D.ARTICLES[k];
-      if (v.type === 'deteste') alerte = TEXTES.verif.detesteSpecial(a(v.k));
-      else if (v.type === 'sans') alerte = TEXTES.rappels[cmd.sorte] || TEXTES.verif.sans(a(v.k));
-      else if (v.type === 'intrus') alerte = TEXTES.verif.intrus(a(v.k), recette(cmd.recette));
-      else if (v.type === 'trop') alerte = TEXTES.verif.trop(a(v.k));
-      else {
-        const absents = v.manque.filter(([k, n]) => nb(k) < n).map(([k]) => k);
-        if (absents.length) {
-          // Au premier essai on laisse chercher ; ensuite on dit ce qui manque.
-          alerte = cmd.erreurs >= 2 ? TEXTES.verif.manqueFrigo(listeNoms(absents)) : TEXTES.verif.manqueFrigoFlou;
-          marcheConseille = true;
-        } else {
-          alerte = TEXTES.verif.manque;
-        }
-      }
-      bip('non');
-      rendre();
-      secouer(potEl());
-    });
-
     return f.resultat;
   }
 
@@ -1802,9 +1791,10 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
   // dessous, les cartes des aliments : le prix, ce qu'il en reste au frigo,
   // acheter, et revendre (au même prix, si on s'est trompée).
   // e : l'étal ouvert, ou null pour le frigo.
-  function fenetreBoutique(e) {
+  function fenetreBoutique(e, { cafe = false } = {}) {
     const B = TEXTES.boutique;
     const auMarche = vue === 'marche';
+    const onglets = auMarche || cafe;     // les étals en onglets, comme les rayons du jeu
     let etal = e;
     const total = () => [...frigo.values()].reduce((x, y) => x + y, 0);
     const libre = (k) => nb(k) - (pot.get(k) || 0);   // ce qui n'est pas déjà dans la casserole
@@ -1827,24 +1817,25 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
 
     function rendre() {
       const articles = etal ? etal.articles : ORDRE.filter((k) => nb(k) > 0);
-      const onglets = auMarche ? `
+      const rayons = onglets ? `
           <div class="e5-gb-etals" role="tablist" aria-label="${esc(B.etals)}">${ETALS.map((x) => `
             <button type="button" role="tab" class="e5-gb-etal" data-etal="${x.cle}" aria-selected="${x === etal}" aria-label="${esc(x.nom)}" title="${esc(x.nom)}">${x.articles.slice(0, 3).map((k, i) => `<span style="--i:${i}">${icone(k)}</span>`).join('')}</button>`).join('')}
           </div>` : '<div class="e5-gb-etals"></div>';
+      const titre = cafe && etal ? B.titreCafe : (etal ? etal.nom : TEXTES.frigo.titre);
       f.corps.innerHTML = `
         <div class="e5-gb">
           <header class="e5-gb-tete">
             <p class="e5-gb-bourse" aria-label="${esc(B.bourse)}">${ICONE_PIECE}<b>${pieces}</b></p>
             <span class="e5-gb-icone">${ICONE_BOUTIQUE}</span>
             <div class="e5-gb-titres">
-              <h3>${fr(etal ? etal.nom : TEXTES.frigo.titre)}</h3>
+              <h3>${fr(titre)}</h3>
               <p>${esc(B.auFrigo)} <b>${total()}</b></p>
             </div>
           </header>
           <nav class="e5-gb-onglets">
-            ${onglets}
+            ${rayons}
             <div class="e5-gb-vues">
-              ${auMarche ? `<button type="button" class="e5-gb-vue" data-vue="vitrine" aria-pressed="${!!etal}" aria-label="${esc(B.vitrine)}" title="${esc(B.vitrine)}"><img src="images/hud/panier.webp" alt=""></button>` : ''}
+              ${onglets ? `<button type="button" class="e5-gb-vue" data-vue="vitrine" aria-pressed="${!!etal}" aria-label="${esc(B.vitrine)}" title="${esc(B.vitrine)}"><img src="images/hud/panier.webp" alt=""></button>` : ''}
               <button type="button" class="e5-gb-vue" data-vue="frigo" aria-pressed="${!etal}" aria-label="${esc(TEXTES.frigo.titre)}" title="${esc(TEXTES.frigo.titre)}">${ICONE_FRIGO_BLEU}</button>
             </div>
           </nav>
@@ -1926,7 +1917,7 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
     if (achats) { const i = achats.lastIndexOf(k); if (i >= 0) achats.splice(i, 1); }
     bip('clic', 0.5);
     const icon = carte.querySelector('.e5-gb-plat svg');
-    envolee(D.pieceSeule(), centre(icon), centre(bourseIcone), { taille: 26, boite: '-12 -12 24 24', duree: 560 })
+    envolee(D.billet(), centre(icon), centre(bourseIcone), { taille: 26, boite: '-12 -12 24 24', duree: 560 })
       .then(() => { ajouterPieces(PRIX[k]); bip('piece'); fenetreCourante?.majTotal?.(); });
     majCarte(carte);
   }
@@ -1935,11 +1926,12 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
   // rien qui puisse en rapporter (pas de pièces sur les tables, pas de plat
   // en route) : elle est coincée.
   function bloquee() {
-    if (ramasseurs.size) return false;
-    if (commandes.some((c) => c.etat === 'cuisine' || c.etat === 'comptoir' || c.etat === 'servie')) return false;
-    const restantes = commandes.filter((c) => c.etat === 'dehors' || c.etat === 'assise');
+    if (feux.some((f) => ['gestes', 'cuisson', 'pret', 'prise'].includes(f.etat))) return false;
+    if (commandes.some((c) => c.etat === 'enService' || c.etat === 'servie')) return false;
+    const restantes = commandes.filter((c) => (c.etat === 'dehors' || c.etat === 'assise') && (c.recette ? !portionsDispo(c.recette) : ![...stock.values()].some((e) => e.n > 0)));
     if (!restantes.length) return false;
-    const cout = (c) => [...besoins(c)].reduce((t, [k, n]) => t + Math.max(0, n - nb(k)) * PRIX[k], 0);
+    const coutRecette = (r) => Object.entries(RECETTES[r].ingredients).reduce((t, [k, n]) => t + Math.max(0, n - nb(k)) * PRIX[k], 0);
+    const cout = (c) => (c.recette ? coutRecette(c.recette) : Math.min(...Object.keys(RECETTES).filter((k) => k !== 'gateau').map(coutRecette)));
     return Math.min(...restantes.map(cout)) > pieces;
   }
 
@@ -1986,6 +1978,20 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
     rebondir(kiosque);
     fenetreRoue();
   });
+  // Le tableau noir, près de l'épicerie : sa fenêtre est un décor (seule
+  // la croix la ferme).
+  const tableau = $('[data-e5="tableau"]');
+  surToucher(tableau, () => {
+    if (vue !== 'marche' || enTransition || fenetreCourante) return;
+    bip('clic', 0.6);
+    rebondir(tableau);
+    const T = TEXTES.tableau;
+    fenetre({
+      titre: T.titre, couleur: '#3f4a45', genre: 'tableau', classe: 'e5-ardoise',
+      corps: `<svg class="e5-ardoise-dessin" viewBox="0 0 320 300" aria-hidden="true">${D.ardoisePermis(T)}</svg>`,
+    });
+  });
+
   let rentrer = null;                   // le panneau « Café » ramène au café
   surToucher($('[data-e5="vers-cafe"]'), () => {
     if (vue === 'marche' && rentrer) { bip('clic', 0.4); rentrer(); }
@@ -1995,7 +2001,7 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
   // pour les clients pas encore installés).
   function manquePourLaSuite() {
     const total = new Map();
-    const prochaines = commandes.filter((c) => c.etat === 'dehors' || c.etat === 'assise').slice(0, L.tables.length);
+    const prochaines = commandes.filter((c) => c.recette && !c.libre && (c.etat === 'dehors' || c.etat === 'assise')).slice(0, L.tables.length);
     for (const c of prochaines) {
       const b = c.etat === 'assise' ? besoins(c) : new Map(Object.entries(RECETTES[c.recette].ingredients));
       for (const [k, n] of b) total.set(k, (total.get(k) || 0) + n);
@@ -2095,9 +2101,13 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
     return {
       k, lieu, el, ui,
       casserole: el.querySelector('.e5-casserole'),
+      contenu: el.querySelector('.e5-contenu'),
       bulle: ui.querySelector('.e5-sf-bulle'),
       icones: ui.querySelector('.e5-sf-icones'),
       legende: ui.querySelector('.e5-sf-legende'),
+      titre: ui.querySelector('.e5-sf-titre'),
+      pourcent: ui.querySelector('.e5-sf-pourcent'),
+      temps: ui.querySelector('.e5-sf-temps'),
       vite: ui.querySelector('.e5-sf-vite'),
       tige: ui.querySelector('.e5-sf-tige'),
       segments: [...ui.querySelectorAll('.e5-sf-barre i')],
@@ -2156,19 +2166,22 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
   // Pendant les gestes, c'est preparer() qui mène la bulle et la barre.
   function majFeu(f) {
     const T = TEXTES.feux;
-    if (f.etat === 'libre') { etatUI(f, 'libre'); return; }
-    if (f.etat === 'pret') {
-      if (f.ui.dataset.etat !== 'pret') {
-        remplirBulle(f, `<svg class="e5-sf-plat" viewBox="-19 -18 38 34" aria-hidden="true">${D.PLATS[f.r.plat]({ vapeur: false })}</svg>`, 1, `${T.nom(f.k + 1)} : ${f.r.nom}, ${T.pret}`);
-        etatUI(f, 'pret');
-      }
+    if (['libre', 'sale', 'prise', 'pret'].includes(f.etat)) {
+      etatUI(f, 'libre');
+      f.el.setAttribute('aria-label', f.etat === 'pret' ? `${T.nom(f.k + 1)} : ${f.r.nom}, ${T.pret}` : f.etat === 'sale' ? `${T.nom(f.k + 1)} : ${T.sale}` : T.nom(f.k + 1));
       return;
     }
     if (f.etat !== 'cuisson') return;
-    etatUI(f, 'cuisson');
+    if (f.ui.dataset.etat !== 'cuisson') {
+      etatUI(f, 'cuisson');
+      f.titre.textContent = f.r.nom;
+      f.legende.textContent = f.r.etape || f.r.cuit;
+    }
     const v = f.vu;
     const texte = duree(f.total - f.fait);
-    if (v.texte !== texte) { f.legende.textContent = texte; v.texte = texte; }
+    if (v.texte !== texte) { f.temps.textContent = texte; v.texte = texte; }
+    const pc = `${Math.floor((f.total ? f.fait / f.total : 0) * 100)} %`;
+    if (v.pc !== pc) { f.pourcent.textContent = pc; v.pc = pc; }
     const q = Math.round((f.total ? f.fait / f.total : 0) * SEGMENTS * 100);   // en centièmes de segment
     if (v.q !== q) {
       f.segments.forEach((s, i) => { s.style.width = `${Math.max(0, Math.min(100, q - i * 100))}%`; });
@@ -2222,7 +2235,26 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
       f.vitesse = f.vitesse > 1 ? 1 : ACCELERATION;
       bip(f.vitesse > 1 ? 'vol' : 'clic', 0.6);
       majFeu(f);
+      montrerCuisson(f);
     });
+  }
+
+  // Pendant la cuisson, rien au-dessus du fourneau : on le touche pour voir
+  // la bulle (nom du plat, barre en %, ce qui se passe, temps restant, 60x),
+  // qui se referme toute seule.
+  function montrerCuisson(f) {
+    clearTimeout(f.finInfo);
+    f.ui.dataset.info = '1';
+    majFeu(f);
+    placerSurFeux();
+    f.bulleInfo = true;
+    f.finInfo = setTimeout(() => cacherCuisson(f), 4500);
+    minuteurs.add(f.finInfo);
+  }
+  function cacherCuisson(f) {
+    clearTimeout(f.finInfo);
+    delete f.ui.dataset.info;
+    placerSurFeux();
   }
 
   // Une seule horloge pour tous les plats en cuisson.
@@ -2253,10 +2285,12 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
   const unChangement = () => new Promise((r) => signaux.push(r));
 
   function platPret(f) {
+    cacherCuisson(f);
     f.etat = 'pret';
     f.el.classList.remove('e5-four-chaud', 'e5-feu');
     f.el.classList.add('e5-fourneau-pret');
     bip('ding');
+    majContenu(f);
     majFeu(f);
     signaler();
   }
@@ -2341,66 +2375,176 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
 
   // Le comptoir : chaque plat prêt attend Cyriel à sa place.
   const occupees = new Set();
-  const PLAT = 0.8;   // taille des plats dans la salle
+  const PLAT = 1;     // taille des plats dans la salle
 
-  async function platVersComptoir(r, cmd, f) {
-    let n = L.comptoir.findIndex((_, k) => !occupees.has(k));
-    if (n < 0) n = 0;
-    occupees.add(n);
-    const place = L.comptoir[n];
-    const g = svgEl('g', {}, calques.volants);
-    g.innerHTML = `<g transform="scale(${PLAT})">${D.PLATS[r.plat]({ vapeur: false })}</g>`;
-    const de = r.four ? f.lieu.four : f.lieu.casserole;
-    placer(g, de.x, de.y - 6);
-    await voler(g, place.x, place.y - 7, 650, { hauteur: 30 });
-    g.remove();
-    bip('plouf');
-    const pose = svgEl('g', { transform: `translate(${place.x} ${place.y - 7}) scale(${PLAT})` }, calques.plateau);
-    pose.innerHTML = D.PLATS[r.plat]({ vapeur: 'blanc' });
-    cmd.surComptoir = { n, x: place.x, y: place.y, g: pose };
+  // Le comptoir bleu : les plats prêts, avec leurs portions. Le même plat
+  // cuisiné plusieurs fois s'additionne (trois salades : 30 portions).
+  const stock = new Map();             // recette → { n, place, g, badge, epice }
+  function placeLibre() {
+    const n = L.comptoir.findIndex((_, k) => !occupees.has(k));
+    return n < 0 ? occupees.size % L.comptoir.length : n;
   }
+  function majStock(e) {
+    e.badge.textContent = `×${e.n}`;
+  }
+  function poserAuComptoir(cle, epice) {
+    const r = RECETTES[cle];
+    let e = stock.get(cle);
+    if (e) {
+      e.n += r.portions;
+      e.epice = e.epice || epice;
+      e.g.firstElementChild.classList.remove('e5-pop');
+      void e.g.firstElementChild.getBoundingClientRect();
+      e.g.firstElementChild.classList.add('e5-pop');
+    } else {
+      const place = placeLibre();
+      occupees.add(place);
+      const p = L.comptoir[place];
+      const g = svgEl('g', { class: 'e5-stock', 'data-e5': `stock-${cle}` }, calques.plateau);
+      g.innerHTML = `<g class="e5-pop"><g transform="scale(${PLAT})">${D.PLATS[r.plat]({ vapeur: 'blanc' })}</g>
+        <g transform="translate(16 -14)"><rect x="-11" y="-7" width="22" height="13" rx="6.5" fill="#fffaf0" stroke="#4b3a28" stroke-width="1.4"/>
+        <text class="e5-stock-n" y="3.4" text-anchor="middle" font-size="9.5" font-weight="700" fill="#4b3a28"></text></g></g>`;
+      placer(g, p.x, p.y - 7);
+      e = { n: r.portions, place, g, badge: g.querySelector('.e5-stock-n'), epice };
+      stock.set(cle, e);
+    }
+    majStock(e);
+    bip('plouf');
+    signaler();
+  }
+  // La serveuse prend une portion (réservée à l'avance) ; le plat quitte le
+  // comptoir avec sa dernière portion.
+  function prendrePortion(cle) {
+    const e = stock.get(cle);
+    if (!e) return;
+    e.pris = (e.pris || 0) + 1;
+    if (e.n <= 0 && e.pris >= (e.reserve || 0)) {
+      e.g.remove();
+      occupees.delete(e.place);
+      stock.delete(cle);
+    }
+  }
+  const portionsDispo = (cle) => stock.get(cle)?.n || 0;
+  // Les portions qui arrivent : au comptoir, et dans les fourneaux.
+  const portionsAVenir = (cle) => portionsDispo(cle)
+    + feux.filter((f) => f.cle === cle && ['gestes', 'cuisson', 'pret', 'prise'].includes(f.etat)).length * RECETTES[cle].portions;
 
-  // Le contenu de la casserole va sur le fourneau f. Sa bulle demande les
-  // ingrédients, puis chaque geste : on touche, la barre se remplit. Puis la
-  // cuisson démarre et on est libre de lancer autre chose.
+
+  // Le contenu de la casserole va sur le fourneau f. Comme dans le jeu, la
+  // bulle montre la prochaine étape : un ingrédient, puis chaque geste. La
+  // toucher l'ajoute à la liste de Cyriel, qui va au fourneau et la fait
+  // (la barre se remplit). On peut en toucher plusieurs d'affilée, sur
+  // plusieurs fourneaux : elle les fait dans l'ordre. Quand tout est fait,
+  // la cuisson démarre. Rien n'attend ici : le service continue.
   let premiereCuisson = true;
-  async function preparer(f, { cmd, extra, epice = null }) {
-    const r = recette(cmd.recette);
-    const T = TEXTES.fourneau;
-    const nom = TEXTES.feux.nom(f.k + 1);
-    cmd.etat = 'cuisine';
-    cyVersFeu(f.k);
-    Object.assign(f, { etat: 'gestes', cmd, r, extra, fait: 0, total: r.cuisson * 60, vitesse: 1 });
-    const contenu = [...pot].flatMap(([k, n]) => Array(n).fill(k));
+  let preparationDite = false;
+  function preparer(f, { cle, epice = null }) {
+    const r = recette(cle);
+    const contenu = [...pot];
     for (const [k, n] of pot) frigo.set(k, nb(k) - n);
-    cmd.epice = epice;
-    if (epice) { contenu.push(epice); frigo.set(epice, nb(epice) - 1); }
+    if (epice) { contenu.push([epice, 1]); frigo.set(epice, nb(epice) - 1); }
     for (const k of [...frigo.keys()]) if (!nb(k)) frigo.delete(k);
     pot.clear();
     majBadge();
+    Object.assign(f, {
+      etat: 'gestes', cle, r, epice, fait: 0, total: r.cuisson * 60, vitesse: 1,
+      etapes: [...contenu.map(([k, n]) => ({ ing: k, n })), ...r.gestes.map((g) => ({ geste: g }))],
+      demandee: 0, faites: 0, enCours: null, dans: [], melange: false,
+    });
+    f.el.classList.add('e5-actif');
+    majContenu(f);
+    majEtapes(f);
+    signaler();
+    if (!preparationDite) { preparationDite = true; dire(TEXTES.preparation); }
+  }
 
-    dire(TEXTES.preparation);
-    montrer(f.lieu.halo.x, f.lieu.halo.y, f.lieu.halo.r, false);
-    demander(f, contenu.map((k) => icone(k)).join(''), contenu.length, `${nom} : ${T.toucher} (${TEXTES.gestes.ingredients})`);
-    await toucher(f.el, f.ui);
-    bip('clic', 0.4);
-    await Promise.all([
-      agir(f, TEXTES.gestes.ingredients, 500 + contenu.length * 150),
-      ...contenu.map((k, j) => tomber(f, k, j * 150)),
-    ]);
-    bip('plouf');
-    secouerCasserole(f);
+  const legendeEtape = (e) => (e.ing ? TEXTES.gestes.ingredient(D.ARTICLES[e.ing]) : TEXTES.gestes[e.geste]);
+  const dessinEtape = (e) => (e.ing
+    ? icone(e.ing).repeat(Math.min(3, e.n))
+    : `<svg viewBox="-24 -24 48 48" aria-hidden="true">${D.ICONES_GESTES[e.geste]()}</svg>`);
 
-    for (let i = 0; i < r.gestes.length; i++) {
-      const g = r.gestes[i];
-      demander(f, `<svg viewBox="-24 -24 48 48" aria-hidden="true">${D.ICONES_GESTES[g]()}</svg>`, 1, `${nom} : ${T.toucher} (${TEXTES.gestes[g]})`);
-      await toucher(f.el, f.ui);
-      bip('clic', (i + 1) / r.gestes.length);
-      await Promise.all([geste(f, g), agir(f, TEXTES.gestes[g], 900)]);
+  // Ce que montre un fourneau en préparation : la barre de l'étape en cours
+  // (avec, au-dessus, la bulle de la suivante si elle n'est pas encore
+  // demandée), ou seulement la bulle, ou la barre vide pendant que Cyriel
+  // arrive.
+  function majEtapes(f) {
+    if (f.etat !== 'gestes') return;
+    const suite = f.etapes[f.demandee];
+    const aria = suite ? `${TEXTES.feux.nom(f.k + 1)} : ${TEXTES.fourneau.toucher} (${legendeEtape(suite)})` : '';
+    if (f.enCours || f.demandee > f.faites) {
+      if (!f.enCours) {
+        etatUI(f, 'action');
+        f.legende.textContent = TEXTES.fourneau.arrive;
+      }
+      if (suite) {
+        const nouvelle = f.ui.dataset.suite !== String(f.demandee);
+        remplirBulle(f, dessinEtape(suite), Math.min(3, suite.n || 1), aria);
+        f.ui.dataset.suite = String(f.demandee);
+        if (nouvelle) pop(f);
+      } else delete f.ui.dataset.suite;
+      placerSurFeux();
+      return;
     }
-    cacherGuide();
+    delete f.ui.dataset.suite;
+    demander(f, dessinEtape(suite), Math.min(3, suite.n || 1), aria);
+  }
+  function pop(f) {
+    f.bulle.classList.remove('e5-sf-pop');
+    void f.bulle.offsetWidth;
+    f.bulle.classList.add('e5-sf-pop');
+  }
 
+  // On a touché un fourneau en préparation : sa prochaine étape va sur la
+  // liste de Cyriel.
+  function enfiler(f) {
+    if (f.demandee >= f.etapes.length) {
+      bip('clic', 0.2);
+      direUnInstant(TEXTES.fourneau.dejaDemande, 1800);
+      return;
+    }
+    const e = f.etapes[f.demandee];
+    f.demandee += 1;
+    bip('clic', 0.4 + 0.6 * (f.demandee / f.etapes.length));
+    majEtapes(f);
+    cyLibre = cyLibre.then(() => faireEtape(f, e));
+  }
+
+  async function faireEtape(f, e) {
+    if (!vivant) return;
+    await revenirEnCuisine();
+    const p = L.devantFeu[f.k];
+    await marcher(cy, [[p.x, p.y]]);
+    if (!vivant) return;
+    f.enCours = e;
+    const legende = legendeEtape(e);
+    if (e.ing) {
+      const action = agir(f, legende, 650 + e.n * 200);
+      majEtapes(f);
+      await Promise.all([action, ...Array.from({ length: e.n }, (_, j) => tomber(f, e.ing, 150 + j * 200))]);
+      for (let j = 0; j < e.n; j++) f.dans.push(e.ing);
+      bip('plouf');
+      majContenu(f);
+      secouerCasserole(f);
+    } else {
+      const action = agir(f, legende, 900);
+      majEtapes(f);
+      await Promise.all([geste(f, e.geste), action]);
+      f.melange = true;
+      majContenu(f);
+    }
+    f.enCours = null;
+    f.faites += 1;
+    if (f.faites === f.etapes.length) lancerCuisson(f);
+    else majEtapes(f);
+    signaler();
+  }
+
+  function lancerCuisson(f) {
+    const r = f.r;
+    delete f.ui.dataset.suite;
     f.etat = 'cuisson';
+    f.melange = true;
+    majContenu(f);
     f.el.classList.add(r.four ? 'e5-four-chaud' : 'e5-feu');
     bip('feu');
     majFeu(f);
@@ -2413,29 +2557,202 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
     }
   }
 
+  // Ce qu'on voit dans la casserole : les ingrédients qui dépassent, puis,
+  // une fois mélangés, le plat qui cuit (sa couleur, quelques morceaux).
+  function majContenu(f) {
+    const g = f.contenu;
+    if (!g) return;
+    if (!['gestes', 'cuisson', 'pret'].includes(f.etat) || !f.r) { g.innerHTML = ''; return; }
+    if (f.etat === 'pret') {      // le plat a pris sa forme définitive
+      g.innerHTML = `<g transform="translate(0 -6) scale(.75)">${D.PLATS[f.r.plat]({ vapeur: 'blanc' })}</g>`;
+      return;
+    }
+    const surface = COULEURS_CASSEROLE[f.cle] || ['#e8c27a', '#c99a4e'];
+    const morceaux = f.dans.slice(-6);
+    const icones = morceaux.map((k, i) => {
+      const x = (i - (morceaux.length - 1) / 2) * 5.2;
+      return `<g transform="translate(${x.toFixed(1)} ${(i % 2 ? -3.6 : -1.4)}) scale(.27) rotate(${(i * 37) % 40 - 20})">${D.ARTICLES[k].dessin()}</g>`;
+    }).join('');
+    if (!f.melange) {
+      g.innerHTML = f.dans.length ? `<ellipse cx="0" cy=".4" rx="10.6" ry="4.2" fill="${surface[0]}" opacity=".5"/>${icones}` : '';
+      return;
+    }
+    const bulles = f.etat === 'cuisson' ? `<g class="e5-bouillon"><circle cx="-5" cy="-.6" r="1.3" fill="${surface[1]}"/><circle cx="4" cy=".4" r="1.1" fill="${surface[1]}"/><circle cx="0" cy="-1.6" r=".9" fill="#fff" opacity=".6"/></g>` : '';
+    g.innerHTML = `
+      <ellipse cx="0" cy=".2" rx="11" ry="4.6" fill="${surface[0]}" stroke="${surface[1]}" stroke-width=".8"/>
+      <path d="M-6 -1.6 Q-2 -3.4 2.4 -3" stroke="#fff" stroke-opacity=".55" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+      <g opacity=".85">${icones}</g>${bulles}`;
+  }
+
   let camionDit = false;
   // On touche un fourneau où le plat est prêt : il part au comptoir (ou, pour
   // la spécialité, la fête commence).
-  async function sortirPlat(f, enFond) {
-    const { cmd, r, extra } = f;
+  async function sortirPlat(f, cmds) {
     bip('clic', 1);
     f.el.classList.remove('e5-fourneau-pret');
-    Object.assign(f, { etat: 'libre', cmd: null, r: null, extra: null, vitesse: 1 });
-    majFeu(f);
-    if (cmd.special) {
-      cmd.objets = await fete(cmd, f);
-      cmd.etat = 'partie';
+    // La spécialité de la maison : c'est la fête.
+    const special = f.cle === 'gateau' && cmds.find((c) => c.special && c.etat === 'assise');
+    if (special) {
+      Object.assign(f, { etat: 'libre', cle: null, r: null, vitesse: 1, dans: [], melange: false });
+      f.el.classList.remove('e5-actif');
+      majContenu(f);
+      majFeu(f);
+      special.etat = 'servie';
+      special.objets = await fete(special, f);
+      special.etat = 'partie';
       return;
     }
-    await platVersComptoir(r, cmd, f);
-    cmd.etat = 'comptoir';
-    enFond.push(servir(cmd).then(async () => {
-      await mangerEtPartir(cmd.client, extra, cmd.epice, RECETTES[cmd.recette].prix);
+    // Cyriel prend le plat et le pose sur le comptoir ; le fourneau reste sale.
+    const { cle, epice, r } = f;
+    f.etat = 'prise';
+    majFeu(f);
+    cyLibre = cyLibre.then(async () => {
+      if (!vivant) return;
+      await revenirEnCuisine();
+      const p = L.devantFeu[f.k];
+      await marcher(cy, [[p.x, p.y]]);
+      Object.assign(f, { etat: 'sale', cle: null, r: null, vitesse: 1, dans: [], melange: false });
+      f.el.classList.remove('e5-actif');
+      f.el.classList.add('e5-sale');
+      majContenu(f);
+      majFeu(f);
+      cyPlat.innerHTML = `<g transform="scale(${PLAT / L.echelle})">${D.PLATS[r.plat]({ vapeur: false })}</g>`;
+      bip('clic', 0.7);
+      const e = stock.get(cle);
+      const place = e ? e.place : placeLibre();
+      const q = L.derriereComptoir[place];
+      await marcher(cy, [[q.x, q.y]]);
+      cyPlat.replaceChildren();
+      poserAuComptoir(cle, epice);
+      if (!comptoirDit) { comptoirDit = true; direUnInstant(TEXTES.auComptoir(r, RECETTES[cle].portions)); }
+      if (!saleDit) { saleDit = true; direUnInstant(TEXTES.sale); }
+      signaler();
+    });
+  }
+  let comptoirDit = false;
+  let saleDit = false;
+
+  // Un fourneau sale : on le touche, Cyriel le nettoie (une seconde).
+  function nettoyer(f) {
+    f.etat = 'nettoyage';
+    f.ui.dataset.etat = '';
+    etatUI(f, 'action');
+    f.legende.textContent = TEXTES.fourneau.arrive;
+    bip('clic', 0.4);
+    cyLibre = cyLibre.then(async () => {
+      if (!vivant) return;
+      await revenirEnCuisine();
+      const p = L.devantFeu[f.k];
+      await marcher(cy, [[p.x, p.y]]);
+      bip('pschitt');
+      await agir(f, TEXTES.gestes.nettoyer, 1000);
+      f.el.classList.remove('e5-sale');
+      f.etat = 'libre';
+      majFeu(f);
+      signaler();
+    });
+  }
+  // Cyriel reste en cuisine (elle ne sert plus en salle) : rien à faire ici,
+  // sauf si elle a été déplacée (la fête).
+  async function revenirEnCuisine() {
+    if (cy.g.parentNode !== calques.cuisine) calques.cuisine.append(cy.g);
+  }
+
+  // La serveuse : elle attend devant le comptoir ; dès qu'un client installé
+  // a son plat au comptoir, elle prend une portion et la lui apporte.
+  const sv = { g: svgEl('g', { class: 'e5-serveuse' }, calques.clients) };
+  sv.corps = svgEl('g', { class: 'e5-corps' }, sv.g);
+  sv.corps.innerHTML = `<g transform="scale(${L.echelle})">${D.serveuse()}</g>`;
+  const svPlat = sv.corps.querySelector('.e5-sv-plat');
+  placer(sv.g, L.serveuse.x, L.serveuse.y);
+  let svOccupee = false;
+  async function serveuse(cmds, fini) {
+    for (;;) {
+      if (!vivant || (fini() && !salles.size)) return;
+      const plusFourni = () => [...stock].filter(([k, e]) => e.n > 0 && k !== 'gateau').sort((a, b) => b[1].n - a[1].n)[0]?.[0];
+      const cmd = cmds.find((c) => c.etat === 'assise' && !c.special && (c.recette ? portionsDispo(c.recette) > 0 : !!plusFourni()));
+      if (cmd && !cmd.recette) { cmd.recette = plusFourni(); cmd.libre = true; }
+      if (!cmd) {
+        // rien à servir : elle débarrasse une table
+        const [table, assiette] = salles.entries().next().value || [];
+        if (table && !salles.get(table).prise) {
+          assiette.prise = true;
+          svOccupee = true;
+          await debarrasser(table, assiette);
+          svOccupee = false;
+          salles.delete(table);
+          signaler();
+          continue;
+        }
+        await unChangement();
+        continue;
+      }
+      const e = stock.get(cmd.recette);
+      e.n -= 1;
+      e.reserve = (e.reserve || 0) + 1;
+      majStock(e);
+      cmd.etat = 'enService';
+      cmd.epice = e.epice;
+      svOccupee = true;
+      await servirClient(cmd, e.place);
+      svOccupee = false;
+      signaler();
+    }
+  }
+  async function servirClient(cmd, place) {
+    const c = cmd.client;
+    const plat = RECETTES[cmd.recette].plat;
+    const t = L.tables.indexOf(c.table);
+    const q = L.devantComptoir[place];
+    await marcher(sv, [[q.x, q.y]]);
+    prendrePortion(cmd.recette);
+    svPlat.innerHTML = `<g transform="scale(${PLAT / L.echelle})">${D.PLATS[plat]({ vapeur: false })}</g>`;
+    bip('clic', 0.7);
+    const chemin = L.servir[t];
+    await marcher(sv, chemin.map((p) => [p.x, p.y]));
+    svPlat.replaceChildren();
+    const a = svgEl('g', {}, calques.tables);
+    a.innerHTML = `<g class="e5-pose e5-pop"><g transform="scale(${PLAT})">${D.PLATS[plat]()}</g></g>`;
+    placer(a, c.table.x, c.table.y - L.dessus - 7);
+    c.assiette = a;
+    if (c.bulle) { c.bulle.remove(); c.bulle = null; }
+    cmd.etat = 'servie';
+    servis.set(cmd.recette, (servis.get(cmd.recette) || 0) + 1);
+    bip('plouf');
+    direUnInstant(TEXTES.service, 1800);
+    gagnerXp(RECETTES[cmd.recette].xp + (cmd.epice ? TEXTES.epice.xp : 0));
+    repas.push(mangerEtPartir(c, null, cmd.epice, RECETTES[cmd.recette].prix).then(() => {
       cmd.etat = 'partie';
       signaler();
       if (!camionDit) { camionDit = true; direUnInstant(TEXTES.astuceCamion); }
     }));
+    // retour devant le comptoir, par le même chemin
+    const retour = [...chemin].reverse().slice(1).map((p) => [p.x, p.y]);
+    await marcher(sv, [...retour, [L.serveuse.x, L.serveuse.y]]);
   }
+  const repas = [];
+  // Les assiettes vides sur les tables, en attendant la serveuse.
+  const salles = new Map();            // table → assiette
+  async function debarrasser(table, assiette) {
+    const t = L.tables.indexOf(table);
+    const chemin = L.servir[t];
+    await marcher(sv, chemin.map((p) => [p.x, p.y]));
+    const inner = assiette.querySelector('.e5-pose > g');
+    if (inner) {
+      inner.setAttribute('transform', `scale(${PLAT / L.echelle})`);
+      svPlat.replaceChildren(inner);
+    }
+    assiette.remove();
+    bip('clic', 0.4);
+    const retour = [...chemin].reverse().slice(1).map((p) => [p.x, p.y]);
+    const q = L.devantComptoir[L.devantComptoir.length - 1];
+    await marcher(sv, [...retour, [q.x, q.y]]);
+    // l'assiette disparaît dans sa main, au comptoir
+    await animer(svPlat, [{ opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(.4)' }], { duree: 260, garder: false });
+    svPlat.replaceChildren();
+    await marcher(sv, [[L.serveuse.x, L.serveuse.y]]);
+  }
+
 
   /* ------------------------------------------------------------ Le service */
 
@@ -2474,7 +2791,7 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
   // Toucher un client installé (ou sa bulle) : Pipistrelle répète sa commande.
   function rendreBavard(cmd, ...cibles) {
     const f = () => {
-      if (cmd.etat !== 'assise' && cmd.etat !== 'cuisine') return;
+      if (cmd.etat !== 'assise' && cmd.etat !== 'enService') return;
       bip('clic', 0.6);
       direUnInstant(`${nomClient(cmd)} : « ${TEXTES.commandes[cmd.sorte]} »`, 4200);
     };
@@ -2493,74 +2810,22 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
     bip('sonnette');
     animer(c.g, [{ opacity: 0 }, { opacity: 1 }], { duree: 350 });
     await marcher(c, c.chemin.map((p) => [p.x, p.y]));
-    c.bulle = bulleDeCommande(c.x, c.y + c.haut - 4, RECETTES[cmd.recette].plat);
-    rendreBavard(cmd, c.g, c.bulle);
+    if (cmd.recette) {
+      c.bulle = bulleDeCommande(c.x, c.y + c.haut - 4, RECETTES[cmd.recette].plat);
+      rendreBavard(cmd, c.g, c.bulle);
+    }
     bip('clic', 0.5);
   }
 
-  // Cyriel prend le plat au comptoir, fait le tour du comptoir et le pose
-  // devant le client. Renvoie une promesse tenue quand le plat est sur la table.
-  function servir(cmd) {
-    const c = cmd.client;
-    const plat = RECETTES[cmd.recette].plat;
-    let poser;
-    const surTable = new Promise((r) => { poser = r; });
-    cyEnService += 1;
-    cyLibre = cyLibre.then(async () => {
-      const { n, g } = cmd.surComptoir;
-      const prise = L.derriereComptoir[n];
-      const S = L.sortieCuisine;
-      const A = L.allee;
-      const T = L.servir[L.tables.indexOf(c.table)];
-      if (cy.g.parentNode !== calques.cuisine) {   // elle revient d'une table
-        await marcher(cy, [[A.x, A.y], [S.x, S.y]]);
-        calques.cuisine.append(cy.g);
-      }
-      await marcher(cy, [[prise.x, prise.y]]);
-      g.remove();
-      occupees.delete(n);
-      cyPlat.innerHTML = `<g transform="scale(${PLAT / L.echelle})">${D.PLATS[plat]({ vapeur: false })}</g>`;
-      bip('clic', 0.7);
-      direUnInstant(TEXTES.service, 1800);
-      await marcher(cy, [[S.x, S.y]]);
-      calques.clients.append(cy.g);
-      await marcher(cy, [[A.x, A.y], [T.x, T.y]]);
-      cyPlat.replaceChildren();
-      const a = svgEl('g', {}, calques.tables);
-      a.innerHTML = `<g class="e5-pose e5-pop"><g transform="scale(${PLAT})">${D.PLATS[plat]()}</g></g>`;
-      placer(a, c.table.x, c.table.y - L.dessus - 7);
-      c.assiette = a;
-      if (c.bulle) { c.bulle.remove(); c.bulle = null; }
-      cmd.etat = 'servie';
-      servis.set(cmd.recette, (servis.get(cmd.recette) || 0) + 1);
-      bip('plouf');
-      gagnerXp(RECETTES[cmd.recette].xp + (cmd.epice ? TEXTES.epice.xp : 0));
-      poser();
-      cyEnService -= 1;
-      if (cyEnService) return;   // un autre plat attend : elle y va directement
-      await marcher(cy, [[A.x, A.y], [S.x, S.y]]);
-      calques.cuisine.append(cy.g);
-      await marcher(cy, [[L.cyriel.x, L.cyriel.y]]);
-    });
-    return surTable;
-  }
 
+
+  // Le client paie en partant : l'argent arrive directement au compteur, en
+  // haut à gauche (rien à ramasser sur la table).
   const ramasseurs = new Set();
-  function poserPieces(x, y, n) {
-    const g = svgEl('g', { class: 'e5-pieces-table', role: 'button', tabindex: '0', 'aria-label': `${TEXTES.ramasser} (${n})`, 'data-e5': 'piece' }, calques.tables);
-    g.innerHTML = `<circle r="22" fill="transparent"/><g class="e5-pop">${D.piece()}</g>`;
-    placer(g, x, y);
+  function payer(n) {
+    ajouterPieces(n);
     bip('piece');
-    const ramasser = () => {
-      if (!ramasseurs.has(ramasser)) return;
-      ramasseurs.delete(ramasser);
-      const de = versEcran(x, y);
-      g.remove();
-      envolee(D.pieceSeule(), de, centre(bourseIcone), { taille: 28, boite: '-12 -12 24 24', duree: 600 })
-        .then(() => { ajouterPieces(n); bip('piece'); });
-    };
-    ramasseurs.add(ramasser);
-    surToucher(g, ramasser);
+    fenetreCourante?.majTotal?.();
   }
   const toutRamasser = () => [...ramasseurs].forEach((f) => f());
 
@@ -2581,6 +2846,88 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
   }
 
   let rangBeurk = 0;
+  // Le plat se vide bouchée après bouchée (de droite à gauche, avec des
+  // marques de dents), jusqu'à l'assiette vide.
+  let bouchees = 0;
+  async function manger(assiette) {
+    const mets = assiette.querySelector('.e5-mets');
+    if (!mets) return;
+    const id = `e5-bouchees-${++bouchees}`;
+    const clip = svgEl('clipPath', { id }, mets.parentNode);
+    const forme = svgEl('path', {}, clip);
+    const bord = (x) => {
+      let d = `M-40 -40 H${x}`;
+      for (let y = -40; y < 30; y += 7) d += ` Q${x - 4.5} ${y + 3.5} ${x} ${y + 7}`;
+      return `${d} H-40 Z`;
+    };
+    forme.setAttribute('d', bord(60));
+    mets.setAttribute('clip-path', `url(#${id})`);
+    const etapes = [9, 1, -7, -40];
+    for (const x of etapes) {
+      await dormir(750 / V);
+      if (!vivant) return;
+      forme.setAttribute('d', bord(x));
+      bip('croque', 0.3);
+    }
+  }
+
+  // Le client content lève le pouce en se levant : la popularité du café
+  // (en haut, au milieu) monte de 0,1.
+  let popularite = POPULARITE;
+  const blocPopularite = $('.e5-popularite');
+  function pouceVert(c, content = true) {
+    const g = svgEl('g', { 'aria-hidden': 'true' }, calques.bulles);
+    g.innerHTML = `<g class="e5-pouce">${D.pouce(content)}</g>`;
+    placer(g, c.x, c.y + c.haut - 6);
+    dormir(1700).then(() => g.remove());
+    dormir(350).then(() => {
+      if (!vivant) return;
+      popularite = Math.max(0, Math.round((popularite + (content ? 0.1 : -0.1)) * 10) / 10);
+      blocPopularite.textContent = popularite.toFixed(1);
+      blocPopularite.classList.remove('e5-monte');
+      void blocPopularite.offsetWidth;
+      blocPopularite.classList.add('e5-monte');
+      bip('ding', 0.4);
+    });
+  }
+
+  // La patience d'un client installé : au bout d'un moment, une horloge
+  // au-dessus de sa tête ; s'il attend vraiment trop, pouce rouge, et il
+  // s'en va sans manger. (Clément, lui, attend toujours.)
+  async function patience(cmd) {
+    if (cmd.special) return;
+    const c = cmd.client;
+    const attend = () => vivant && cmd.etat === 'assise';
+    const debut = performance.now();
+    const ecoule = () => (performance.now() - debut) * V;
+    while (attend() && ecoule() < PATIENCE.horloge) await dormir(1000);
+    if (!attend()) return;
+    const h = svgEl('g', { class: 'e5-horloge', 'aria-hidden': 'true' }, calques.bulles);
+    h.innerHTML = `<g class="e5-horloge-in">${D.horloge()}</g>`;
+    placer(h, c.x - 26, c.y + c.haut - 10);
+    const aiguille = h.querySelector('.e5-aiguille');
+    while (attend() && ecoule() < PATIENCE.depart) {
+      const f = (ecoule() - PATIENCE.horloge) / (PATIENCE.depart - PATIENCE.horloge);
+      aiguille.setAttribute('transform', `rotate(${(f * 360).toFixed(0)})`);
+      h.firstElementChild.classList.toggle('e5-presse', f > 0.75);
+      await dormir(500);
+    }
+    h.remove();
+    if (!attend()) return;
+    cmd.etat = 'fachee';
+    if (c.bulle) { c.bulle.remove(); c.bulle = null; }
+    bip('non');
+    pouceVert(c, false);
+    direUnInstant(TEXTES.parti(c.nom), 3000);
+    await dormir(900);
+    await marcher(c, [...c.chemin].reverse().map((p) => [p.x, p.y]));
+    ouvrirPorte();
+    await animer(c.g, [{ opacity: 1 }, { opacity: 0 }], { duree: 320 });
+    c.g.remove();
+    cmd.etat = 'partie';
+    signaler();
+  }
+
   async function mangerEtPartir(c, extra, epice, prix) {
     await dormir(350);
     if (extra) {
@@ -2590,17 +2937,20 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
       direUnInstant(phrase(c.nom, D.ARTICLES[extra].defini), 3800);
       await degouter(c, c.y, TEXTES.reactions[rang % TEXTES.reactions.length]);
       c.assiette.remove();
-      poserPieces(c.table.x + 14, c.table.y - L.dessus - 4, PAIEMENT_BEURK);
+      payer(PAIEMENT_BEURK);
     } else {
       const p = versEcran(c.x, c.y + c.haut + 6);
       coeurs(p.x, p.y, 4);
       bip('miam');
       c.corps.classList.add('e5-content');
       if (epice) direUnInstant(TEXTES.epice.miam(c.nom, D.ARTICLES[epice]));
-      await animer(c.assiette.firstElementChild, [{ transform: 'scale(1)' }, { transform: 'scale(0)' }], { duree: 2200, easing: 'ease-in' });
-      c.assiette.remove();
+      await manger(c.assiette);
+      // l'assiette vide reste : la serveuse viendra la débarrasser
+      salles.set(c.table, c.assiette);
+      c.assiette = null;
       c.corps.classList.remove('e5-content');
-      poserPieces(c.table.x + 14, c.table.y - L.dessus - 4, prix + (epice ? TEXTES.epice.pieces : 0));
+      payer(prix + (epice ? TEXTES.epice.pieces : 0));
+      pouceVert(c);
     }
     await dormir(400);
     await marcher(c, [...c.chemin].reverse().map((p) => [p.x, p.y]));
@@ -2610,19 +2960,26 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
   }
 
   // Le client attend que sa table se libère (le client d'avant est parti).
+  // La première table libre et débarrassée (on attend s'il n'y en a pas).
   async function tableLibre(cmd, cmds) {
-    const occupee = () => cmds.some((c) => c !== cmd && c.table === cmd.table && ['assise', 'cuisine', 'comptoir', 'servie'].includes(c.etat));
-    while (vivant && occupee()) await unChangement();
+    const libre = () => L.tables.findIndex((T, t) => !salles.has(T)
+      && !cmds.some((c) => c !== cmd && c.client && c.table === t && ['assise', 'enService', 'servie', 'fachee'].includes(c.etat)));
+    while (vivant && libre() < 0) await unChangement();
+    return Math.max(0, libre());
   }
+
 
   function lancerArrivees(cmds) {
     return (async () => {
       for (let i = 0; i < cmds.length; i++) {
-        await dormir(ARRIVEES[i] ?? 3000);
-        await tableLibre(cmds[i], cmds);
+        await dormir(ARRIVEES(i));
+        const t = await tableLibre(cmds[i], cmds);
         await enCafe();
+        cmds[i].table = t;
+        cmds[i].client = creerClient(cmds[i]);
         await entrer(cmds[i]);
         cmds[i].etat = 'assise';
+        patience(cmds[i]);
         signaler();
       }
     })();
@@ -2630,60 +2987,81 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
 
   // Ce que dit Pipistrelle pendant le service, sans répéter son dernier conseil.
   function conseiller(t) {
+    if (vue !== 'cafe') return;          // au marché, on garde ses boutons
     if (texteDeFond !== t) dire(t);
   }
 
   // Le livre s'ouvre au fourneau f : on choisit la commande, on remplit la
   // casserole, et on peut filer au marché. Renvoie true si un plat est lancé.
   async function ouvrirLivre(f, cmds) {
-    let choisie = null;
     for (;;) {
-      const pretes = cmds.filter((c) => c.etat === 'assise');
-      if (!pretes.length) return false;
-      const res = await livreCuisine(pretes, choisie);
+      const res = await livreConsultation({ cuisine: cmds });
       if (!res) return false;
       if (res.action === 'marche') {
-        choisie = res.cmd;
-        await allerAuMarche();
+        // La boutique d'ingrédients s'ouvre dans le café, sur l'étal du
+        // premier ingrédient qui manque ; en la fermant, on revient au livre.
+        const manque = Object.entries(RECETTES[res.cle].ingredients).find(([k, n]) => nb(k) < n);
+        const etal = ETALS.find((e) => manque && e.articles.includes(manque[0])) || ETALS[0];
+        await fenetreBoutique(etal, { cafe: true }).resultat;
         continue;
       }
-      // L'épice de la recette est au frigo : on propose de relever le plat.
-      const ep = recette(res.cmd.recette).epice;
-      // Déjà mise dans la casserole : c'est oui. Sinon, si elle est au frigo,
-      // on propose de relever le plat.
-      if (ep && pot.get(ep)) { res.epice = ep; pot.delete(ep); }
-      else res.epice = ep && nb(ep) > 0 && await proposerEpice(ep) ? ep : null;
-      await preparer(f, res);
+      // La casserole se remplit toute seule avec la recette ; si son épice
+      // est au frigo, on propose de relever le plat.
+      pot.clear();
+      for (const [k, n] of Object.entries(RECETTES[res.cle].ingredients)) pot.set(k, n);
+      const ep = recette(res.cle).epice;
+      const epice = ep && nb(ep) > 0 && await proposerEpice(ep) ? ep : null;
+      preparer(f, { cle: res.cle, epice });
       return true;
     }
   }
 
-  // La boucle du service, comme dans le jeu : on touche un fourneau libre
-  // pour lancer une commande, un fourneau prêt pour poser le plat au
-  // comptoir. Jusqu'à trois plats cuisent en même temps ; Cyriel sert.
+  // La boucle du service, comme dans le jeu : un fourneau libre ouvre le
+  // livre (on lance une recette), un fourneau en préparation fait avancer
+  // Cyriel d'une étape, un plat prêt part sur le comptoir, un fourneau sale
+  // se nettoie. La serveuse sert les clients depuis le comptoir.
   let paralleleDit = false;
   async function service(cmds, { premierTexte, texte }) {
-    const enFond = [];
     let premier = true;
+    const fini = () => !cmds.some((c) => ['dehors', 'assise', 'enService', 'fachee'].includes(c.etat));
+    const travail = serveuse(cmds, fini);
     for (;;) {
+      if (fini()) break;
       const enAttente = cmds.filter((c) => c.etat === 'assise');
-      const occupes = feux.filter((f) => f.etat !== 'libre');
+      // les commandes qui n'ont encore ni portion au comptoir, ni plat en route
+      const attendues = (k) => enAttente.filter((x) => x.recette === k).length;
+      const libres = enAttente.filter((c) => !c.recette);
+      const toutAVenir = Object.keys(RECETTES).filter((k) => k !== 'gateau').reduce((t, k) => t + portionsAVenir(k), 0);
+      const aCuisiner = [...enAttente.filter((c) => c.recette && portionsAVenir(c.recette) < attendues(c.recette)),
+        ...(libres.length > toutAVenir ? libres : [])];
+      const occupes = feux.filter((f) => f.etat !== 'libre' && f.etat !== 'sale');
       const prets = feux.filter((f) => f.etat === 'pret');
-      const libres = feux.filter((f) => f.etat === 'libre');
-      if (!enAttente.length && !occupes.length && !cmds.some((c) => c.etat === 'dehors')) break;
+      const feuxLibres = feux.filter((f) => f.etat === 'libre');
+      const sales = feux.filter((f) => f.etat === 'sale');
+      const aDemander = feux.filter((f) => f.etat === 'gestes' && f.demandee < f.etapes.length);
+      const cyOccupee = feux.some((f) => (f.etat === 'gestes' && f.demandee > f.faites) || f.etat === 'prise' || f.etat === 'nettoyage');
 
       if (prets.length) {
         const f = prets[0];
-        conseiller(f.cmd.special ? TEXTES.pretSpecial(f.k + 1) : TEXTES.pret(f.k + 1));
+        conseiller(f.cle === 'gateau' ? TEXTES.pretSpecial(f.k + 1) : TEXTES.pret(f.k + 1));
         montrer(f.lieu.halo.x, f.lieu.halo.y, f.lieu.halo.r, false);
-      } else if (enAttente.length && libres.length) {
-        if (premier) conseiller(premierTexte);
+      } else if (aDemander.length && !cyOccupee) {
+        const f = aDemander[0];
+        conseiller(TEXTES.preparation);
+        montrer(f.lieu.halo.x, f.lieu.halo.y, f.lieu.halo.r, false);
+      } else if (aCuisiner.length && feuxLibres.length) {
+        if (premier) conseiller(aCuisiner.some((c) => !c.recette) ? TEXTES.premierPassant : premierTexte);
         else if (occupes.length && !paralleleDit) { paralleleDit = true; conseiller(TEXTES.enParallele); }
         else conseiller(texte);
-        const f = libres[0];
+        const f = feuxLibres[0];
+        montrer(f.lieu.halo.x, f.lieu.halo.y, f.lieu.halo.r, false);
+      } else if (aCuisiner.length && sales.length) {
+        conseiller(TEXTES.sale);
+        const f = sales[0];
         montrer(f.lieu.halo.x, f.lieu.halo.y, f.lieu.halo.r, false);
       } else {
-        conseiller(occupes.length ? TEXTES.cuissonEnCours : TEXTES.attenteClient);
+        conseiller(feux.some((x) => x.etat === 'cuisson') ? TEXTES.cuissonEnCours
+          : occupes.length ? TEXTES.cyOccupee : TEXTES.attenteClient);
         cacherGuide();
       }
 
@@ -2693,26 +3071,31 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
       if (!f) continue;
       cacherGuide();
       if (f.etat === 'pret') {
-        // Le plat part au comptoir pendant qu'on peut déjà toucher un autre
-        // fourneau (sauf la spécialité : la fête commence).
-        if (f.cmd.special) await sortirPlat(f, enFond);
-        else enFond.push(sortirPlat(f, enFond));
+        if (f.cle === 'gateau') await sortirPlat(f, cmds);
+        else sortirPlat(f, cmds);
+      } else if (f.etat === 'gestes') {
+        enfiler(f);
+        premier = false;
       } else if (f.etat === 'cuisson') {
         bip('clic', 0.3);
-        if (expressRestant > 0) await proposerExpress(f);
+        // Premier toucher : la bulle de la cuisson (nom, barre, temps) ;
+        // second toucher, bulle ouverte : cuisiner tout de suite.
+        if (!f.ui.dataset.info) montrerCuisson(f);
+        else if (expressRestant > 0) { cacherCuisson(f); await proposerExpress(f); }
         else direUnInstant(f.vitesse > 1 ? f.r.cuit : `${f.r.cuit} ${TEXTES.astuce60x}`, 3200);
+      } else if (f.etat === 'sale') {
+        nettoyer(f);
       } else if (f.etat === 'libre') {
-        if (!enAttente.length) {
-          bip('non');
-          direUnInstant(occupes.length ? TEXTES.rienAPreparer : TEXTES.attenteClient, 2400);
-          continue;
-        }
         bip('clic', 0.5);
         if (await ouvrirLivre(f, cmds)) premier = false;
+      } else {
+        bip('clic', 0.2);
+        direUnInstant(TEXTES.fourneau.dejaDemande, 1800);
       }
     }
     cacherGuide();
-    while (enFond.length) await enFond.shift();   // (de nouvelles promesses s'ajoutent en route)
+    await travail;
+    while (repas.length) await repas.shift();   // (de nouveaux repas s'ajoutent en route)
   }
 
   /* ------------------------------------------------------ Le client spécial */
@@ -3097,12 +3480,12 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
 
     await dire(TEXTES.intro, [TEXTES.boutons.intro]);
     outilsPrets = true;
-    const premiers = CLIENTS.slice(0, L.tables.length).map((c) => TEXTES.recettes[c.recette].dans);
+    const premiers = CLIENTS.slice(0, 4).map((c) => TEXTES.recettes[c.recette].dans);
     await dire(TEXTES.livre(`${premiers.slice(0, -1).join(', ')} et ${premiers[premiers.length - 1]}`), [TEXTES.boutons.voirLivre]);
     await livreConsultation();
     await dire(TEXTES.versMarche, [TEXTES.boutons.marche]);
 
-    commandes = CLIENTS.map((c) => ({ ...c, etat: 'dehors', erreurs: 0, client: creerClient(c) }));
+    commandes = SOIREE.map((c) => ({ ...c, etat: 'dehors', erreurs: 0, client: null }));
     await allerAuMarche();
     ouvrirCafe();
     dire(TEXTES.ouverture);
@@ -3144,7 +3527,7 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
   };
 
   // Les boutons du décor : Pipistrelle répond.
-  for (const nom of ['carte', 'reglages', 'porte', 'cadeau', 'toques', 'marmite', 'noeud', 'toque']) {
+  for (const nom of ['carte', 'reglages', 'porte', 'cadeau', 'marmite', 'noeud', 'toque']) {
     surMenu(nom, () => { bip('clic', 0.4); direUnInstant(H.messages[nom]); });
   }
   // Les onglets du chat : le premier, c'est le Café chat.
@@ -3186,6 +3569,18 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
     else direUnInstant(H.pleinIndispo);
   });
 
+  // La cabane : direction le marché, à tout moment une fois le café ouvert
+  // (avant, elle fait comme le bouton « Aller au marché » de Pipistrelle).
+  surMenu('marche', () => {
+    if (vue === 'marche') { bip('clic', 0.3); direUnInstant(H.dejaMarche); return; }
+    const versMarche = [...zoneChoix.querySelectorAll('button')].find((x) => x.textContent === TEXTES.boutons.marche);
+    if (versMarche) { versMarche.click(); return; }
+    if (!cafeOuvert) { bip('non'); direUnInstant(H.marchePlusTard); return; }
+    if (fenetreCourante || enTransition) return;
+    bip('clic', 0.5);
+    allerAuMarche().catch((e) => { if (vivant) console.error(e); });
+  });
+
   // Le fouet : comme toucher le bon fourneau (le plat prêt d'abord, puis
   // l'étape en attente, puis un fourneau libre s'il y a une commande).
   surMenu('fouet', () => {
@@ -3193,7 +3588,8 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
     if (!cafeOuvert) { direUnInstant(H.fouetFerme); return; }
     if (fenetreCourante || enTransition) return;
     const f = feux.find((x) => x.etat === 'pret')
-      || feux.find((x) => x.etat === 'gestes' && x.ui.dataset.etat === 'demande')
+      || feux.find((x) => x.etat === 'gestes' && x.demandee < x.etapes.length)
+      || feux.find((x) => x.etat === 'sale')
       || (commandes.some((c) => c.etat === 'assise') && feux.find((x) => x.etat === 'libre'))
       || null;
     if (!f) {
@@ -3210,11 +3606,13 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
     window.__e5 = {
       get pieces() { return pieces; },
       get frigo() { return Object.fromEntries(frigo); },
+      recette: (k) => ({ ...RECETTES[k].ingredients }),
+      get stock() { return Object.fromEntries([...stock].map(([k, e]) => [k, e.n])); },
       get pot() { return Object.fromEntries(pot); },
-      get commandes() { return commandes.map((c) => ({ sorte: c.sorte, etat: c.etat, erreurs: c.erreurs })); },
+      get commandes() { return commandes.map((c) => ({ sorte: c.sorte, etat: c.etat, recette: c.libre ? null : c.recette })); },
       get vue() { return vue; },
       get son() { return son.ambianceCourante ? son.ambianceCourante() : null; },
-      get feux() { return feux.map((f) => ({ etat: f.etat, recette: f.cmd && f.cmd.recette, reste: Math.ceil(f.total - f.fait) })); },
+      get feux() { return feux.map((f) => ({ etat: f.etat, recette: f.cle || null, reste: Math.ceil(f.total - f.fait), etapes: f.etapes?.length, demandee: f.demandee, faites: f.faites })); },
       besoins: (sorte) => Object.fromEntries(besoins(commandes.find((c) => c.sorte === sorte))),
       // pour les essais : ouvrir directement les fenêtres d'après les maquettes
       fenetres: {

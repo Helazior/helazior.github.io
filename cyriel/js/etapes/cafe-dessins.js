@@ -302,7 +302,7 @@ export function tasse({ vapeur = 'blanc' } = {}) {
   <ellipse cx="1.5" cy="11.5" rx="13.5" ry="2.8" fill="#e9dcff" stroke="#c9b3f2" stroke-width="1"/>
   <path d="M-9 -7 H9 V5 Q9 11 3 11 H-3 Q-9 11 -9 5 Z" fill="#8f5cf7"/>
   <path d="M9 -3 Q15.5 -3 15.5 2 Q15.5 7 9 7" stroke="#8f5cf7" stroke-width="2.6" fill="none"/>
-  <ellipse cx="0" cy="-7" rx="9" ry="2.6" fill="#6b3f22"/>
+  <ellipse cx="0" cy="-7" rx="9" ry="2.6" fill="#e9dcff"/><g class="e5-mets"><ellipse cx="0" cy="-7" rx="9" ry="2.6" fill="#6b3f22"/></g>
   <path d="M-6 -1 V4" stroke="#fff" stroke-opacity=".45" stroke-width="1.8" stroke-linecap="round"/>`;
 }
 
@@ -310,20 +310,20 @@ export function tasse({ vapeur = 'blanc' } = {}) {
 export function gateau() {
   return `
   <ellipse cx="0" cy="10.5" rx="17" ry="3.6" fill="#ffffff" stroke="#e3d6c2" stroke-width="1.2"/>
-  <path d="M-13 -5 L13 -5 L2 -12 Z" fill="#9a6845"/>
+  <g class="e5-mets"><path d="M-13 -5 L13 -5 L2 -12 Z" fill="#9a6845"/>
   <rect x="-13" y="-5" width="26" height="15" fill="#f2cf93"/>
   <rect x="-13" y="-5" width="26" height="4" fill="#7b4a2d"/>
   <rect x="-13" y="2" width="26" height="3.2" fill="#f07aa0"/>
   <path d="M-11 -1.2 q1 3.4 2 0 Z M-3 -1.2 q1 4.4 2 0 Z M6 -1.2 q1 3.4 2 0 Z" fill="#7b4a2d"/>
   <rect x="-3.5" y="-15" width="10" height="3.4" rx="1.7" fill="#e8456f" transform="rotate(-18 1.5 -13.3)"/>
-  <circle cx="-3.5" cy="-9.5" r="2.4" fill="#fffaf2"/>`;
+  <circle cx="-3.5" cy="-9.5" r="2.4" fill="#fffaf2"/></g>`;
 }
 
 /** Tarte à la rhubarbe entière, croisillons dorés, sur son assiette. */
 export function tarte() {
   return `
   <ellipse cx="0" cy="10" rx="18" ry="4" fill="#ffffff" stroke="#e3d6c2" stroke-width="1.2"/>
-  <path d="M-15.5 0 V5 A15.5 5.6 0 0 0 15.5 5 V0 Z" fill="#cf9550"/>
+  <g class="e5-mets"><path d="M-15.5 0 V5 A15.5 5.6 0 0 0 15.5 5 V0 Z" fill="#cf9550"/>
   <path d="M-15.5 2 q2.6 2.4 5.2 0 q2.6 2.6 5.2 0.4 q2.6 2.6 5.2 0.4 q2.6 2.6 5.2 0 q2.6 2.4 5.2 -0.4" stroke="#b97d3c" stroke-width="1" fill="none"/>
   <ellipse cx="0" cy="0" rx="15.5" ry="5.6" fill="#e8b46e"/>
   <ellipse cx="0" cy="0" rx="12.4" ry="4.2" fill="#ec6f97"/>
@@ -331,18 +331,18 @@ export function tarte() {
   <g stroke="#f6cf8f" stroke-width="1.7" stroke-linecap="round">
     <path d="M-8.5 -3 L-3.5 3.6 M-2.5 -4 L3 3.9 M3.5 -3.8 L8.5 2.6"/>
     <path d="M-9 2.4 L-4 -3.6 M-3 3.9 L2.5 -4 M3.6 3.4 L8.8 -2.4"/>
-  </g>`;
+  </g></g>`;
 }
 
 /** Crêpes pliées, nappées de crème de marron. */
 export function crepes() {
   return `
   <ellipse cx="0" cy="10" rx="18" ry="4" fill="#ffffff" stroke="#e3d6c2" stroke-width="1.2"/>
-  <path d="M-16 7 Q-15 -4 -1 -6 Q13 -6 16 6 Q0 10 -16 7 Z" fill="#e9b265"/>
+  <g class="e5-mets"><path d="M-16 7 Q-15 -4 -1 -6 Q13 -6 16 6 Q0 10 -16 7 Z" fill="#e9b265"/>
   <path d="M-13 4 Q-11 -9 3 -10 Q14 -9 14 2 Q0 7 -13 4 Z" fill="#f6cf8c" stroke="#dea457" stroke-width="1"/>
   <ellipse cx="-6" cy="0" rx="1.6" ry=".9" fill="#dea457"/><ellipse cx="8" cy="-3" rx="1.3" ry=".8" fill="#dea457"/><ellipse cx="2" cy="2.4" rx="1.4" ry=".8" fill="#dea457"/>
   <path d="M-8 -5 q3 -3.4 6 0 q3 3.4 6 0 q2 -2.4 4 -0.6" stroke="#7b4a2d" stroke-width="2.6" fill="none" stroke-linecap="round"/>
-  <path d="M-1 -9.5 C-4 -10 -4 -13 -1 -13.4 C2 -13.8 3.4 -11 1 -9.6 Z" fill="#8a5a3b"/>`;
+  <path d="M-1 -9.5 C-4 -10 -4 -13 -1 -13.4 C2 -13.8 3.4 -11 1 -9.6 Z" fill="#8a5a3b"/></g>`;
 }
 
 /** Salade du jardin, dans son saladier en verre. */
@@ -350,10 +350,11 @@ export function saladier() {
   return `
   <ellipse cx="0" cy="11" rx="16" ry="3.4" fill="#2a1745" opacity=".1"/>
   <path d="M-17 -2 Q-16 11 0 12 Q16 11 17 -2 Z" fill="#d9f0f7" stroke="#9ccbe0" stroke-width="1.2"/>
-  <path d="M-15 -3 C-15 -10 -8 -13 -3 -10 C0 -15 9 -14 10 -9 C15 -10 18 -6 16 -2 Z" fill="#7cc54b"/>
+  <g class="e5-mets"><path d="M-15 -3 C-15 -10 -8 -13 -3 -10 C0 -15 9 -14 10 -9 C15 -10 18 -6 16 -2 Z" fill="#7cc54b"/>
   <path d="M-9 -9 Q-6 -5 -2 -8 M4 -11 Q6 -6 11 -8" stroke="#4f9a2c" stroke-width="1.2" fill="none"/>
   <path d="M-11 -3 L-6 -8 L-3 -3 Z" fill="#f0503b"/><path d="M2 -3 L7 -9 L10 -3 Z" fill="#e8402e"/>
   <ellipse cx="-1" cy="-4" rx="3" ry="2" fill="#f4dc9c"/>
+</g>
   <path d="M-12 2 Q-10 7 -5 9" stroke="#fff" stroke-opacity=".7" stroke-width="1.8" fill="none" stroke-linecap="round"/>`;
 }
 
@@ -370,9 +371,9 @@ export function soupe({ vapeur = 'blanc' } = {}) {
   <path d="M-15 -3 Q-14 10 0 10.6 Q14 10 15 -3 Z" fill="#7fb35a"/>
   <path d="M-11 4 Q-6 8 0 8" stroke="#a8d27f" stroke-width="1.6" fill="none" stroke-linecap="round"/>
   <ellipse cx="0" cy="-3" rx="15" ry="4.6" fill="#99c870"/>
-  <ellipse cx="0" cy="-3" rx="12.4" ry="3.4" fill="#d9362a"/>
+  <g class="e5-mets"><ellipse cx="0" cy="-3" rx="12.4" ry="3.4" fill="#d9362a"/>
   <path d="M-6 -3 Q-2 -6 2 -4 Q4 -2 0 -1.6 Q-3 -1.4 -2 -3" stroke="#fff6ee" stroke-width="1.4" fill="none" stroke-linecap="round"/>
-  <path d="M5 -4 C7 -7 11 -6 11 -4 C9 -2 7 -2 5 -4 Z" fill="#3f9a3a"/>`;
+  <path d="M5 -4 C7 -7 11 -6 11 -4 C9 -2 7 -2 5 -4 Z" fill="#3f9a3a"/></g>`;
 }
 
 /** Omelette pliée, avec un brin de persil. */
@@ -380,10 +381,10 @@ export function omelette() {
   return `
   <ellipse cx="0" cy="9" rx="18" ry="4.6" fill="#ffffff" stroke="#c9d8e8" stroke-width="1.2"/>
   <ellipse cx="0" cy="9" rx="13" ry="3" fill="none" stroke="#dbe7f2" stroke-width="1"/>
-  <path d="M-14 6 Q-13 -6 0 -7 Q13 -7 14 5 Q0 9 -14 6 Z" fill="#f2c94c" stroke="#d9a72a" stroke-width="1"/>
+  <g class="e5-mets"><path d="M-14 6 Q-13 -6 0 -7 Q13 -7 14 5 Q0 9 -14 6 Z" fill="#f2c94c" stroke="#d9a72a" stroke-width="1"/>
   <path d="M-10 4 Q-8 -3 1 -4 Q10 -4 11 3" stroke="#e0b23a" stroke-width="1" fill="none"/>
   <ellipse cx="-5" cy="-2" rx="2.2" ry="1" fill="#fbe08a"/>
-  <path d="M7 -5 C9 -8 12 -7 12 -5 C10 -3 8 -3 7 -5 Z M10 -6 C11 -9 14 -9 14 -7" fill="#4fae3e"/>`;
+  <path d="M7 -5 C9 -8 12 -7 12 -5 C10 -3 8 -3 7 -5 Z M10 -6 C11 -9 14 -9 14 -7" fill="#4fae3e"/></g>`;
 }
 
 /** Mousse au chocolat dans sa coupe, avec chantilly et cerise. */
@@ -393,11 +394,12 @@ export function mousse() {
   <path d="M-8 11.6 Q-2 9.8 0 5 Q2 9.8 8 11.6 Z" fill="#dff0f8" stroke="#9ccbe0" stroke-width="1"/>
   <path d="M0 5 V-1" stroke="#9ccbe0" stroke-width="2.2"/>
   <path d="M-13 -9 Q-12 2 0 2 Q12 2 13 -9 Z" fill="#dff0f8" stroke="#9ccbe0" stroke-width="1.2"/>
-  <path d="M-12 -9 Q-11 0 0 0.4 Q11 0 12 -9 Z" fill="#6b3d22"/>
+  <g class="e5-mets"><path d="M-12 -9 Q-11 0 0 0.4 Q11 0 12 -9 Z" fill="#6b3d22"/>
   <path d="M-13 -9 C-13 -15 -7 -16 -4 -13 C-2 -18 5 -18 6 -13 C10 -16 15 -13 13 -9 Z" fill="#7b4a2d"/>
   <path d="M-6 -13 C-7 -18 -1 -20 1 -17 C3 -21 9 -18 7 -14 Z" fill="#fffaf2" stroke="#e8dcc8" stroke-width=".8"/>
   <path d="M2 -20 Q4 -25 8 -25" stroke="#4f9a2c" stroke-width="1.2" fill="none" stroke-linecap="round"/>
   <circle cx="1.5" cy="-19.6" r="3" fill="#e5304f"/><circle cx="0.6" cy="-20.6" r=".9" fill="#ff9aa8"/>
+</g>
   <path d="M-9 -6 Q-9 -2 -6 -1" stroke="#fff" stroke-opacity=".6" stroke-width="1.4" fill="none" stroke-linecap="round"/>`;
 }
 
@@ -748,7 +750,7 @@ function portrait(dessin, x, y, l, h, boite, fond = '#e9dcff') {
 // blanches côté salle. Repère : i le long du mur de droite, j le long du mur
 // de gauche, z vers le haut ; (0, 0) est le coin du fond.
 
-const CA = { x: 200, y: 190, a: 15, b: 7.5, n: 12, h: 112 };
+const CA = { x: 200, y: 182, a: 15, b: 7.5, n: 13, h: 112 };
 const qx = (i, j) => CA.x + (i - j) * CA.a;
 const qy = (i, j, z = 0) => CA.y + (i + j) * CA.b - z;
 const Q = (i, j, z = 0) => `${qx(i, j).toFixed(1)} ${qy(i, j, z).toFixed(1)}`;
@@ -767,45 +769,80 @@ function qboite(i0, j0, I, J, z0, H, c) {
 }
 const qpied = (i, j, h, couleur, l = 2.4) => `<path d="M${Q(i, j, 0)} L${Q(i, j, h)}" stroke="${couleur}" stroke-width="${l}" stroke-linecap="round"/>`;
 
-const TABLES_J = [3.4, 7.0, 10.6];
-const TABLE_I = 8.6;
-const SIEGE_I = 7.2;
-const HAUT_TABLE = 16;
+// La disposition, d'après la maquette de Clément : la porte de la cuisine au
+// fond du mur de gauche, puis le grand frigo, puis les trois fourneaux
+// jusqu'au bout du mur ; le comptoir bleu en îlot devant les fourneaux
+// (Cyriel cuisine entre les deux, la serveuse prend les plats de l'autre
+// côté) ; quatre tables blanches en quinconce côté salle, chacune avec sa
+// chaise contre le mur de droite. Les personnages sont plus grands qu'avant.
+const TABLES = [[8.8, 2.4], [8.8, 6.9], [11.6, 4.6], [11.6, 9.1]];   // centre de chaque table (i, j)
+const TABLE_DEMI = 0.9;      // demi-côté d'une table
+const HAUT_TABLE = 30;
+const HAUT_FEU = 38;
+const HAUT_COMPTOIR = 42;
+const COMPTOIR = { i0: 4.1, i1: 5.5, j0: 7.4, j1: 11.6 };
+const PLACES_COMPTOIR = [8.0, 9.0, 10.0, 11.0];   // j des plats posés sur le comptoir
+const PORTE_J = [1.2, 3.4];   // la porte, au fond du mur de gauche
+const FRIGO = { i: 2.0, j0: 3.8, j1: 6.2, h: 90 };
+const COULOIR = 7.0;          // l'allée des clients et de la serveuse, entre le comptoir et les tables
+const ALLEE_T = 10.3;         // l'allée devant les tables du fond
 
-// Le cadre de la vue du café : la salle entière, toujours visible.
-export const CADRE_CAFE = { x: 4, y: 64, l: 392, h: 352 };
+// Le cadre de la vue du café : la salle entière (debout), et la salle en
+// grand quand l'écran est couché (le camion déborde à droite).
+export const CADRE_CAFE = { x: 2, y: 64, l: 396, h: 318 };
+export const CADRE_CAFE_PAYSAGE = { x: 25, y: 72, l: 420, h: 302 };
 
-// Les quatre fourneaux le long du mur de gauche (j de départ de chacun) :
-// les trois premiers servent, le dernier est pour le décor.
-const FEUX_J = [2.2, 3.9, 5.6, 7.3];
+// Les trois fourneaux le long du mur de gauche (j de départ de chacun).
+const FEUX_J = [6.3, 8.5, 10.7];
+const FEU_J = 2.1;           // la largeur d'un fourneau
 export const NB_FEUX = 3;
 function lieuxFeu(j0) {
-  const j = j0 + 0.8;
-  const c = pt(0.95, j, 15);
+  const j = j0 + FEU_J / 2;
+  const c = pt(1.0, j, HAUT_FEU);
   return {
-    casserole: c,                                        // la casserole posée dessus
-    four: pt(1.9, j, 8),                                 // la porte du four
-    halo: { x: c.x, y: c.y - 4, r: 24 },                 // le cercle « touche ici »
+    casserole: c,                                        // la poêle posée dessus
+    four: pt(2.0, j, 16),                                // la porte du four
+    halo: { x: c.x, y: c.y - 6, r: 30 },                 // le cercle « touche ici »
   };
 }
 
+// Le chemin d'un client, de la porte jusqu'à sa chaise.
+function cheminTable([ti, tj]) {
+  const si = ti;
+  const sj = tj - TABLE_DEMI - 0.55;
+  const debut = [pt(0.6, 2.3), pt(COULOIR, 2.3)];
+  if (ti < 10) {
+    return [...debut, pt(COULOIR, sj), pt(si, sj)];
+  }
+  const voie = tj - 0.3;      // entre deux tables de devant
+  return [...debut, pt(COULOIR, voie), pt(ALLEE_T, voie), pt(ALLEE_T, sj), pt(si, sj)];
+}
+// Le chemin de la serveuse, du comptoir jusqu'à côté de la table.
+function cheminServeuse([ti, tj]) {
+  if (ti < 10) return [pt(COULOIR, tj), pt(ti - TABLE_DEMI - 0.5, tj)];
+  return [pt(COULOIR, tj - 0.3), pt(ALLEE_T, tj - 0.3), pt(ALLEE_T, tj)];
+}
+
 export const LIEUX = {
-  echelle: 0.72,                                   // taille des personnages dans la salle
-  tables: TABLES_J.map((j) => pt(TABLE_I, j)),     // centre de chaque table, au sol
+  echelle: 1.3,                                    // taille des personnages dans la salle
+  tables: TABLES.map(([i, j]) => pt(i, j)),        // centre de chaque table, au sol
   dessus: HAUT_TABLE,                              // hauteur du plateau des tables
-  sieges: TABLES_J.map((j) => pt(SIEGE_I, j)),     // pieds d'un client assis (cachés par la table)
-  chemins: TABLES_J.map((j) => [pt(0.6, 11.4), pt(6, 11.4), pt(6, j), pt(SIEGE_I, j)]),
-  porte: pt(0.5, 11.4),
-  pipi: pt(5.4, 1.6, 46),                          // Pipistrelle au repos (elle conseille)
-  cyriel: pt(2.75, 8.3),                           // Cyriel en cuisine, au repos
-  devantFeu: FEUX_J.slice(0, NB_FEUX).map((j) => pt(2.65, j + 1.55)),   // Cyriel près d'un fourneau
-  derriereComptoir: [6, 4, 8].map((j) => pt(2.95, j)),                  // Cyriel prend le plat n
-  sortieCuisine: pt(2.6, 10.1),                    // le bout du comptoir, côté salle
-  allee: pt(5.9, 10.1),                            // l'allée entre le comptoir et les chaises, au bout
-  servir: TABLES_J.map((j) => pt(5.9, j + 0.95)),  // Cyriel pose le plat sur la table t
-  comptoir: [pt(4.2, 6, 14), pt(4.2, 4, 14), pt(4.2, 8, 14)],   // places des plats prêts
-  feux: FEUX_J.slice(0, NB_FEUX).map(lieuxFeu),     // les fourneaux où l'on cuisine
-  frigo: pt(1.6, 1.05, 26),
+  sieges: TABLES.map(([i, j]) => pt(i, j - TABLE_DEMI - 0.55)),   // pieds d'un client assis (cachés par la table)
+  chemins: TABLES.map(cheminTable),
+  porte: pt(0.6, 2.3),
+  pipi: pt(8.5, 0.9, 74),                          // Pipistrelle au repos (elle conseille)
+  cyriel: pt(3.0, 6.0),                            // Cyriel en cuisine, au repos
+  devantFeu: FEUX_J.map((j) => pt(3.2, j + 0.15)),                     // Cyriel près d'un fourneau (sans cacher la poêle)
+  derriereComptoir: PLACES_COMPTOIR.map((j) => pt(3.4, j)),          // Cyriel pose le plat n
+  comptoir: PLACES_COMPTOIR.map((j) => pt(4.8, j, HAUT_COMPTOIR + 2)),   // places des plats prêts
+  sortieCuisine: pt(3.2, 12.3),                    // le bout du comptoir, côté salle (pour la fête)
+  serveuse: pt(6.5, 9.6),                          // la serveuse au repos, devant le comptoir
+  devantComptoir: PLACES_COMPTOIR.map((j) => pt(6.2, j)),            // la serveuse prend le plat n
+  couloir: (j) => pt(COULOIR, j),
+  servir: TABLES.map(cheminServeuse),              // le chemin de la serveuse jusqu'à la table t
+  feux: FEUX_J.map(lieuxFeu),                      // les fourneaux où l'on cuisine
+  frigo: pt(FRIGO.i, (FRIGO.j0 + FRIGO.j1) / 2, 50),
+  camion: pt(14.6, -2.2),                          // le camion du chef pâtissier, au bord de la rue
 };
 
 // Autour du café, comme sur la maquette de Clément (et le jeu d'origine) :
@@ -854,11 +891,6 @@ function rue() {
   // les tirets blancs, au milieu des rues (pas dans le carrefour)
   const tirets = [-30, -27, -24, -21, -18, -15, -12, -1, 2, 5, 8, 11, 14, 17, 20, 23, 26, 29]
     .map((u) => ligne([C, u], [C, u + 1.6], '#faf7f1', 3) + ligne([u, C], [u + 1.6, C], '#faf7f1', 3)).join('');
-  // la terrasse du camion, devant à droite
-  const t = { i0: n + 1.2, i1: n + 10.5, j0: 5.4, j1: n + 1.2 };
-  let dallesTerrasse = '';
-  for (let u = t.i0 + 1.5; u < t.i1; u += 1.5) dallesTerrasse += ligne([u, t.j0], [u, t.j1]);
-  for (let v = t.j0 + 1.5; v < t.j1; v += 1.5) dallesTerrasse += ligne([t.i0, v], [t.i1, v]);
   return `
   <rect x="-1400" y="-1400" width="3200" height="3400" fill="${herbe}"/>
   ${qf([[T0, -L], [-0.6, -L], [-0.6, L], [T0, L]], TROTTOIR)}
@@ -866,10 +898,6 @@ function rue() {
   ${qf(croix, ASPHALTE)}
   <path d="M${croix.map((q) => Q(...q)).join(' L')} Z" fill="none" stroke="${BORD}" stroke-width="1.4" stroke-linejoin="round"/>
   ${joints}${tirets}
-  ${qf([[t.i0 - 0.1, t.j0], [t.i1, t.j0], [t.i1, t.j1 + 0.01], [t.i0 - 0.1, t.j1 + 0.01]], DALLE)}
-  ${dallesTerrasse}
-  ${qf([[t.i1, t.j0, 0], [t.i1, t.j1, 0], [t.i1, t.j1, -4], [t.i1, t.j0, -4]], TRANCHE)}
-  ${qf([[t.i0, t.j1, 0], [t.i1, t.j1, 0], [t.i1, t.j1, -4], [t.i0, t.j1, -4]], TRANCHE2)}
   ${qf([[-0.6, -0.6], [n + 1.2, -0.6], [n + 1.2, n + 1.2], [-0.6, n + 1.2]], DALLE)}
   ${qf([[n + 1.2, -0.6, 0], [n + 1.2, n + 1.2, 0], [n + 1.2, n + 1.2, -4], [n + 1.2, -0.6, -4]], TRANCHE)}
   ${qf([[-0.6, n + 1.2, 0], [n + 1.2, n + 1.2, 0], [n + 1.2, n + 1.2, -4], [-0.6, n + 1.2, -4]], TRANCHE2)}`;
@@ -877,21 +905,28 @@ function rue() {
 
 function sol() {
   const n = CA.n;
-  const lattes = Array.from({ length: 20 }, (_, k) => {
-    const j = 0.6 * (k + 1);
-    return `<path d="M${Q(5.4, j)} L${Q(n, j)}" stroke="#c38a54" stroke-width=".9"/>`;
-  }).join('') + Array.from({ length: 20 }, (_, k) => {
-    const j = 0.6 * k + 0.05;
-    const i = 5.4 + ((k * 2.3) % 6);
-    return `<path d="M${Q(i, j)} L${Q(i, j + 0.6)}" stroke="#c38a54" stroke-width=".8"/>`;
-  }).join('');
-  const carreaux = Array.from({ length: 6 }, (_, k) => `<path d="M${Q(0.9 * (k + 1), 0)} L${Q(0.9 * (k + 1), 9.9)}" stroke="#868691" stroke-width=".8"/>`).join('')
-    + Array.from({ length: 11 }, (_, k) => `<path d="M${Q(0, 0.9 * (k + 1))} L${Q(5.4, 0.9 * (k + 1))}" stroke="#868691" stroke-width=".8"/>`).join('');
+  const K = { i1: 6.6, j0: 3.6 };     // le carrelage de la cuisine
+  // Les lattes du parquet, dans le sens du mur de gauche, en quinconce.
+  let lattes = '';
+  for (let k = 1; k * 0.65 < n; k++) {
+    const i = k * 0.65;
+    const jFin = i < K.i1 ? K.j0 : n;
+    lattes += `<path d="M${Q(i, 0)} L${Q(i, jFin)}" stroke="#c38a54" stroke-width=".9"/>`;
+    for (let m = 0; m < 6; m++) {
+      const j = ((k * 2.3 + m * 2.9) % n);
+      if (i < K.i1 && j > K.j0 - 0.6) continue;
+      lattes += `<path d="M${Q(i - 0.65, j)} L${Q(i, j)}" stroke="#c38a54" stroke-width=".8"/>`;
+    }
+  }
+  let carreaux = '';
+  for (let u = 1.1; u < K.i1; u += 1.1) carreaux += `<path d="M${Q(u, K.j0)} L${Q(u, n)}" stroke="#7d7d88" stroke-width=".9"/>`;
+  for (let v = K.j0 + 1.1; v < n; v += 1.1) carreaux += `<path d="M${Q(0, v)} L${Q(K.i1, v)}" stroke="#7d7d88" stroke-width=".9"/>`;
   return `
   ${qf([[0, 0], [n, 0], [n, n], [0, n]], '#d7a26c')}
   ${lattes}
-  ${qf([[0, 0], [5.4, 0], [5.4, 9.9], [0, 9.9]], '#a2a2ad')}
+  ${qf([[0, K.j0], [K.i1, K.j0], [K.i1, n], [0, n]], '#9d9da8')}
   ${carreaux}
+  <path d="M${Q(0, K.j0)} L${Q(K.i1, K.j0)} L${Q(K.i1, n)}" stroke="#7a7a86" stroke-width="1.4" fill="none"/>
   ${qf([[0, 0], [n, 0], [n, 0.5], [0, 0.5]], '#1a1026', ' opacity=".08"')}
   ${qf([[0, 0], [0.5, 0], [0.5, n], [0, n]], '#1a1026', ' opacity=".06"')}`;
 }
@@ -946,16 +981,21 @@ function murDroitDecor() {
 function murGaucheDecor() {
   return `
   <g transform="${murGauche()}">
+    <g transform="translate(-61 0)">
     <rect x="-64" y="-78" width="30" height="2.4" rx="1" fill="#8b8b98"/>
     <path d="M-60 -76 V-62 M-60 -62 a3 3 0 1 0 0.1 0" stroke="#9aa3ad" stroke-width="1.4" fill="none"/>
     <path d="M-51 -76 V-66" stroke="#9aa3ad" stroke-width="1.4"/><ellipse cx="-51" cy="-62" rx="2.6" ry="4.4" fill="none" stroke="#9aa3ad" stroke-width="1.1"/>
     <path d="M-42 -76 V-72" stroke="#9aa3ad" stroke-width="1.2"/><path d="M-46 -72 h8 v9 q0 4 -4 4 q-4 0 -4 -4 Z" fill="#f2a0c0"/>
+    </g>
+    <g transform="translate(-80 0)">
     <rect x="-112" y="-98" width="38" height="30" rx="2" fill="#8a5a3b"/>
     ${portrait(duoSpeleo(), -109, -95, 32, 24, '-30 -54 60 45', '#2a2140')}
-    <g transform="rotate(-4 -130 -84)">
+    </g>
+    <g transform="translate(-8 0) rotate(-4 -130 -84)">
       <rect x="-142" y="-100" width="24" height="29" fill="#fffaf2" stroke="#d9c8a8" stroke-width=".8"/>
       ${portrait(cyrielChapeau(), -140, -98, 20, 21, '-15 -52 30 31', '#cfe7f5')}
     </g>
+    <g transform="translate(-14 0) scale(1.35) translate(150 0)">
     <rect x="-180" y="-63" width="30" height="63" fill="#fbfdff"/>
     <rect x="-177" y="-60" width="24" height="60" fill="#1d1530"/>
     <g class="e5-porte" data-e5="porte">
@@ -968,35 +1008,37 @@ function murGaucheDecor() {
         <text data-e5="pancarte" x="-165" y="-29.2" text-anchor="middle" font-size="5.4" font-weight="600" fill="#7a3cf0">Fermé</text>
       </g>
     </g>
+    </g>
   </g>`;
 }
 
 function frigoIso() {
-  const I = 1.6;
-  const j0 = 0.15;
-  const J = 1.85;
-  const H = 56;
+  const I = FRIGO.i;
+  const j0 = FRIGO.j0;
+  const J = FRIGO.j1 - FRIGO.j0;
+  const H = FRIGO.h;
   // Façade (plan i = 1.6) : à plat, u = -15 j, v = -z.
   const u0 = -15 * (j0 + J);
   const u1 = -15 * j0;
+  const v0 = u1 - 15 * 1.85;   // la façade est dessinée à l'ancienne taille, puis agrandie
   return `
   <g data-e5="frigo">
     ${qf([[0, j0, 0], [I, j0, 0], [I, j0 + J, 0], [0, j0 + J, 0]], '#1a1026', ' opacity=".12"')}
     ${qboite(0, j0, I, J, 0, H, { devant: '#dcd8d2', cote: '#efebe6', dessus: '#fbfaf8' })}
-    <g transform="${murGauche(I)}">
-      <rect x="${u0}" y="${-H}" width="${u1 - u0}" height="${H}" fill="#fdfaf1"/>
-      <path d="M${u0} -40 H${u1} M${u0} -24 H${u1}" stroke="#e3dccd" stroke-width="1.4"/>
-      <g transform="translate(${u0 + 7} -45) scale(.3)">${lait()}</g>
-      <g transform="translate(${u0 + 18} -45) scale(.28)">${oeufs()}</g>
-      <g transform="translate(${u0 + 10} -29) scale(.28)">${marron()}</g>
-      <g transform="translate(${u0 + 19} -13) scale(.28)">${pomme()}</g>
+    <g transform="${murGauche(I)} translate(${u1} 0) scale(${(J / 1.85).toFixed(3)} ${(H / 56).toFixed(3)}) translate(${-u1} 0)">
+      <rect x="${v0}" y="-56" width="${u1 - v0}" height="56" fill="#fdfaf1"/>
+      <path d="M${v0} -40 H${u1} M${v0} -24 H${u1}" stroke="#e3dccd" stroke-width="1.4"/>
+      <g transform="translate(${v0 + 7} -45) scale(.3)">${lait()}</g>
+      <g transform="translate(${v0 + 18} -45) scale(.28)">${oeufs()}</g>
+      <g transform="translate(${v0 + 10} -29) scale(.28)">${marron()}</g>
+      <g transform="translate(${v0 + 19} -13) scale(.28)">${pomme()}</g>
       <g class="e5-porte-frigo" data-e5="frigo-porte">
-        <rect x="${u0}" y="${-H}" width="${u1 - u0}" height="${H}" rx="2" fill="#f7f5f1" stroke="#d6d0c6" stroke-width="1.2"/>
-        <path d="M${u0} -36 H${u1}" stroke="#d6d0c6" stroke-width="1.2"/>
+        <rect x="${v0}" y="-56" width="${u1 - v0}" height="56" rx="2" fill="#f7f5f1" stroke="#d6d0c6" stroke-width="1.2"/>
+        <path d="M${v0} -36 H${u1}" stroke="#d6d0c6" stroke-width="1.2"/>
         <rect x="${u1 - 5}" y="-50" width="2.4" height="10" rx="1.2" fill="#b9b2a6"/>
         <rect x="${u1 - 5}" y="-31" width="2.4" height="16" rx="1.2" fill="#b9b2a6"/>
-        <path d="M${u0 + 8} -47 c-2.4 -2 -2.8 -3.4 -1.6 -3.9 c.7 -.3 1.3 .1 1.6 .5 c.3 -.4 .9 -.8 1.6 -.5 c1.2 .5 .8 1.9 -1.6 3.9 Z" fill="#8f5cf7"/>
-        <g transform="translate(${u0 + 10} -24) rotate(-6)">
+        <path d="M${v0 + 8} -47 c-2.4 -2 -2.8 -3.4 -1.6 -3.9 c.7 -.3 1.3 .1 1.6 .5 c.3 -.4 .9 -.8 1.6 -.5 c1.2 .5 .8 1.9 -1.6 3.9 Z" fill="#8f5cf7"/>
+        <g transform="translate(${v0 + 10} -24) rotate(-6)">
           <rect x="-6.5" y="-7.5" width="13" height="15" fill="#fff" stroke="#e3dccd" stroke-width=".6"/>
           ${portrait(cyrielClin(), -5, -6, 10, 9, '-13 -49 26 23', '#ffe3ef')}
         </g>
@@ -1006,80 +1048,110 @@ function frigoIso() {
 }
 
 function fourneauxIso() {
-  const blanc = { devant: '#d9dbe1', cote: '#f5f6f8', dessus: '#3b3b45' };
+  const blanc = { devant: '#e3e5ea', cote: '#f7f8fa', dessus: '#3b3b45' };
   return FEUX_J.map((j0, k) => {
-    const J = 1.6;
+    const J = FEU_J;
+    const I = 2.0;
+    const H = HAUT_FEU;
     const u0 = -15 * (j0 + J);
     const u1 = -15 * j0;
-    const actif = k < NB_FEUX;
-    const brule = (i, j) => `<ellipse cx="${qx(i, j).toFixed(1)}" cy="${qy(i, j, 15).toFixed(1)}" rx="5.4" ry="2.7" fill="none" stroke="#5a5a66" stroke-width="1.4"/>`;
-    const poele = (i, j, plein) => `<g transform="translate(${qx(i, j).toFixed(1)} ${qy(i, j, 15).toFixed(1)})">
-      <ellipse cx="0" cy="-1" rx="6.6" ry="3.3" fill="#c9cdd6"/><ellipse cx="0" cy="-2.2" rx="5.6" ry="2.6" fill="${plein ? '#f2cf5a' : '#aeb3bd'}"/>
-      <path d="M5 -1.6 L11 1.4" stroke="#7d8696" stroke-width="2" stroke-linecap="round"/></g>`;
-    const corps = `
-      ${qboite(0, j0, 1.9, J, 0, 15, blanc)}
-      ${brule(0.55, j0 + 0.45)}${brule(1.3, j0 + 1.15)}
-      ${actif ? '' : poele(0.55, j0 + 0.45, true) + poele(1.3, j0 + 1.15, true)}
-      <g transform="${murGauche(1.9)}">
-        <rect x="${u0 + 2.5}" y="-12" width="${u1 - u0 - 5}" height="9" rx="1.5" fill="#e7e9ee" stroke="#c4c8d1" stroke-width=".7"/>
-        <rect ${actif ? 'data-e5="four-vitre"' : ''} x="${u0 + 5}" y="-10.5" width="${u1 - u0 - 10}" height="6" rx="1" fill="#3a3a46"/>
-        <rect x="${u0 + 5}" y="-14" width="${u1 - u0 - 10}" height="1.4" rx=".7" fill="#9aa3ad"/>
-        <circle cx="${u0 + 6}" cy="-1.8" r="1" fill="#9aa3ad"/><circle cx="${u1 - 6}" cy="-1.8" r="1" fill="#9aa3ad"/>
-      </g>`;
-    if (!actif) return corps;
+    const brule = (i, j) => `<ellipse cx="${qx(i, j).toFixed(1)}" cy="${qy(i, j, H).toFixed(1)}" rx="6.4" ry="3.2" fill="none" stroke="#6a6a76" stroke-width="1.6"/>`;
     const c = lieuxFeu(j0).casserole;
-    const flammes = [-6, -3, 0, 3, 6].map((dx, n) => `
-        <path class="e5-flamme" d="M${(c.x + dx - 1.8).toFixed(1)} ${(c.y + 4).toFixed(1)} Q${(c.x + dx).toFixed(1)} ${(c.y - 3).toFixed(1)} ${(c.x + dx + 1.8).toFixed(1)} ${(c.y + 4).toFixed(1)} Z" fill="${n % 2 ? '#ffd36b' : '#ff8a2a'}" style="animation-delay:-${(n * 0.07).toFixed(2)}s"/>`).join('');
-    // Le numéro du fourneau, comme une plaque au mur, au-dessus de la vapeur.
-    const u = -15 * (j0 + 0.55);
+    const flammes = [-8, -4, 0, 4, 8].map((dx, n) => `
+        <path class="e5-flamme" d="M${(c.x + dx - 2).toFixed(1)} ${(c.y + 3).toFixed(1)} Q${(c.x + dx).toFixed(1)} ${(c.y - 5).toFixed(1)} ${(c.x + dx + 2).toFixed(1)} ${(c.y + 3).toFixed(1)} Z" fill="${n % 2 ? '#ffd36b' : '#ff8a2a'}" style="animation-delay:-${(n * 0.07).toFixed(2)}s"/>`).join('');
+    // Le numéro du fourneau, comme une plaque au mur.
+    const u = -15 * (j0 + J / 2);
     return `
     <g class="e5-fourneau" data-e5="fourneau-${k}" role="button" tabindex="0" aria-label="Fourneau ${k + 1}">
-      <path d="M${Q(0, j0, 0)} L${Q(2.2, j0, 0)} L${Q(2.2, j0 + 1.7, 0)} L${Q(0, j0 + 1.7, 0)} L${Q(0, j0 + 1.7, 62)} L${Q(0, j0, 62)} Z" fill="transparent"/>
+      <path d="M${Q(0, j0, 0)} L${Q(2.6, j0, 0)} L${Q(2.6, j0 + J, 0)} L${Q(0, j0 + J, 0)} L${Q(0, j0 + J, 70)} L${Q(0, j0, 70)} Z" fill="transparent"/>
       <g transform="${murGauche(0)}">
-        <circle cx="${u.toFixed(1)}" cy="-52" r="6.6" fill="#fff" stroke="#7a3cf0" stroke-width="1.6"/>
-        <text x="${u.toFixed(1)}" y="-48.8" text-anchor="middle" font-size="9" font-weight="700" fill="#7a3cf0">${k + 1}</text>
+        <circle cx="${u.toFixed(1)}" cy="-58" r="6.6" fill="#fff" stroke="#7a3cf0" stroke-width="1.6"/>
+        <text x="${u.toFixed(1)}" y="-54.8" text-anchor="middle" font-size="9" font-weight="700" fill="#7a3cf0">${k + 1}</text>
       </g>
-      ${corps}
+      ${qf([[0, j0 + 0.05, 0], [I + 0.15, j0 + 0.05, 0], [I + 0.15, j0 + J - 0.05, 0], [0, j0 + J - 0.05, 0]], '#1a1026', ' opacity=".12"')}
+      ${qboite(0, j0 + 0.05, I, J - 0.1, 0, H, blanc)}
+      ${qf([[0, j0 + 0.05, H], [I, j0 + 0.05, H], [I, j0 + J - 0.05, H], [0, j0 + J - 0.05, H]], '#43434e')}
+      ${brule(0.55, j0 + 0.55)}${brule(0.55, j0 + J - 0.55)}${brule(1.45, j0 + 0.55)}
+      <g transform="${murGauche(I)}">
+        <rect x="${u0 + 3}" y="-33" width="${u1 - u0 - 6}" height="7" rx="1.5" fill="#eceef2" stroke="#c9cdd5" stroke-width=".8"/>
+        <circle cx="${u0 + 8}" cy="-29.5" r="1.6" fill="#9aa3ad"/><circle cx="${u0 + 14}" cy="-29.5" r="1.6" fill="#9aa3ad"/><circle cx="${u1 - 8}" cy="-29.5" r="1.6" fill="#9aa3ad"/>
+        <rect data-e5="four-vitre" x="${u0 + 5}" y="-22" width="${u1 - u0 - 10}" height="14" rx="1.5" fill="#3a3a46"/>
+        <rect x="${u0 + 6}" y="-24.6" width="${u1 - u0 - 12}" height="1.6" rx=".8" fill="#9aa3ad"/>
+        <rect x="${u0 + 4}" y="-5" width="${u1 - u0 - 8}" height="3" rx="1" fill="#d5d8de"/>
+      </g>
       <g class="e5-flammes">${flammes}</g>
-      <g class="e5-casserole" data-e5="casserole-${k}">
-        <rect x="${c.x - 10}" y="${c.y - 12}" width="20" height="12" rx="3" fill="#cfcadd"/>
-        <rect x="${c.x - 11.5}" y="${c.y - 13.5}" width="23" height="3" rx="1.5" fill="#b9b3cb"/>
-        <path d="M${c.x + 11.5} ${c.y - 9} H${c.x + 18}" stroke="#9e98b3" stroke-width="2.4" stroke-linecap="round"/>
-        <path d="M${c.x - 6} ${c.y - 9} V${c.y - 4}" stroke="#fff" stroke-opacity=".6" stroke-width="1.6" stroke-linecap="round"/>
+      <g class="e5-salete" aria-hidden="true">
+        ${qf([[0.2, j0 + 0.25, H + 0.2], [1.2, j0 + 0.15, H + 0.2], [1.6, j0 + 1.0, H + 0.2], [0.9, j0 + 1.35, H + 0.2], [0.3, j0 + 1.0, H + 0.2]], '#b7a68b')}
+        ${qf([[1.15, j0 + 1.25, H + 0.2], [1.95, j0 + 1.15, H + 0.2], [1.95, j0 + 2.0, H + 0.2], [1.3, j0 + 1.95, H + 0.2]], '#a8977c')}
+        <g transform="${murGauche(I)}" fill="#ad9c80" stroke="#8c7b60" stroke-width=".6">
+          <path d="M${u0 + 3} ${-H - 0.5} h16 v5 q-1 9 -3.4 0.5 q-1.4 5 -3.2 1 q-2 12 -4.4 0 q-1 3 -2.6 0 Z"/>
+          <path d="M${u1 - 17} ${-H - 0.5} h14 v4 q-1 15 -3.4 2 q-2 6 -4 -0.5 q-2 4 -3.6 0 Z"/>
+          <path d="M${u0 + 8} -26 q3 -3 7 0 v7 q-2 7 -3.6 0 q-1.2 3 -2.4 0 Z"/>
+        </g>
+        ${qf([[I, j0 + 0.4, 0], [I + 0.5, j0 + 0.5, 0], [I + 0.6, j0 + 1.1, 0], [I, j0 + 1.0, 0]], '#9f8f74', ' opacity=".55"')}
+      </g>
+      <g class="e5-casserole" data-e5="casserole-${k}" style="transform-origin:${c.x}px ${c.y}px">
+        <g class="e5-poele">
+          <path d="M${c.x + 12} ${c.y - 2} L${c.x + 25} ${c.y + 3}" stroke="#2f2f38" stroke-width="3.4" stroke-linecap="round"/>
+          <path d="M${c.x + 12} ${c.y - 2} L${c.x + 25} ${c.y + 3}" stroke="#55555f" stroke-width="1.4" stroke-linecap="round"/>
+          <ellipse cx="${c.x}" cy="${c.y}" rx="14" ry="6.6" fill="#55555f"/>
+          <ellipse cx="${c.x}" cy="${c.y - 0.6}" rx="12" ry="5.2" fill="#2f2f38"/>
+        </g>
+        <g class="e5-contenu" transform="translate(${c.x} ${c.y - 0.6})"></g>
+        <g class="e5-poele">
+          <path d="M${c.x - 14} ${c.y} A14 6.6 0 0 0 ${c.x + 14} ${c.y} L${c.x + 13} ${c.y + 3} A13 6.2 0 0 1 ${c.x - 13} ${c.y + 3} Z" fill="#6c6c78"/>
+          <path d="M${c.x - 9} ${c.y + 4.4} Q${c.x - 3} ${c.y + 6} ${c.x + 2} ${c.y + 5.4}" stroke="#a9a9b4" stroke-width="1" fill="none" stroke-linecap="round"/>
+        </g>
       </g>
       <g class="e5-vapeur-four e5-vapeur" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round">
-        <path d="M${c.x - 5} ${c.y - 16} q-3 -4 0 -8 q3 -4 0 -8"/>
-        <path d="M${c.x + 1} ${c.y - 18} q-3 -4 0 -8 q3 -4 0 -8" style="animation-delay:-.6s"/>
-        <path d="M${c.x + 7} ${c.y - 16} q-3 -4 0 -8 q3 -4 0 -8" style="animation-delay:-1.2s"/>
+        <path d="M${c.x - 6} ${c.y - 8} q-3 -4 0 -8 q3 -4 0 -8"/>
+        <path d="M${c.x + 1} ${c.y - 10} q-3 -4 0 -8 q3 -4 0 -8" style="animation-delay:-.6s"/>
+        <path d="M${c.x + 8} ${c.y - 8} q-3 -4 0 -8 q3 -4 0 -8" style="animation-delay:-1.2s"/>
       </g>
     </g>`;
   }).join('');
 }
 
 function comptoirIso() {
-  const bleu = { devant: '#5a8fc6', cote: '#4a7fb8', dessus: '#4a7fb8' };
-  const plateau = { devant: '#e9eef4', cote: '#f7f9fc', dessus: '#ffffff' };
+  const { i0, i1, j0, j1 } = COMPTOIR;
+  const H = HAUT_COMPTOIR;
+  const blanc = { devant: '#e6eaf0', cote: '#f8fafc', dessus: '#ffffff' };
+  const bleu = { devant: '#3f86c8', cote: '#5a9ad6', dessus: '#7fb6e6' };
+  const jm = (j0 + j1) / 2;
+  // La façade côté salle (i = i1) : deux casiers ouverts, avec leurs piles d'assiettes.
+  const casier = (ja, jb) => {
+    const ua = -15 * jb + 3;
+    const ub = -15 * ja - 3;
+    const piles = [0.3, 0.7].map((f) => {
+      const x = ua + (ub - ua) * f;
+      return Array.from({ length: 6 }, (_, n) => `<ellipse cx="${x.toFixed(1)}" cy="${(-6 - n * 2.6).toFixed(1)}" rx="8" ry="2.2" fill="#fff" stroke="#c8ced8" stroke-width=".6"/>`).join('');
+    }).join('');
+    return `<rect x="${ua}" y="${-H + 8}" width="${ub - ua}" height="${H - 11}" rx="1.5" fill="#b9c4d2"/>
+      <rect x="${ua}" y="-4" width="${ub - ua}" height="2" fill="#a8743f"/>${piles}`;
+  };
   return `
-  ${qf([[3.4, 2.6], [5.0, 2.6], [5.0, 9.0], [3.4, 9.0]], '#1a1026', ' opacity=".12"')}
-  ${qboite(3.6, 2.8, 1.2, 6, 0, 11, bleu)}
-  <path d="M${Q(4.8, 2.8, 5.5)} L${Q(4.8, 8.8, 5.5)} M${Q(3.6, 8.8, 5.5)} L${Q(4.8, 8.8, 5.5)}" stroke="#d6e6f6" stroke-width="2.2"/>
-  ${qboite(3.5, 2.7, 1.4, 6.2, 11, 3, plateau)}
-  <g transform="translate(${qx(4.2, 3.3).toFixed(1)} ${qy(4.2, 3.3, 14).toFixed(1)})">
-    <rect x="-7" y="-14" width="14" height="14" rx="4" fill="#ffffff" fill-opacity=".6" stroke="#c9b8ef" stroke-width="1.2"/>
-    <rect x="-7.6" y="-16.6" width="15.2" height="3.4" rx="1.7" fill="#8f5cf7"/>
-    <circle cx="-2.4" cy="-4.4" r="2.6" fill="#d9a441"/><circle cx="2.4" cy="-7.6" r="2.6" fill="#c98d3a"/>
-  </g>`;
+  ${qf([[i0 - 0.15, j0 - 0.1], [i1 + 0.25, j0 - 0.1], [i1 + 0.25, j1 + 0.2], [i0 - 0.15, j1 + 0.2]], '#1a1026', ' opacity=".12"')}
+  ${qboite(i0, j0, i1 - i0, jm - j0, 0, H - 4, blanc)}
+  ${qboite(i0, jm, i1 - i0, j1 - jm, 0, H - 4, blanc)}
+  <g transform="${murGauche(i1)}">${casier(j0, jm)}${casier(jm, j1)}</g>
+  ${qboite(i0 - 0.05, j0 - 0.05, i1 - i0 + 0.1, j1 - j0 + 0.1, H - 4, 4, bleu)}
+  <path d="M${Q(i0 + 0.3, j0 + 0.4, H)} L${Q(i1 - 0.4, j0 + 1.6, H)} M${Q(i0 + 0.4, jm + 0.3, H)} L${Q(i1 - 0.5, jm + 1.4, H)}" stroke="#bcdaf4" stroke-width="2.2" stroke-linecap="round" opacity=".7"/>`;
 }
 
-function chaiseIso(j) {
-  const i0 = SIEGE_I - 0.35;
+// Une chaise blanche, dossier côté mur de droite (le client fait face à sa table).
+function chaiseIso([ti, tj]) {
+  const ci = ti;
+  const cj = tj - TABLE_DEMI - 0.55;
+  const i0 = ci - 0.45;
+  const j0 = cj - 0.45;
   const blanc = { devant: '#e4e7ec', cote: '#f6f7f9', dessus: '#ffffff' };
+  const pied = '#c9ccd3';
   return `
-  ${qf([[i0, j - 0.4], [i0 + 0.8, j - 0.4], [i0 + 0.8, j + 0.4], [i0, j + 0.4]], '#1a1026', ' opacity=".1"')}
-  ${qpied(i0 + 0.1, j - 0.3, 8, '#c9ccd3', 1.6)}${qpied(i0 + 0.7, j - 0.3, 8, '#c9ccd3', 1.6)}
-  ${qpied(i0 + 0.1, j + 0.3, 8, '#c9ccd3', 1.6)}${qpied(i0 + 0.7, j + 0.3, 8, '#c9ccd3', 1.6)}
-  ${qboite(i0, j - 0.35, 0.18, 0.7, 8, 18, blanc)}
-  ${qboite(i0, j - 0.35, 0.8, 0.7, 8, 2, blanc)}`;
+  ${qf([[i0, j0], [i0 + 0.95, j0], [i0 + 0.95, j0 + 0.95], [i0, j0 + 0.95]], '#1a1026', ' opacity=".1"')}
+  ${qpied(i0 + 0.12, j0 + 0.12, 15, pied, 2)}${qpied(i0 + 0.8, j0 + 0.12, 15, pied, 2)}
+  ${qpied(i0 + 0.12, j0 + 0.8, 15, pied, 2)}${qpied(i0 + 0.8, j0 + 0.8, 15, pied, 2)}
+  ${qboite(i0, j0, 0.92, 0.92, 15, 2.6, blanc)}
+  ${qboite(i0, j0 - 0.02, 0.92, 0.18, 17, 22, blanc)}`;
 }
 
 function plantePot(i, j, s = 1) {
@@ -1108,7 +1180,7 @@ export function fondCafe() {
 export function comptoir() {
   return `
   ${comptoirIso()}
-  ${TABLES_J.map(chaiseIso).join('')}`;
+  ${TABLES.map(chaiseIso).join('')}`;
 }
 
 // Cyriel en cheffe, aux fourneaux et au service ; son plat est dans
@@ -1119,21 +1191,25 @@ export function cheffe() {
 
 export function tables() {
   const blanc = { devant: '#e3e6eb', cote: '#f3f5f8', dessus: '#ffffff' };
-  return TABLES_J.map((j) => {
-    const i0 = TABLE_I - 0.85;
-    const j0 = j - 1.35;
+  const bois = '#8a4f2c';
+  const d = TABLE_DEMI;
+  return TABLES.map(([ti, tj]) => {
+    const i0 = ti - d;
+    const j0 = tj - d;
+    const L2 = 2 * d;
     return `
   <g>
-    ${qf([[i0 - 0.2, j0 - 0.2], [i0 + 1.9, j0 - 0.2], [i0 + 1.9, j0 + 2.9], [i0 - 0.2, j0 + 2.9]], '#1a1026', ' opacity=".12"')}
-    ${qpied(i0 + 0.15, j0 + 0.15, 14, '#7b4a2d')}${qpied(i0 + 1.55, j0 + 0.15, 14, '#7b4a2d')}
-    ${qpied(i0 + 0.15, j0 + 2.55, 14, '#7b4a2d')}${qpied(i0 + 1.55, j0 + 2.55, 14, '#7b4a2d')}
-    ${qboite(i0, j0, 1.7, 2.7, 13.5, 2.5, blanc)}
+    ${qf([[i0 - 0.1, j0 - 0.1], [i0 + L2 + 0.2, j0 - 0.1], [i0 + L2 + 0.2, j0 + L2 + 0.2], [i0 - 0.1, j0 + L2 + 0.2]], '#1a1026', ' opacity=".12"')}
+    ${qpied(i0 + 0.15, j0 + 0.15, HAUT_TABLE - 3, bois, 3)}${qpied(i0 + L2 - 0.15, j0 + 0.15, HAUT_TABLE - 3, bois, 3)}
+    ${qpied(i0 + 0.15, j0 + L2 - 0.15, HAUT_TABLE - 3, bois, 3)}${qpied(i0 + L2 - 0.15, j0 + L2 - 0.15, HAUT_TABLE - 3, bois, 3)}
+    ${qboite(i0, j0, L2, L2, HAUT_TABLE - 3.5, 3.5, blanc)}
+    <path d="M${Q(i0 + 0.3, j0 + 0.5, HAUT_TABLE)} Q${Q(ti, tj - 0.2, HAUT_TABLE)} ${Q(i0 + L2 - 0.4, j0 + L2 - 0.3, HAUT_TABLE)}" stroke="#eef1f5" stroke-width="3" fill="none" stroke-linecap="round"/>
   </g>`;
   }).join('');
 }
 
 export function decorAvant() {
-  return `${plantePot(11.2, 0.9, 0.9)}${plantePot(1.2, 11.2, 0.85)}`;
+  return `${plantePot(12.3, 0.7, 1.35)}${plantePot(12.3, 12.2, 1.35)}`;
 }
 
 /* ================================================================ Marché */
@@ -1714,6 +1790,7 @@ const LOOKS = [
 function coiffure(c, couleur) {
   switch (c) {
     case 'chignon': return `<circle cx="0" cy="-46" r="6" fill="${couleur}"/><path d="M-11 -32 C-12 -45 12 -45 11 -32 C8 -38 -8 -38 -11 -32 Z" fill="${couleur}"/>`;
+    case 'queue': return `<path d="M9 -40 C17 -38 18 -28 15 -18 C13 -12 10 -14 11 -19 C12 -25 12 -31 8 -35 Z" fill="${couleur}"/><ellipse cx="10.4" cy="-37.6" rx="2.6" ry="2" fill="#8f5cf7"/><path d="M-11.2 -31 C-12 -45 10 -47 11.4 -33 C8 -38 2 -38.6 -3 -40 C-6 -37 -9 -34 -11.2 -31 Z" fill="${couleur}"/>`;
     case 'bonnet': return `<path d="M-11.5 -33 C-12 -47 12 -47 11.5 -33 Z" fill="#f5d33f"/><rect x="-12.5" y="-36" width="25" height="5" rx="2.5" fill="#e3b04b"/><circle cx="0" cy="-46" r="3.6" fill="#fffaf2"/>`;
     case 'couettes': return `<path d="M-11 -31 C-12 -46 12 -46 11 -31 C7 -37 -7 -37 -11 -31 Z" fill="${couleur}"/><ellipse cx="-13.5" cy="-30" rx="4" ry="6" fill="${couleur}"/><ellipse cx="13.5" cy="-30" rx="4" ry="6" fill="${couleur}"/><circle cx="-11" cy="-35" r="1.8" fill="#f06fa4"/><circle cx="11" cy="-35" r="1.8" fill="#f06fa4"/>`;
     default: return `<path d="M-11.2 -31 C-12 -45 10 -47 11.4 -33 C7 -37 1 -36 -2 -39 C-4 -35 -8 -34 -11.2 -31 Z" fill="${couleur}"/>`;
@@ -1979,6 +2056,13 @@ export const PERSONNAGES = {
   angeloune: { look: LOOKS[6] },
   rachou: { look: LOOKS[7] },
   clement: { look: LOOKS[0] },
+  // les clients de passage
+  passant0: { look: { peau: '#f2cbae', cheveux: '#6b3e22', haut: '#4fa3d8', bas: '#3b3550', coiffe: 'courts' } },
+  passant1: { look: { peau: '#e8b48f', cheveux: '#e8b04a', haut: '#e86aa0', bas: '#4a7bd8', coiffe: 'couettes' } },
+  passant2: { look: { peau: '#8f5a3c', cheveux: '#1a1026', haut: '#5bbf6a', bas: '#3b3550', coiffe: 'courts' } },
+  passant3: { look: { peau: '#f6d3b8', cheveux: '#b8452e', haut: '#f5d33f', bas: '#5a4a8a', coiffe: 'chignon' } },
+  passant4: { look: { peau: '#c98e6a', cheveux: '#3a2418', haut: '#9b6bff', bas: '#2f3a4a', coiffe: 'bonnet' } },
+  passant5: { look: { peau: '#f2cbae', cheveux: '#2a1c14', haut: '#f08a3c', bas: '#3b5f8a', coiffe: 'queue' } },
 };
 for (const p of Object.values(PERSONNAGES)) {
   const k = p.look.clement ? 1.1 : 1;
@@ -2016,7 +2100,7 @@ function joueur(nom, look, { x, y, assis = false, coucou = false, coeur = false,
 }
 
 /** La place du marché. etals : [{ cle, nom, couleur, fonce, articles }]. */
-export function marche(etals, joueurs, texteCafe, texteRoue) {
+export function marche(etals, joueurs, texteCafe, texteRoue, texteTableau = 'Tableau') {
   const C = MARCHE.centre;
   const R = MARCHE.R;
   const e = Object.fromEntries(etals.map((x) => [x.cle, x]));
@@ -2044,7 +2128,6 @@ export function marche(etals, joueurs, texteCafe, texteRoue) {
   ${arbre(112, 100, 1.15)}
   ${buisson(-10, 150)}${buisson(420, 150, 1.05)}
   ${etal(e.epicerie)}
-  ${chevalet(454, 198)}
   ${etal(e.cremerie)}${etal(e.primeur)}
   ${girouette(-96, 288)}${borneIncendie(-62, 310)}
   ${oranger(500, 284)}${corbeille(532, 302)}
@@ -2060,6 +2143,9 @@ export function marche(etals, joueurs, texteCafe, texteRoue) {
   ${joueur(nAngel || '', LOOKS[6], { x: 258, y: 414, parcours: '0,0,3 30,14,2' })}
   <g transform="translate(${C.x} ${C.y})">${muret('i', R, -R, -7)}${muret('j', R, -R, -7.5)}</g>
   ${poubelle(426, 398)}
+  <g class="e5-etal e5-tableau" data-e5="tableau" role="button" tabindex="0" aria-label="${texteTableau}">
+    <rect x="308" y="400" width="74" height="80" fill="transparent"/>${chevalet(345, 470)}
+  </g>
   ${arbre(-60, 470, 0.95)}${arbre(470, 476, 0.95, true)}${arbre(20, 580, 1)}${arbre(390, 590, 0.95)}${arbre(-220, 420, 0.9)}${arbre(630, 420, 0.9)}
   ${buisson(110, 520)}${buisson(300, 528, 1.1)}${buisson(-120, 520)}${buisson(540, 530)}
   ${papillonVolant(60, 180, '#b48cff', 0)}${papillonVolant(380, 460, '#ff9cc8', -2.4)}${papillonVolant(-60, 300, '#8f5cf7', -1.2)}`;
@@ -2206,4 +2292,172 @@ export function affiche() {
   <path d="M58 -22 C52 -28 50 -34 54 -38 C59 -43 54 -49 58 -55" fill="none" stroke="#b48cff" stroke-width="3" stroke-linecap="round"/>
   <path d="M60 -60 C46 -72 44 -90 56 -93 C61 -94 63 -90 63 -87 C64 -90 67 -94 72 -93 C84 -90 80 -72 60 -60 Z" fill="none" stroke="#b48cff" stroke-width="3" stroke-linejoin="round"/>
   <g transform="translate(-68 -24) scale(1.8)"><g class="e5-flotte">${pipistrelle({ plat: gateau() })}</g></g>`;
+}
+
+/* ===================================== L'icône du marché (barre d'actions) */
+
+/** Une petite cabane de marché, dans le style des icônes de la barre :
+ *  gros contour brun, auvent rayé rouge et crème, étal de bois garni de
+ *  fruits. Boîte -44 -60 88 120. */
+export function cabaneMarche() {
+  const T = '#4b2e17';
+  const rayures = [-30, -15, 0, 15].map((x, i) => `<path d="M${x} -26 L${x + 15} -26 L${x + 15} -10 Q${x + 7.5} -2 ${x} -10 Z" fill="${i % 2 ? '#fff4dc' : '#e8463a'}"/>`).join('');
+  return `
+  <ellipse cx="0" cy="49" rx="38" ry="6" fill="#5a3a1a" opacity=".22"/>
+  <path d="M-29 -12 V44 M29 -12 V44" stroke="${T}" stroke-width="9" stroke-linecap="round"/>
+  <path d="M-29 -12 V44 M29 -12 V44" stroke="#c98a4e" stroke-width="4.6" stroke-linecap="round"/>
+  <path d="M-34 -40 L0 -54 L34 -40 Z" fill="#b9673a" stroke="${T}" stroke-width="3.4" stroke-linejoin="round"/>
+  <path d="M-22 -44 L0 -51 L22 -44" stroke="#e39a5e" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+  <g>
+    <path d="M-37 -40 H37 L30 -26 H-30 Z" fill="#fff4dc" stroke="${T}" stroke-width="3.4" stroke-linejoin="round"/>
+    <path d="M-23 -40 L-18 -26 M-5 -40 L-4 -26 M9 -40 L10 -26 M23 -40 L22 -26" stroke="#e8463a" stroke-width="7"/>
+    ${rayures}
+    <path d="M-30 -26 L-30 -10 Q-22.5 -2 -15 -10 Q-7.5 -2 0 -10 Q7.5 -2 15 -10 Q22.5 -2 30 -10 L30 -26 Z" fill="none" stroke="${T}" stroke-width="3.4" stroke-linejoin="round"/>
+  </g>
+  <rect x="-36" y="14" width="72" height="12" rx="3" fill="#d9a05e" stroke="${T}" stroke-width="3.4"/>
+  <path d="M-30 18 H30" stroke="#f2c98a" stroke-width="2.4" stroke-linecap="round"/>
+  <rect x="-31" y="26" width="62" height="18" rx="2" fill="#b8793e" stroke="${T}" stroke-width="3.4"/>
+  <path d="M-31 35 H31 M-10 26 V44 M10 26 V44" stroke="${T}" stroke-width="2.2"/>
+  <g stroke="${T}" stroke-width="2.4">
+    <circle cx="-22" cy="9" r="7" fill="#e8453c"/>
+    <circle cx="-9" cy="8" r="7.4" fill="#f4a531"/>
+    <circle cx="5" cy="9" r="7" fill="#9bcf45"/>
+    <circle cx="19" cy="8.4" r="7.2" fill="#e8453c"/>
+  </g>
+  <path d="M-24 5 Q-22 3 -20 4.4 M-11 4 Q-9 2.4 -7 3.6 M3 5 Q5 3.4 7 4.6 M17 4.4 Q19 2.8 21 4" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" opacity=".8"/>
+  <path d="M-22 2 V-1 M19 1.2 L20.5 -2" stroke="#4f8a2a" stroke-width="2.2" stroke-linecap="round"/>`;
+}
+
+/** La bulle de parole d'un joueur, au-dessus de sa tête (pointe en (0, 0)) :
+ *  blanche, le texte sur trois lignes au plus (coupé avec « … »). */
+export function bulleParole(texte) {
+  const mots = String(texte).split(/\s+/).filter(Boolean);
+  const lignes = [];
+  let l = '';
+  for (const m of mots) {
+    const essai = l ? `${l} ${m}` : m;
+    if (essai.length > 20 && l) { lignes.push(l); l = m; } else l = essai;
+  }
+  if (l) lignes.push(l);
+  if (lignes.length > 3) { lignes.length = 3; lignes[2] = `${lignes[2].slice(0, 18)}…`; }
+  for (let i = 0; i < lignes.length; i++) if (lignes[i].length > 22) lignes[i] = `${lignes[i].slice(0, 21)}…`;
+  const larg = Math.max(...lignes.map((x) => x.length)) * 6.2 + 18;
+  const d = Math.max(22, larg / 2);
+  const h = lignes.length * 14 + 10;
+  const haut = -8 - h;
+  return `
+  <path d="M${-d + 6} ${haut} H${d - 6} Q${d} ${haut} ${d} ${haut + 6} V-14 Q${d} -8 ${d - 6} -8 H6 L0 0 L-6 -8 H${-d + 6} Q${-d} -8 ${-d} -14 V${haut + 6} Q${-d} ${haut} ${-d + 6} ${haut} Z" fill="#fff" stroke="${ENCRE}" stroke-width="2" stroke-linejoin="round"/>
+  ${lignes.map((x, i) => `<text y="${haut + 17 + i * 14}" text-anchor="middle" font-size="12" font-weight="700" fill="${ENCRE}">${echapper(x)}</text>`).join('')}`;
+}
+
+/* ========================================== Le tableau noir du marché */
+
+// L'icône des permis : un rouleau à pâtisserie et un couteau croisés sur un
+// petit disque bleu. Centrée en (0, 0), environ 50 de large.
+function iconePermis({ question = false, plus = false } = {}) {
+  return `
+  <circle cx="0" cy="2" r="15" fill="#7fc4e8" stroke="#3d7fa8" stroke-width="2"/>
+  <g transform="rotate(-38)">
+    <rect x="-22" y="-4.6" width="44" height="9.2" rx="4.6" fill="#d9a05e" stroke="#5a3a1a" stroke-width="2"/>
+    <path d="M-15 -1.6 H14" stroke="#f2c98a" stroke-width="2" stroke-linecap="round"/>
+    <rect x="-29" y="-2.6" width="9" height="5.2" rx="2.6" fill="#b8793e" stroke="#5a3a1a" stroke-width="1.8"/>
+    <rect x="20" y="-2.6" width="9" height="5.2" rx="2.6" fill="#b8793e" stroke="#5a3a1a" stroke-width="1.8"/>
+  </g>
+  <g transform="rotate(42)">
+    <path d="M-6 -4 H22 Q27 -4 27 0 Q22 4 -6 4 Z" fill="#e8ecf0" stroke="#4a4f57" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M-2 -1.4 H20" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/>
+    <rect x="-24" y="-4" width="18" height="8" rx="3" fill="#4a3426" stroke="#2a1c12" stroke-width="2"/>
+    <circle cx="-19" cy="0" r="1.1" fill="#d9c8a8"/><circle cx="-11" cy="0" r="1.1" fill="#d9c8a8"/>
+  </g>
+  ${question ? '<text x="0" y="-12" text-anchor="middle" font-size="26" font-weight="700" fill="#f2b632" stroke="#5a3a1a" stroke-width="1.6" paint-order="stroke">?</text>' : ''}
+  ${plus ? '<path d="M-2 -24 V-12 M-8 -18 H4" stroke="#e8453c" stroke-width="5" stroke-linecap="round"/><path d="M-2 -24 V-12 M-8 -18 H4" stroke="#ff8a80" stroke-width="1.6" stroke-linecap="round"/>' : ''}`;
+}
+
+/** Le dessin de la fenêtre du tableau noir (boîte 0 0 320 300) : rien à
+ *  toucher, c'est le décor du jeu d'origine refait à la craie. */
+export function ardoisePermis(T) {
+  const craie = 'fill="none" stroke="#f1eee4" stroke-linecap="round" stroke-linejoin="round"';
+  return `
+  <path d="M24 30 Q160 22 296 30" ${craie} stroke-width="3" opacity=".9"/>
+  <g transform="translate(120 66) scale(.95)">${iconePermis()}</g>
+  <text x="152" y="76" font-size="22" font-weight="700" fill="#f1eee4">${T.compte}</text>
+  <path d="M26 108 Q100 104 118 106 M148 106 Q240 102 300 108" ${craie} stroke-width="2.6" opacity=".85"/>
+  <path d="M110 110 Q106 180 112 250" ${craie} stroke-width="2.6" opacity=".85"/>
+  <g transform="translate(62 170)">${iconePermis({ question: true })}</g>
+  <ellipse cx="214" cy="172" rx="76" ry="34" ${craie} stroke-width="2.6" transform="rotate(-4 214 172)" opacity=".9"/>
+  <g transform="translate(186 176) scale(.9)">${iconePermis({ plus: true })}</g>
+  <g transform="translate(236 170)"><ellipse cx="0" cy="5" rx="9" ry="3.6" fill="#c9932a"/><ellipse cx="0" cy="3" rx="9" ry="3.6" fill="#f2c14e" stroke="#c9932a" stroke-width="1"/></g>
+  <text x="252" y="180" font-size="18" font-weight="700" fill="#f1eee4">× 1</text>
+  <g transform="translate(212 124)">
+    <rect x="-82" y="-13" width="164" height="24" rx="5" fill="#f3e7c8" stroke="#bfa774" stroke-width="1.2"/>
+    <path d="M-6 11 L0 18 L6 11 Z" fill="#f3e7c8"/>
+    <text y="4" text-anchor="middle" font-size="13" font-weight="700" fill="#3d2c1c">${T.recharger}</text>
+  </g>
+  <path d="M196 226 q-6 -10 -2 -18 M190 214 l4 -6 l5 4" ${craie} stroke-width="2.2"/>
+  <g transform="translate(262 252)" ${craie} stroke-width="2.4">
+    <path d="M-16 -4 Q-24 -14 -14 -20 Q-12 -32 0 -30 Q12 -34 15 -22 Q26 -16 17 -5 Z"/>
+    <path d="M-15 -4 H16 V4 H-15 Z"/>
+    <path d="M-12 14 Q0 22 12 14"/><circle cx="-5" cy="9" r=".8"/><circle cx="6" cy="9" r=".8"/>
+  </g>
+  <g transform="translate(40 262)">
+    <circle r="17" fill="#8fd0e8" stroke="#f1eee4" stroke-width="3"/>
+    <circle r="12" fill="#5aaed0"/>
+    <text y="7" text-anchor="middle" font-size="20" font-weight="700" font-style="italic" fill="#fff">i</text>
+  </g>`;
+}
+
+/** Un billet vert (l'argent du café), boîte -12 -12 24 24. */
+export function billet() {
+  return `
+  <g transform="rotate(-12)">
+    <rect x="-11" y="-5.6" width="22" height="13" rx="1.6" fill="#5f9a2a" transform="translate(1.4 1.6)"/>
+    <rect x="-11" y="-7" width="22" height="13" rx="1.6" fill="#a6dc5a" stroke="#4f8a22" stroke-width="1.3"/>
+    <rect x="-8.6" y="-4.8" width="17.2" height="8.6" rx="1" fill="none" stroke="#6fae34" stroke-width=".9"/>
+    <circle cx="0" cy="-.5" r="3" fill="#e9f7cf" stroke="#4f8a22" stroke-width="1"/>
+    <path d="M0 1.2 C-1.6 -.2 -1.9 -1.2 -1 -1.6 C-.5 -1.8 -.2 -1.5 0 -1.2 C.2 -1.5 .5 -1.8 1 -1.6 C1.9 -1.2 1.6 -.2 0 1.2 Z" fill="#4f8a22"/>
+  </g>`;
+}
+
+/** Le pouce vert d'un client content, sur une petite pastille ; la base de
+ *  la pastille en (0, 0). */
+export function pouce(content = true) {
+  const [clair, moyen, fonce] = content ? ['#8fd14a', '#6fb33a', '#2f6b18'] : ['#f2665a', '#d94a3e', '#8a1f16'];
+  return `
+  <circle cx="0" cy="-14" r="13" fill="#fff" stroke="${content ? '#3c8a1e' : '#b8322a'}" stroke-width="2"/>
+  <g${content ? '' : ' transform="rotate(180 0 -14)"'}>
+  <path d="M-6 -6 V-15 H-2 L1 -23 Q2 -26 4.4 -24.6 Q6 -23.4 5 -20 L4 -17 H8.6 Q11 -17 10.6 -14.4 L9.4 -7.6 Q9 -6 7.2 -6 Z" fill="${clair}" stroke="${fonce}" stroke-width="1.6" stroke-linejoin="round"/>
+  <rect x="-9.6" y="-16" width="4.6" height="10.6" rx="1.2" fill="${moyen}" stroke="${fonce}" stroke-width="1.6"/>
+  <path d="M5.5 -14 H9.6 M5.2 -11 H9.2" stroke="${fonce}" stroke-width="1.2" stroke-linecap="round"/>
+  </g>`;
+}
+
+/** L'horloge d'un client qui attend trop (centre en (0, 0)) ; l'aiguille
+ *  (.e5-aiguille) fait le tour avant qu'il s'en aille. */
+export function horloge() {
+  const graduations = Array.from({ length: 12 }, (_, k) => {
+    const a = (k * Math.PI) / 6;
+    return `<path d="M${(Math.sin(a) * 9).toFixed(1)} ${(-Math.cos(a) * 9).toFixed(1)} L${(Math.sin(a) * 10.8).toFixed(1)} ${(-Math.cos(a) * 10.8).toFixed(1)}" stroke="#4a5560" stroke-width="1.2"/>`;
+  }).join('');
+  return `
+  <circle r="14" fill="#56636e" stroke="#2f3840" stroke-width="1.6"/>
+  <circle r="11.8" fill="#fbfdff"/>
+  ${graduations}
+  <path d="M0 0 L0 -6" stroke="#2f3840" stroke-width="1.8" stroke-linecap="round" transform="rotate(300)"/>
+  <g class="e5-aiguille"><path d="M0 2 L0 -9" stroke="#d94a3e" stroke-width="1.4" stroke-linecap="round"/></g>
+  <circle r="1.6" fill="#2f3840"/>
+  <circle cx="-5" cy="-6" r="2.4" fill="#fff" opacity=".6"/>`;
+}
+
+
+/** La serveuse du café (comme sur la maquette) : queue de cheval, haut gris
+ *  bleu, jupe sombre, tablier blanc ; son plateau est dans .e5-sv-plat,
+ *  sur sa main levée. Origine aux pieds. */
+export function serveuse() {
+  const look = { peau: '#f1c7a5', cheveux: '#3a2418', haut: '#6f9c98', bas: '#3b3f4a', coiffe: 'queue' };
+  return `
+  <ellipse cx="0" cy="0" rx="10" ry="3.6" fill="#1a1026" opacity=".18"/>
+  ${corpsJoueur(look)}
+  <path d="M-6 -16 H6 L7 -6 Q0 -4 -7 -6 Z" fill="#fffdf8" stroke="#e1dccf" stroke-width=".6"/>
+  <path d="M-6 -16 Q0 -13.6 6 -16" stroke="#e1dccf" stroke-width=".8" fill="none"/>
+  <g transform="translate(15 -13)"><g class="e5-sv-plat"></g></g>`;
 }
