@@ -88,7 +88,7 @@ const TEXTES = {
   intro: 'Bienvenue dans ton café, cheffe Cyriel ! Moi, c’est Pipistrelle : je te donnerai des conseils. Ce soir, on rouvre.',
   livre: (plats) => `Le frigo est vide… Ce soir, il va y avoir du monde ! Les premiers clients mangeront ce qu’il y a sur le comptoir ; ensuite, certains ont réservé ${plats}. Regarde dans le livre de recettes ce qu’il faut acheter !`,
   versMarche: 'Allons au marché faire les courses !',
-  marche: 'Touche un étal pour voir ce qu’il vend. Le livre de recettes et le panier (ton frigo) sont en bas à droite.',
+  marche: 'Bonnes courses !',
   astuceMarche: 'Le livre de recettes, en bas à droite, dit tout ce qu’il faut acheter.',
   achatDeteste: (a) => `${cap(a.partitif)} ? Tu es sûre ? Bon… c’est toi la cheffe.`,
   pasAssez: 'Plus assez d’argent ! Sers d’abord des clients (ils paient en partant), ou tente ta chance à la roue de la fortune.',
@@ -330,7 +330,7 @@ const TEXTES = {
 
   fourneau: {
     toucher: 'touche le fourneau',
-    arrive: 'Cyriel arrive…',
+    arrive: '',
     dejaDemande: 'Cyriel s’en occupe !',
     accelerer: 'Accélérer la cuisson 60 fois',
   },
@@ -2014,28 +2014,20 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
     achats = [];
     await changerVue('marche');
     visitesMarche += 1;
-    if (visitesMarche === 2) dormir(2200).then(() => { if (vivant && vue === 'marche') direUnInstant(TEXTES.astuceRoue); });
     const sortie = achats;
-    dormir(22000).then(() => { if (vivant && vue === 'marche' && achats === sortie && !sortie.length) direUnInstant(TEXTES.astuceMarche, 4500); });
-    for (;;) {
-      await Promise.race([
-        dire(TEXTES.marche, [TEXTES.boutons.retour]),
-        new Promise((r) => { rentrer = r; }),
-      ]);
-      rentrer = null;
-      fermerFenetre();
-      const manque = manquePourLaSuite();
-      if (!manque.length) break;
-      const choix = await dire(TEXTES.manqueEncore(listeNoms(manque)), [TEXTES.boutons.rester, TEXTES.boutons.rentrer]);
-      if (choix === 1) break;
-    }
+    // On repart quand on veut (le bouton, ou le panneau « Café »).
+    await Promise.race([
+      dire(TEXTES.marche, [TEXTES.boutons.retour]),
+      new Promise((r) => { rentrer = r; }),
+    ]);
+    rentrer = null;
+    fermerFenetre();
     achats = null;
     await changerVue('cafe');
     if (sortie.length) await rangerCourses(sortie);
   }
 
   async function rangerCourses(liste) {
-    dire(TEXTES.rangement);
     const porteFrigo = $('[data-e5="frigo-porte"]');
     await animer(porteFrigo, [{ transform: 'scaleX(1)' }, { transform: 'scaleX(.15)' }], { duree: 300, easing: 'ease-out' });
     const vers = versEcran(L.frigo.x, L.frigo.y);
@@ -2455,7 +2447,6 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
     majContenu(f);
     majEtapes(f);
     signaler();
-    if (!preparationDite) { preparationDite = true; dire(TEXTES.preparation); }
   }
 
   const legendeEtape = (e) => (e.ing ? TEXTES.gestes.ingredient(D.ARTICLES[e.ing]) : TEXTES.gestes[e.geste]);
@@ -2499,7 +2490,6 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
   function enfiler(f) {
     if (f.demandee >= f.etapes.length) {
       bip('clic', 0.2);
-      direUnInstant(TEXTES.fourneau.dejaDemande, 1800);
       return;
     }
     const e = f.etapes[f.demandee];
@@ -2549,12 +2539,7 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
     bip('feu');
     majFeu(f);
     lancerHorloge();
-    if (premiereCuisson) {
-      premiereCuisson = false;
-      direUnInstant(TEXTES.vraiTemps);
-    } else {
-      direUnInstant(r.cuit);
-    }
+    premiereCuisson = false;
   }
 
   // Ce qu'on voit dans la casserole : les ingrédients qui dépassent, puis,
@@ -2624,8 +2609,6 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
       await marcher(cy, [[q.x, q.y]]);
       cyPlat.replaceChildren();
       poserAuComptoir(cle, epice);
-      if (!comptoirDit) { comptoirDit = true; direUnInstant(TEXTES.auComptoir(r, RECETTES[cle].portions)); }
-      if (!saleDit) { saleDit = true; direUnInstant(TEXTES.sale); }
       signaler();
     });
   }
@@ -2719,12 +2702,10 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
     cmd.etat = 'servie';
     servis.set(cmd.recette, (servis.get(cmd.recette) || 0) + 1);
     bip('plouf');
-    direUnInstant(TEXTES.service, 1800);
     gagnerXp(RECETTES[cmd.recette].xp + (cmd.epice ? TEXTES.epice.xp : 0));
     repas.push(mangerEtPartir(c, null, cmd.epice, RECETTES[cmd.recette].prix).then(() => {
       cmd.etat = 'partie';
       signaler();
-      if (!camionDit) { camionDit = true; direUnInstant(TEXTES.astuceCamion); }
     }));
     // retour devant le comptoir, par le même chemin
     const retour = [...chemin].reverse().slice(1).map((p) => [p.x, p.y]);
@@ -2986,10 +2967,8 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
   }
 
   // Ce que dit Pipistrelle pendant le service, sans répéter son dernier conseil.
-  function conseiller(t) {
-    if (vue !== 'cafe') return;          // au marché, on garde ses boutons
-    if (texteDeFond !== t) dire(t);
-  }
+  // (Plus d'explications : le cercle violet suffit à guider.)
+  function conseiller() {}
 
   // Le livre s'ouvre au fourneau f : on choisit la commande, on remplit la
   // casserole, et on peut filer au marché. Renvoie true si un plat est lancé.
@@ -3082,7 +3061,7 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
         // second toucher, bulle ouverte : cuisiner tout de suite.
         if (!f.ui.dataset.info) montrerCuisson(f);
         else if (expressRestant > 0) { cacherCuisson(f); await proposerExpress(f); }
-        else direUnInstant(f.vitesse > 1 ? f.r.cuit : `${f.r.cuit} ${TEXTES.astuce60x}`, 3200);
+        else cacherCuisson(f);
       } else if (f.etat === 'sale') {
         nettoyer(f);
       } else if (f.etat === 'libre') {
@@ -3090,7 +3069,6 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
         if (await ouvrirLivre(f, cmds)) premier = false;
       } else {
         bip('clic', 0.2);
-        direUnInstant(TEXTES.fourneau.dejaDemande, 1800);
       }
     }
     cacherGuide();
@@ -3488,7 +3466,6 @@ function demarrer({ scene, son, fx, memoire, debug, aller: allerEtape, numero })
     commandes = SOIREE.map((c) => ({ ...c, etat: 'dehors', erreurs: 0, client: null }));
     await allerAuMarche();
     ouvrirCafe();
-    dire(TEXTES.ouverture);
     const arrivees = lancerArrivees(commandes);
     await service(commandes, { premierTexte: TEXTES.premiereCommande, texte: TEXTES.commandeSuivante });
     await arrivees;
