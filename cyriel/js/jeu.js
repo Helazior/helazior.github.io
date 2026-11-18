@@ -98,6 +98,8 @@ function aller(n) {
   const suite = p.toString();
   history.replaceState(null, '', location.pathname + (suite ? '?' + suite : ''));
 
+  if (n >= 2) pleinEcran();
+
   nettoyer = etape.demarrer({
     scene, son, fx, memoire, fond,
     debug: cleBonne ? params.get('debug') : null,   // null, '', 'carte' ou 'vite'
@@ -113,6 +115,40 @@ function aller(n) {
     const plusTard = window.requestIdleCallback || ((f) => setTimeout(f, 300));
     plusTard(() => prochaine.preparer());
   }
+}
+
+/* ------------------------------------------------------ Plein écran */
+
+// Dès l'étape 2, le jeu passe en plein écran. Le navigateur ne l'accepte
+// qu'après un geste : on essaie tout de suite (le bouton qui mène à l'étape
+// 2 en est un), sinon au prochain toucher. Si elle quitte le plein écran
+// elle-même, on la laisse tranquille. (Sur iPhone, Safari ne le permet pas.)
+let pleinVoulu = false;
+let pleinQuitte = false;
+const enPlein = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
+function demanderPlein() {
+  if (!pleinVoulu || pleinQuitte || enPlein()) return;
+  const el = document.documentElement;
+  const f = el.requestFullscreen || el.webkitRequestFullscreen;
+  if (!f) return;
+  try {
+    const r = f.call(el, { navigationUI: 'hide' });
+    if (r && r.catch) r.catch(() => {});
+  } catch { /* refusé : on réessaiera au prochain geste */ }
+}
+function pleinEcran() {
+  pleinVoulu = true;
+  demanderPlein();
+}
+for (const geste of ['pointerup', 'touchend', 'click', 'keydown']) {
+  window.addEventListener(geste, demanderPlein, { capture: true, passive: true });
+}
+let etaitPlein = false;
+for (const ev of ['fullscreenchange', 'webkitfullscreenchange']) {
+  document.addEventListener(ev, () => {
+    if (etaitPlein && !enPlein()) pleinQuitte = true;
+    etaitPlein = enPlein();
+  });
 }
 
 /* --------------------------------------------------- Bouton du son */
